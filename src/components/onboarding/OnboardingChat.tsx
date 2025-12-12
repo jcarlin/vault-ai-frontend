@@ -339,18 +339,18 @@ export function OnboardingChat({
   return (
     <div className="min-h-screen bg-zinc-950 flex flex-col">
       {/* Header */}
-      <header className="h-14 border-b border-zinc-800/50 flex items-center px-6 bg-zinc-900">
-        <div className="flex items-center gap-3">
+      <header className="h-14 border-b border-zinc-800/50 flex items-center px-4 sm:px-6 bg-zinc-900">
+        <div className="flex items-center gap-2 sm:gap-3">
           <div className="h-8 w-8 rounded-lg bg-emerald-500/20 flex items-center justify-center">
             <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4 text-emerald-500">
               <path d="M12 2L2 7v10l10 5 10-5V7L12 2z" stroke="currentColor" strokeWidth="1.5" />
               <circle cx="12" cy="12" r="2" fill="currentColor" />
             </svg>
           </div>
-          <span className="font-semibold text-zinc-100">Vault AI Setup</span>
+          <span className="font-semibold text-zinc-100 text-sm sm:text-base">Vault AI Setup</span>
         </div>
         <div className="ml-auto flex items-center gap-2">
-          <span className="text-xs text-zinc-500">Step {
+          <span className="text-xs text-zinc-500 hidden sm:inline">Step {
             currentStep === 'timezone' ? '1' :
             currentStep === 'admin' ? '2' :
             currentStep === 'cluster' ? '3' :
@@ -361,7 +361,7 @@ export function OnboardingChat({
               <div
                 key={step}
                 className={cn(
-                  'h-1.5 w-6 rounded-full transition-colors',
+                  'h-1.5 w-4 sm:w-6 rounded-full transition-colors',
                   i < ['timezone', 'admin', 'cluster', 'tour', 'complete'].indexOf(currentStep)
                     ? 'bg-emerald-500'
                     : i === ['timezone', 'admin', 'cluster', 'tour', 'complete'].indexOf(currentStep)
@@ -375,8 +375,8 @@ export function OnboardingChat({
       </header>
 
       {/* Messages */}
-      <div className="flex-1 overflow-auto p-6">
-        <div className="max-w-2xl mx-auto space-y-6">
+      <div className="flex-1 overflow-auto p-4 sm:p-6">
+        <div className="max-w-2xl mx-auto space-y-4 sm:space-y-6">
           {messages.map((message) => (
             <div
               key={message.id}
@@ -423,13 +423,13 @@ export function OnboardingChat({
 
       {/* Suggestions */}
       {lastMessage?.suggestions && !isProcessing && !showClusterScan && (
-        <div className="px-6 pb-4">
+        <div className="px-4 sm:px-6 pb-4">
           <div className="max-w-2xl mx-auto flex flex-wrap gap-2">
             {lastMessage.suggestions.map((suggestion) => (
               <button
                 key={suggestion}
                 onClick={() => handleSuggestionClick(suggestion)}
-                className="px-4 py-2 rounded-xl border border-zinc-700/50 bg-zinc-800/50 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100 transition-colors"
+                className="px-3 sm:px-4 py-2 rounded-xl border border-zinc-700/50 bg-zinc-800/50 text-xs sm:text-sm text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100 transition-colors"
               >
                 {suggestion}
               </button>
@@ -439,9 +439,9 @@ export function OnboardingChat({
       )}
 
       {/* Input */}
-      <div className="p-6 border-t border-zinc-800/50 bg-zinc-900/50">
+      <div className="p-4 sm:p-6 border-t border-zinc-800/50 bg-zinc-900/50">
         <form onSubmit={handleSubmit} className="max-w-2xl mx-auto">
-          <div className="flex gap-3">
+          <div className="flex gap-2 sm:gap-3">
             <input
               type="text"
               value={input}
@@ -453,12 +453,12 @@ export function OnboardingChat({
                 'Type a message...'
               }
               disabled={isProcessing || showClusterScan}
-              className="flex-1 h-12 px-4 rounded-xl bg-zinc-800/50 border border-zinc-700/50 text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:border-emerald-500/50 disabled:opacity-50"
+              className="flex-1 h-11 sm:h-12 px-4 rounded-xl bg-zinc-800/50 border border-zinc-700/50 text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:border-emerald-500/50 disabled:opacity-50 text-sm sm:text-base"
             />
             <button
               type="submit"
               disabled={!input.trim() || isProcessing || showClusterScan}
-              className="h-12 w-12 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:bg-zinc-700 disabled:cursor-not-allowed text-white flex items-center justify-center transition-colors"
+              className="h-11 w-11 sm:h-12 sm:w-12 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:bg-zinc-700 disabled:cursor-not-allowed text-white flex items-center justify-center transition-colors flex-shrink-0"
             >
               <SendIcon />
             </button>

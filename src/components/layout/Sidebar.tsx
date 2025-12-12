@@ -210,7 +210,7 @@ export function Sidebar({ activeJob, onPauseJob, onResumeJob, onCancelJob, devel
 
   return (
     <>
-    <aside className="w-72 border-r border-zinc-800/50 flex flex-col bg-zinc-900">
+    <aside className="w-72 h-full border-r border-zinc-800/50 flex flex-col bg-zinc-900 pt-14 lg:pt-0">
       {/* New chat and Upload buttons */}
       <div className="p-3 space-y-2">
         <button className="w-full flex items-center gap-2 h-9 px-3 rounded-lg border border-zinc-800/50 text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100 transition-colors text-sm">

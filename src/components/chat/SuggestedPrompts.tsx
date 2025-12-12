@@ -91,12 +91,12 @@ export function SuggestedPrompts({ onSelect, disabled }: SuggestedPromptsProps) 
   return (
     <div className="text-center max-w-lg mx-auto">
       <SparkleIcon />
-      <h2 className="text-2xl font-semibold text-zinc-100 mb-3">What would you like to work on?</h2>
-      <p className="text-zinc-500 text-sm mb-8 leading-relaxed">
-        Your secure AI cluster is ready. Train models, upload data, or<br />
+      <h2 className="text-xl sm:text-2xl font-semibold text-zinc-100 mb-3">What would you like to work on?</h2>
+      <p className="text-zinc-500 text-sm mb-6 sm:mb-8 leading-relaxed px-2 sm:px-0">
+        Your secure AI cluster is ready. Train models, upload data, or
         run inference—all locally on your hardware.
       </p>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {prompts.map((prompt) => (
           <PromptCard
             key={prompt.label}

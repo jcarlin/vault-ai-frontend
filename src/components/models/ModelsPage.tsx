@@ -53,29 +53,29 @@ export function ModelsPage() {
   };
 
   return (
-    <div className="flex-1 overflow-auto p-6">
-      <div className="max-w-3xl mx-auto space-y-6">
+    <div className="flex-1 overflow-auto p-4 sm:p-6">
+      <div className="max-w-3xl mx-auto space-y-4 sm:space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-zinc-100">Models</h1>
-            <p className="text-zinc-500 text-sm mt-1">
+            <h1 className="text-xl sm:text-2xl font-bold text-zinc-100">Models</h1>
+            <p className="text-zinc-500 text-sm mt-1 hidden sm:block">
               Manage your AI models and training data
             </p>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowUploadModal(true)}
-              className="flex items-center gap-2 h-9 px-4 rounded-lg border border-zinc-700/50 text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100 transition-colors text-sm"
+              className="flex items-center gap-2 h-9 px-3 sm:px-4 rounded-lg border border-zinc-700/50 text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100 transition-colors text-sm"
             >
               <UploadIcon />
-              Upload Data
+              <span className="hidden sm:inline">Upload Data</span>
             </button>
             <button
-              className="flex items-center gap-2 h-9 px-4 rounded-lg bg-emerald-600 text-white hover:bg-emerald-500 transition-colors text-sm font-medium"
+              className="flex items-center gap-2 h-9 px-3 sm:px-4 rounded-lg bg-emerald-600 text-white hover:bg-emerald-500 transition-colors text-sm font-medium"
             >
               <PlusIcon />
-              Add Model
+              <span className="hidden sm:inline">Add Model</span>
             </button>
           </div>
         </div>

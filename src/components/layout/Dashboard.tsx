@@ -109,6 +109,25 @@ function UserAvatar() {
   );
 }
 
+function MenuIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
+      <line x1="3" y1="12" x2="21" y2="12" />
+      <line x1="3" y1="6" x2="21" y2="6" />
+      <line x1="3" y1="18" x2="21" y2="18" />
+    </svg>
+  );
+}
+
+function CloseIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
+      <line x1="18" y1="6" x2="6" y2="18" />
+      <line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  );
+}
+
 function CodeIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
@@ -163,6 +182,7 @@ export function Dashboard({
   const [showClusterPanel, setShowClusterPanel] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showDevModeConfirm, setShowDevModeConfirm] = useState(false);
+  const [showMobileSidebar, setShowMobileSidebar] = useState(false);
 
   const handleToggleDeveloperMode = () => {
     if (!developerMode) {
@@ -183,72 +203,81 @@ export function Dashboard({
       {/* Header */}
       <header className="h-14 border-b border-zinc-800/50 flex items-center justify-between px-4 flex-shrink-0 bg-zinc-900">
         <div className="flex items-center gap-2.5">
+          {/* Mobile menu button */}
+          {currentPage === 'dashboard' && (
+            <button
+              onClick={() => setShowMobileSidebar(!showMobileSidebar)}
+              className="lg:hidden p-1.5 -ml-1.5 rounded-lg hover:bg-zinc-800/50 transition-colors"
+            >
+              {showMobileSidebar ? <CloseIcon /> : <MenuIcon />}
+            </button>
+          )}
           <VaultLogo />
-          <span className="font-semibold tracking-tight text-zinc-100">Vault AI</span>
+          <span className="font-semibold tracking-tight text-zinc-100 hidden sm:block">Vault AI</span>
           {developerMode && (
-            <span className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-purple-500/20 text-purple-400">
+            <span className="hidden sm:flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-purple-500/20 text-purple-400">
               <CodeIcon />
               Advanced
             </span>
           )}
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2">
           {/* Chat/Insights toggle */}
-          <div className="flex rounded-lg border border-zinc-800/50 p-0.5 mr-2">
+          <div className="flex rounded-lg border border-zinc-800/50 p-0.5 sm:mr-2">
             <button
               onClick={() => onNavigate('dashboard')}
               className={cn(
-                "flex items-center gap-1.5 h-7 px-3 rounded-md text-xs font-medium transition-colors",
+                "flex items-center gap-1.5 h-7 px-2 sm:px-3 rounded-md text-xs font-medium transition-colors",
                 currentPage === 'dashboard'
                   ? "bg-zinc-800 text-zinc-100"
                   : "text-zinc-500 hover:text-zinc-300"
               )}
             >
               <MessageIcon />
-              Chat
+              <span className="hidden sm:inline">Chat</span>
             </button>
             <button
               onClick={() => onNavigate('insights')}
               className={cn(
-                "flex items-center gap-1.5 h-7 px-3 rounded-md text-xs font-medium transition-colors",
+                "flex items-center gap-1.5 h-7 px-2 sm:px-3 rounded-md text-xs font-medium transition-colors",
                 currentPage === 'insights'
                   ? "bg-zinc-800 text-zinc-100"
                   : "text-zinc-500 hover:text-zinc-300"
               )}
             >
               <ChartIcon />
-              Insights
+              <span className="hidden sm:inline">Insights</span>
             </button>
             <button
               onClick={() => onNavigate('models')}
               className={cn(
-                "flex items-center gap-1.5 h-7 px-3 rounded-md text-xs font-medium transition-colors",
+                "flex items-center gap-1.5 h-7 px-2 sm:px-3 rounded-md text-xs font-medium transition-colors",
                 currentPage === 'models'
                   ? "bg-zinc-800 text-zinc-100"
                   : "text-zinc-500 hover:text-zinc-300"
               )}
             >
               <CubeIcon />
-              Models
+              <span className="hidden sm:inline">Models</span>
             </button>
           </div>
 
           {/* Cluster status & Security - combined dropdown trigger */}
           <button
             className={cn(
-              "flex items-center gap-3 text-sm px-3 py-1.5 rounded-lg transition-colors",
+              "flex items-center gap-2 sm:gap-3 text-sm px-2 sm:px-3 py-1.5 rounded-lg transition-colors",
               showClusterPanel ? "bg-zinc-800/50" : "hover:bg-zinc-800/50"
             )}
             onClick={() => setShowClusterPanel(!showClusterPanel)}
           >
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2">
               <span className="h-2 w-2 rounded-full bg-emerald-500" />
-              <span className="text-zinc-400">{cluster.cubes.length} cubes</span>
+              <span className="text-zinc-400 hidden sm:inline">{cluster.cubes.length} cubes</span>
             </div>
-            <div className="flex items-center gap-1.5 text-zinc-500">
+            <div className="flex items-center gap-1 sm:gap-1.5 text-zinc-500">
               <LockIcon />
-              <span>Secure</span>
+              <span className="hidden md:inline">Secure</span>
               <svg
                 viewBox="0 0 24 24"
                 fill="none"
@@ -325,17 +354,33 @@ export function Dashboard({
 
       {/* Main content area */}
       <div className="flex-1 flex min-h-0">
-        {/* Sidebar - only show on dashboard */}
-        {currentPage === 'dashboard' && (
-          <Sidebar
-            activeJob={activeJob}
-            onPauseJob={onPauseJob}
-            onResumeJob={onResumeJob}
-            onCancelJob={onCancelJob}
-            developerMode={developerMode}
-            applications={applications}
-            onSelectApplication={onSelectApplication}
+        {/* Mobile sidebar overlay */}
+        {currentPage === 'dashboard' && showMobileSidebar && (
+          <div
+            className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+            onClick={() => setShowMobileSidebar(false)}
           />
+        )}
+
+        {/* Sidebar - hidden on mobile unless toggled */}
+        {currentPage === 'dashboard' && (
+          <div className={cn(
+            "fixed inset-y-0 left-0 z-50 w-72 transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 lg:z-auto",
+            showMobileSidebar ? "translate-x-0" : "-translate-x-full"
+          )}>
+            <Sidebar
+              activeJob={activeJob}
+              onPauseJob={onPauseJob}
+              onResumeJob={onResumeJob}
+              onCancelJob={onCancelJob}
+              developerMode={developerMode}
+              applications={applications}
+              onSelectApplication={(app) => {
+                onSelectApplication(app);
+                setShowMobileSidebar(false);
+              }}
+            />
+          </div>
         )}
 
         {/* Main content */}
@@ -353,7 +398,7 @@ export function Dashboard({
               className="fixed inset-0 z-40"
               onClick={() => setShowClusterPanel(false)}
             />
-            <div className="fixed top-14 right-4 z-50 w-80 bg-zinc-900 border border-zinc-800/50 rounded-lg shadow-lg">
+            <div className="fixed top-14 right-2 sm:right-4 z-50 w-[calc(100%-1rem)] sm:w-80 max-w-sm bg-zinc-900 border border-zinc-800/50 rounded-lg shadow-lg">
               <div className="p-4">
                 <ClusterHealth cluster={cluster} />
               </div>

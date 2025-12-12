@@ -66,31 +66,31 @@ function ZapIcon() {
 
 export function OnboardingWelcome({ onStart }: OnboardingWelcomeProps) {
   return (
-    <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center p-8">
-      <div className="max-w-md w-full text-center space-y-8">
+    <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center p-4 sm:p-8">
+      <div className="max-w-md w-full text-center space-y-6 sm:space-y-8">
         <div className="flex justify-center">
           <VaultLogo />
         </div>
 
         <div className="space-y-3">
-          <h1 className="text-3xl font-bold text-zinc-100">Welcome to Vault AI</h1>
-          <p className="text-zinc-400 text-lg">
+          <h1 className="text-2xl sm:text-3xl font-bold text-zinc-100">Welcome to Vault AI</h1>
+          <p className="text-zinc-400 text-base sm:text-lg">
             Let's get your secure AI cluster set up in just a few minutes.
           </p>
         </div>
 
-        <div className="grid grid-cols-3 gap-4 py-6">
-          <div className="flex flex-col items-center gap-2 p-4 rounded-xl bg-zinc-900/50 border border-zinc-800/50">
+        <div className="grid grid-cols-3 gap-2 sm:gap-4 py-6">
+          <div className="flex flex-col items-center gap-2 p-3 sm:p-4 rounded-xl bg-zinc-900/50 border border-zinc-800/50">
             <ShieldIcon />
-            <span className="text-xs text-zinc-400">100% Private</span>
+            <span className="text-[10px] sm:text-xs text-zinc-400">100% Private</span>
           </div>
-          <div className="flex flex-col items-center gap-2 p-4 rounded-xl bg-zinc-900/50 border border-zinc-800/50">
+          <div className="flex flex-col items-center gap-2 p-3 sm:p-4 rounded-xl bg-zinc-900/50 border border-zinc-800/50">
             <CubeIcon />
-            <span className="text-xs text-zinc-400">Local Processing</span>
+            <span className="text-[10px] sm:text-xs text-zinc-400">Local Processing</span>
           </div>
-          <div className="flex flex-col items-center gap-2 p-4 rounded-xl bg-zinc-900/50 border border-zinc-800/50">
+          <div className="flex flex-col items-center gap-2 p-3 sm:p-4 rounded-xl bg-zinc-900/50 border border-zinc-800/50">
             <ZapIcon />
-            <span className="text-xs text-zinc-400">High Performance</span>
+            <span className="text-[10px] sm:text-xs text-zinc-400">High Performance</span>
           </div>
         </div>
 

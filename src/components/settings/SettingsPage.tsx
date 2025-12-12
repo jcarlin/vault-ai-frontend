@@ -113,31 +113,33 @@ export function SettingsPage({ onClose, developerMode = false, onRestartSetup }:
   };
 
   return (
-    <div className="flex-1 flex overflow-hidden bg-zinc-950">
-      {/* Settings sidebar */}
-      <aside className="w-64 border-r border-zinc-800/50 flex flex-col bg-zinc-900">
-        <div className="p-4 border-b border-zinc-800/50">
+    <div className="flex-1 flex flex-col md:flex-row overflow-hidden bg-zinc-950">
+      {/* Settings sidebar - horizontal on mobile */}
+      <aside className="w-full md:w-64 border-b md:border-b-0 md:border-r border-zinc-800/50 flex flex-col bg-zinc-900 flex-shrink-0">
+        <div className="p-3 md:p-4 border-b border-zinc-800/50 flex items-center justify-between md:block">
           <button
             onClick={onClose}
             className="flex items-center gap-2 text-sm text-zinc-400 hover:text-zinc-100 transition-colors"
           >
             <ArrowLeftIcon />
-            Back to Chat
+            <span className="hidden sm:inline">Back to Chat</span>
           </button>
+          <h1 className="text-base font-semibold text-zinc-100 md:hidden">Settings</h1>
         </div>
 
-        <div className="p-4">
+        <div className="hidden md:block p-4">
           <h1 className="text-lg font-semibold text-zinc-100">Settings</h1>
           <p className="text-xs text-zinc-500 mt-1">Configure your Vault AI system</p>
         </div>
 
-        <nav className="flex-1 px-3 space-y-1">
+        {/* Horizontal scrollable tabs on mobile, vertical list on desktop */}
+        <nav className="flex md:flex-col overflow-x-auto md:overflow-x-visible px-2 md:px-3 py-2 md:py-0 gap-1 md:space-y-1 md:flex-1">
           {visibleCategories.map((category) => (
             <button
               key={category.id}
               onClick={() => setActiveCategory(category.id)}
               className={cn(
-                "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors",
+                "flex items-center gap-2 md:gap-3 px-3 py-2 md:py-2.5 rounded-lg text-left transition-colors whitespace-nowrap flex-shrink-0 md:flex-shrink md:w-full",
                 activeCategory === category.id
                   ? "bg-zinc-800 text-zinc-100"
                   : "text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/50"
@@ -148,21 +150,19 @@ export function SettingsPage({ onClose, developerMode = false, onRestartSetup }:
               )}>
                 {getCategoryIcon(category.icon)}
               </span>
-              <div>
-                <span className="text-sm font-medium">{category.label}</span>
-              </div>
+              <span className="text-sm font-medium">{category.label}</span>
             </button>
           ))}
         </nav>
 
-        {/* Version info */}
-        <div className="p-4 border-t border-zinc-800/50">
+        {/* Version info - hidden on mobile */}
+        <div className="hidden md:block p-4 border-t border-zinc-800/50">
           <p className="text-xs text-zinc-600">Vault AI v1.0.0-beta.3</p>
         </div>
       </aside>
 
       {/* Settings content */}
-      <main className="flex-1 overflow-auto p-6">
+      <main className="flex-1 overflow-auto p-4 sm:p-6">
         <div className="max-w-2xl">
           {renderContent()}
         </div>
