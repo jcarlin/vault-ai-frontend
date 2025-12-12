@@ -113,10 +113,10 @@ export function SettingsPage({ onClose, developerMode = false, onRestartSetup }:
   };
 
   return (
-    <div className="flex-1 flex flex-col md:flex-row overflow-hidden bg-zinc-950">
-      {/* Settings sidebar - horizontal on mobile */}
-      <aside className="w-full md:w-64 border-b md:border-b-0 md:border-r border-zinc-800/50 flex flex-col bg-zinc-900 flex-shrink-0">
-        <div className="p-3 md:p-4 border-b border-zinc-800/50 flex items-center justify-between md:block">
+    <div className="flex-1 flex flex-col h-full overflow-hidden bg-zinc-950">
+      {/* Settings header with tabs on mobile */}
+      <div className="flex-shrink-0 border-b border-zinc-800/50 bg-zinc-900">
+        <div className="p-3 flex items-center justify-between">
           <button
             onClick={onClose}
             className="flex items-center gap-2 text-sm text-zinc-400 hover:text-zinc-100 transition-colors"
@@ -124,22 +124,18 @@ export function SettingsPage({ onClose, developerMode = false, onRestartSetup }:
             <ArrowLeftIcon />
             <span className="hidden sm:inline">Back to Chat</span>
           </button>
-          <h1 className="text-base font-semibold text-zinc-100 md:hidden">Settings</h1>
+          <h1 className="text-base font-semibold text-zinc-100">Settings</h1>
+          <div className="w-20" /> {/* Spacer for centering */}
         </div>
 
-        <div className="hidden md:block p-4">
-          <h1 className="text-lg font-semibold text-zinc-100">Settings</h1>
-          <p className="text-xs text-zinc-500 mt-1">Configure your Vault AI system</p>
-        </div>
-
-        {/* Horizontal scrollable tabs on mobile, vertical list on desktop */}
-        <nav className="flex md:flex-col overflow-x-auto md:overflow-x-visible px-2 md:px-3 py-2 md:py-0 gap-1 md:space-y-1 md:flex-1">
+        {/* Horizontal scrollable tabs */}
+        <nav className="flex overflow-x-auto px-2 pb-2 gap-1">
           {visibleCategories.map((category) => (
             <button
               key={category.id}
               onClick={() => setActiveCategory(category.id)}
               className={cn(
-                "flex items-center gap-2 md:gap-3 px-3 py-2 md:py-2.5 rounded-lg text-left transition-colors whitespace-nowrap flex-shrink-0 md:flex-shrink md:w-full",
+                "flex items-center gap-2 px-3 py-2 rounded-lg text-left transition-colors whitespace-nowrap flex-shrink-0",
                 activeCategory === category.id
                   ? "bg-zinc-800 text-zinc-100"
                   : "text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/50"
@@ -154,16 +150,11 @@ export function SettingsPage({ onClose, developerMode = false, onRestartSetup }:
             </button>
           ))}
         </nav>
-
-        {/* Version info - hidden on mobile */}
-        <div className="hidden md:block p-4 border-t border-zinc-800/50">
-          <p className="text-xs text-zinc-600">Vault AI v1.0.0-beta.3</p>
-        </div>
-      </aside>
+      </div>
 
       {/* Settings content */}
-      <main className="flex-1 overflow-auto p-4 sm:p-6">
-        <div className="max-w-2xl">
+      <main className="flex-1 overflow-auto p-4">
+        <div className="max-w-2xl mx-auto">
           {renderContent()}
         </div>
       </main>
