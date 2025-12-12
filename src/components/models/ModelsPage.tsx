@@ -1,0 +1,115 @@
+import { useState } from 'react';
+import { ModelList } from './ModelList';
+import { ModelDetailDialog } from './ModelDetailDialog';
+import { StorageIndicator } from './StorageIndicator';
+import { UploadModal } from '@/components/upload';
+import { mockModels, mockStorage, type Model } from '@/mocks/models';
+
+function PlusIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
+      <line x1="12" y1="5" x2="12" y2="19" />
+      <line x1="5" y1="12" x2="19" y2="12" />
+    </svg>
+  );
+}
+
+function UploadIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <polyline points="17 8 12 3 7 8" />
+      <line x1="12" y1="3" x2="12" y2="15" />
+    </svg>
+  );
+}
+
+function ShieldIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-3.5 w-3.5">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+    </svg>
+  );
+}
+
+export function ModelsPage() {
+  const [models, setModels] = useState<Model[]>(mockModels);
+  const [selectedModel, setSelectedModel] = useState<Model | null>(null);
+  const [showUploadModal, setShowUploadModal] = useState(false);
+
+  const handleSetDefault = (model: Model) => {
+    setModels(prev =>
+      prev.map(m => ({
+        ...m,
+        isDefault: m.id === model.id,
+      }))
+    );
+    setSelectedModel(null);
+  };
+
+  const handleDelete = (model: Model) => {
+    setModels(prev => prev.filter(m => m.id !== model.id));
+    setSelectedModel(null);
+  };
+
+  return (
+    <div className="flex-1 overflow-auto p-6">
+      <div className="max-w-3xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-zinc-100">Models</h1>
+            <p className="text-zinc-500 text-sm mt-1">
+              Manage your AI models and training data
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowUploadModal(true)}
+              className="flex items-center gap-2 h-9 px-4 rounded-lg border border-zinc-700/50 text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100 transition-colors text-sm"
+            >
+              <UploadIcon />
+              Upload Data
+            </button>
+            <button
+              className="flex items-center gap-2 h-9 px-4 rounded-lg bg-emerald-600 text-white hover:bg-emerald-500 transition-colors text-sm font-medium"
+            >
+              <PlusIcon />
+              Add Model
+            </button>
+          </div>
+        </div>
+
+        {/* Storage Indicator */}
+        <StorageIndicator storage={mockStorage} />
+
+        {/* Model List */}
+        <ModelList
+          models={models}
+          onModelClick={setSelectedModel}
+        />
+
+        {/* Security footer */}
+        <div className="flex items-center justify-center gap-1.5 text-xs text-emerald-500/80 pt-4">
+          <ShieldIcon />
+          <span>All models run locally on your secure cluster</span>
+        </div>
+      </div>
+
+      {/* Model Detail Dialog */}
+      <ModelDetailDialog
+        model={selectedModel}
+        open={!!selectedModel}
+        onClose={() => setSelectedModel(null)}
+        onSetDefault={handleSetDefault}
+        onDelete={handleDelete}
+      />
+
+      {/* Upload Modal */}
+      <UploadModal
+        open={showUploadModal}
+        onClose={() => setShowUploadModal(false)}
+      />
+    </div>
+  );
+}
