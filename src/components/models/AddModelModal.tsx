@@ -77,6 +77,16 @@ function DownloadIcon() {
   );
 }
 
+function UploadIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <polyline points="17 8 12 3 7 8" />
+      <line x1="12" y1="3" x2="12" y2="15" />
+    </svg>
+  );
+}
+
 function CheckIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
@@ -96,6 +106,40 @@ function SpinnerIcon() {
 export function AddModelModal({ open, onClose, onAddModel }: AddModelModalProps) {
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [downloadedIds, setDownloadedIds] = useState<Set<string>>(new Set());
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState<string | null>(null);
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+
+    // Simulate upload processing
+    setTimeout(() => {
+      const fileName = file.name.replace(/\.[^/.]+$/, '');
+      const newModel: Model = {
+        id: `custom-${Date.now()}`,
+        name: fileName.toLowerCase().replace(/\s+/g, '-'),
+        displayName: fileName,
+        type: 'base',
+        status: 'ready',
+        size: `${(file.size / (1024 * 1024 * 1024)).toFixed(1)}GB`,
+        parameters: 'Custom',
+        description: 'Manually uploaded model',
+        isDefault: false,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        metrics: {
+          tokensPerSecond: 50,
+        },
+      };
+
+      setIsUploading(false);
+      setUploadedFile(file.name);
+      onAddModel(newModel);
+    }, 2000);
+  };
 
   const handleDownload = (availableModel: AvailableModel) => {
     setDownloadingId(availableModel.id);
@@ -127,6 +171,8 @@ export function AddModelModal({ open, onClose, onAddModel }: AddModelModalProps)
 
   const handleClose = () => {
     setDownloadingId(null);
+    setIsUploading(false);
+    setUploadedFile(null);
     onClose();
   };
 
@@ -137,11 +183,43 @@ export function AddModelModal({ open, onClose, onAddModel }: AddModelModalProps)
           <DialogTitle className="text-zinc-100">Add Model</DialogTitle>
         </DialogHeader>
 
-        <p className="text-sm text-zinc-400 -mt-2">
-          Select a model to download and add to your library
-        </p>
+        {/* Upload from disk */}
+        <div className="p-4 rounded-lg border-2 border-dashed border-zinc-700 hover:border-zinc-600 transition-colors">
+          <label className="flex flex-col items-center gap-2 cursor-pointer">
+            <input
+              type="file"
+              accept=".gguf,.bin,.safetensors,.pt,.pth"
+              onChange={handleFileUpload}
+              disabled={isUploading}
+              className="hidden"
+            />
+            {isUploading ? (
+              <>
+                <SpinnerIcon />
+                <span className="text-sm text-zinc-400">Processing model...</span>
+              </>
+            ) : uploadedFile ? (
+              <>
+                <span className="text-emerald-500"><CheckIcon /></span>
+                <span className="text-sm text-zinc-400">Uploaded: {uploadedFile}</span>
+              </>
+            ) : (
+              <>
+                <span className="text-zinc-500"><UploadIcon /></span>
+                <span className="text-sm text-zinc-300">Upload from disk</span>
+                <span className="text-xs text-zinc-500">.gguf, .safetensors, .bin, .pt</span>
+              </>
+            )}
+          </label>
+        </div>
 
-        <div className="space-y-2 max-h-[400px] overflow-auto -mx-2 px-2">
+        <div className="flex items-center gap-3 text-xs text-zinc-500">
+          <div className="flex-1 h-px bg-zinc-700" />
+          <span>or download</span>
+          <div className="flex-1 h-px bg-zinc-700" />
+        </div>
+
+        <div className="space-y-2 max-h-[280px] overflow-auto -mx-2 px-2">
           {availableModels.map((model) => {
             const isDownloading = downloadingId === model.id;
             const isDownloaded = downloadedIds.has(model.id);
