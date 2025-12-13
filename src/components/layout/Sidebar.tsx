@@ -110,20 +110,6 @@ function ActivityItemCard({ item, isSelected, onClick }: { item: ActivityItem; i
   );
 }
 
-function UserProfile() {
-  return (
-    <div className="flex items-center gap-3 px-4 py-3">
-      <div className="h-8 w-8 rounded-full bg-emerald-500/20 flex items-center justify-center text-sm font-medium text-emerald-500">
-        A
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-zinc-100 truncate">Admin</p>
-        <p className="text-xs text-zinc-500 truncate">Lab Administrator</p>
-      </div>
-    </div>
-  );
-}
-
 function PauseIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" className="h-3.5 w-3.5">
@@ -263,10 +249,6 @@ export function Sidebar({ activeJob, onPauseJob, onResumeJob, onCancelJob, devel
         />
       )}
 
-      {/* User profile */}
-      <div className="border-t border-zinc-800/50 mt-auto">
-        <UserProfile />
-      </div>
     </aside>
 
     <UploadModal
