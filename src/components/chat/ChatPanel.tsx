@@ -45,9 +45,9 @@ export function ChatPanel({ allocation, className, conversationMessages }: ChatP
   useEffect(() => {
     if (conversationMessages !== lastConversationRef.current) {
       lastConversationRef.current = conversationMessages;
-      if (conversationMessages) {
+      if (conversationMessages && conversationMessages.length > 0) {
         loadConversation(conversationMessages);
-      } else if (conversationMessages === null) {
+      } else {
         clearHistory();
       }
     }

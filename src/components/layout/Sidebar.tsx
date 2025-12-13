@@ -121,6 +121,14 @@ function PauseIcon() {
   );
 }
 
+function PlayIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className="h-3.5 w-3.5">
+      <path d="M8 5v14l11-7z" />
+    </svg>
+  );
+}
+
 function StopIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" className="h-3.5 w-3.5">
@@ -178,8 +186,8 @@ function SidebarTrainingProgress({ job, onPause, onResume, onCancel }: SidebarTr
           onClick={job.status === 'running' ? onPause : onResume}
           className="flex-1 flex items-center justify-center gap-1.5 h-8 rounded-lg border border-zinc-700/50 text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100 transition-colors text-xs"
         >
-          <PauseIcon />
-          Pause
+          {job.status === 'running' ? <PauseIcon /> : <PlayIcon />}
+          {job.status === 'running' ? 'Pause' : 'Resume'}
         </button>
         <button
           onClick={onCancel}
