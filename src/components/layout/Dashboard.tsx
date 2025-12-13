@@ -210,193 +210,200 @@ export function Dashboard({
     setShowDevModeConfirm(false);
   };
 
-  return (
-    <div className="h-screen flex flex-col bg-zinc-950 text-zinc-100">
-      {/* Header */}
-      <header className="h-14 border-b border-zinc-800/50 flex items-center justify-between px-4 flex-shrink-0 bg-zinc-900">
-        <div className="flex items-center gap-2.5">
-          {/* Mobile menu button */}
-          {currentPage === 'dashboard' && (
-            <button
-              onClick={() => setShowMobileSidebar(!showMobileSidebar)}
-              className="lg:hidden p-1.5 -ml-1.5 rounded-lg hover:bg-zinc-800/50 transition-colors"
-            >
-              {showMobileSidebar ? <CloseIcon /> : <MenuIcon />}
-            </button>
-          )}
-          <VaultLogo />
-          <span className="font-semibold tracking-tight text-zinc-100 hidden sm:block">Vault AI</span>
-          {developerMode && (
-            <span className="hidden sm:flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-purple-500/20 text-purple-400">
-              <CodeIcon />
-              Advanced
-            </span>
-          )}
-        </div>
+  // Show sidebar on chat page only
+  const showSidebar = currentPage === 'dashboard';
 
-        <div className="flex items-center gap-1 sm:gap-2">
-          {/* Chat/Insights toggle */}
-          <div className="flex rounded-lg border border-zinc-800/50 p-0.5 sm:mr-2">
-            <button
-              onClick={() => onNavigate('dashboard')}
-              className={cn(
-                "flex items-center gap-1.5 h-7 px-2 sm:px-3 rounded-md text-xs font-medium transition-colors",
-                currentPage === 'dashboard'
-                  ? "bg-zinc-800 text-zinc-100"
-                  : "text-zinc-500 hover:text-zinc-300"
-              )}
-            >
-              <MessageIcon />
-              <span className="hidden sm:inline">Chat</span>
-            </button>
-            <button
-              onClick={() => onNavigate('insights')}
-              className={cn(
-                "flex items-center gap-1.5 h-7 px-2 sm:px-3 rounded-md text-xs font-medium transition-colors",
-                currentPage === 'insights'
-                  ? "bg-zinc-800 text-zinc-100"
-                  : "text-zinc-500 hover:text-zinc-300"
-              )}
-            >
-              <ChartIcon />
-              <span className="hidden sm:inline">Insights</span>
-            </button>
-            <button
-              onClick={() => onNavigate('models')}
-              className={cn(
-                "flex items-center gap-1.5 h-7 px-2 sm:px-3 rounded-md text-xs font-medium transition-colors",
-                currentPage === 'models'
-                  ? "bg-zinc-800 text-zinc-100"
-                  : "text-zinc-500 hover:text-zinc-300"
-              )}
-            >
-              <CubeIcon />
-              <span className="hidden sm:inline">Models</span>
-            </button>
+  return (
+    <div className="h-screen flex bg-zinc-950 text-zinc-100">
+      {/* Mobile sidebar overlay */}
+      {showSidebar && showMobileSidebar && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+          onClick={() => setShowMobileSidebar(false)}
+        />
+      )}
+
+      {/* Sidebar - full height, includes logo */}
+      {showSidebar && (
+        <div className={cn(
+          "fixed inset-y-0 left-0 z-50 w-64 flex flex-col bg-zinc-900 border-r border-zinc-800/50 transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0",
+          showMobileSidebar ? "translate-x-0" : "-translate-x-full"
+        )}>
+          {/* Logo header in sidebar */}
+          <div className="h-14 flex items-center gap-2.5 px-4 border-b border-zinc-800/50 flex-shrink-0">
+            <VaultLogo />
+            <span className="font-semibold tracking-tight text-zinc-100">Vault AI</span>
+            {developerMode && (
+              <span className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-purple-500/20 text-purple-400">
+                <CodeIcon />
+              </span>
+            )}
           </div>
 
-          {/* Cluster status & Security - combined dropdown trigger */}
-          <button
-            className={cn(
-              "flex items-center gap-2 sm:gap-3 text-sm px-2 sm:px-3 py-1.5 rounded-lg transition-colors",
-              showClusterPanel ? "bg-zinc-800/50" : "hover:bg-zinc-800/50"
+          {/* Sidebar content */}
+          <Sidebar
+            activeJob={activeJob}
+            onPauseJob={onPauseJob}
+            onResumeJob={onResumeJob}
+            onCancelJob={onCancelJob}
+            developerMode={developerMode}
+            applications={applications}
+            onSelectApplication={(app) => {
+              onSelectApplication(app);
+              setShowMobileSidebar(false);
+            }}
+            onSelectConversation={handleSelectConversation}
+            onNewChat={handleNewChat}
+            selectedConversationId={selectedConversation?.id}
+          />
+        </div>
+      )}
+
+      {/* Main content area (header + content) */}
+      <div className="flex-1 flex flex-col min-h-0 min-w-0">
+        {/* Header - only spans content area */}
+        <header className="h-14 border-b border-zinc-800/50 flex items-center justify-between px-4 flex-shrink-0 bg-zinc-950">
+          <div className="flex items-center gap-3">
+            {/* Mobile menu button */}
+            {showSidebar && (
+              <button
+                onClick={() => setShowMobileSidebar(!showMobileSidebar)}
+                className="lg:hidden p-1.5 -ml-1.5 rounded-lg hover:bg-zinc-800/50 transition-colors"
+              >
+                {showMobileSidebar ? <CloseIcon /> : <MenuIcon />}
+              </button>
             )}
-            onClick={() => setShowClusterPanel(!showClusterPanel)}
-          >
-            <div className="flex items-center gap-1.5 sm:gap-2">
-              <span className="h-2 w-2 rounded-full bg-emerald-500" />
-              <span className="text-zinc-400 hidden sm:inline">{cluster.cubes.length} cubes</span>
-            </div>
-            <div className="flex items-center gap-1 sm:gap-1.5 text-zinc-500">
-              <LockIcon />
-              <span className="hidden md:inline">Secure</span>
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
+
+            {/* View switcher - now on the left */}
+            <div className="flex rounded-lg border border-zinc-800/50 p-0.5">
+              <button
+                onClick={() => onNavigate('dashboard')}
                 className={cn(
-                  "h-4 w-4 transition-transform duration-200",
-                  showClusterPanel && "rotate-180"
+                  "flex items-center gap-1.5 h-7 px-2 sm:px-3 rounded-md text-xs font-medium transition-colors",
+                  currentPage === 'dashboard'
+                    ? "bg-zinc-800 text-zinc-100"
+                    : "text-zinc-500 hover:text-zinc-300"
                 )}
               >
-                <polyline points="6 9 12 15 18 9" />
-              </svg>
+                <MessageIcon />
+                <span className="hidden sm:inline">Chat</span>
+              </button>
+              <button
+                onClick={() => onNavigate('insights')}
+                className={cn(
+                  "flex items-center gap-1.5 h-7 px-2 sm:px-3 rounded-md text-xs font-medium transition-colors",
+                  currentPage === 'insights'
+                    ? "bg-zinc-800 text-zinc-100"
+                    : "text-zinc-500 hover:text-zinc-300"
+                )}
+              >
+                <ChartIcon />
+                <span className="hidden sm:inline">Insights</span>
+              </button>
+              <button
+                onClick={() => onNavigate('models')}
+                className={cn(
+                  "flex items-center gap-1.5 h-7 px-2 sm:px-3 rounded-md text-xs font-medium transition-colors",
+                  currentPage === 'models'
+                    ? "bg-zinc-800 text-zinc-100"
+                    : "text-zinc-500 hover:text-zinc-300"
+                )}
+              >
+                <CubeIcon />
+                <span className="hidden sm:inline">Models</span>
+              </button>
             </div>
-          </button>
+          </div>
 
-          {/* User menu */}
-          <div className="relative">
+          <div className="flex items-center gap-1 sm:gap-2">
+            {/* Cluster status & Security */}
             <button
-              onClick={() => setShowUserMenu(!showUserMenu)}
-              className="p-1 rounded-lg hover:bg-zinc-800/50 transition-colors"
+              className={cn(
+                "flex items-center gap-2 sm:gap-3 text-sm px-2 sm:px-3 py-1.5 rounded-lg transition-colors",
+                showClusterPanel ? "bg-zinc-800/50" : "hover:bg-zinc-800/50"
+              )}
+              onClick={() => setShowClusterPanel(!showClusterPanel)}
             >
-              <UserAvatar />
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                <span className="text-zinc-400 hidden sm:inline">{cluster.cubes.length} cubes</span>
+              </div>
+              <div className="flex items-center gap-1 sm:gap-1.5 text-zinc-500">
+                <LockIcon />
+                <span className="hidden md:inline">Secure</span>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  className={cn(
+                    "h-4 w-4 transition-transform duration-200",
+                    showClusterPanel && "rotate-180"
+                  )}
+                >
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </div>
             </button>
 
-            {showUserMenu && (
-              <>
-                <div
-                  className="fixed inset-0 z-40"
-                  onClick={() => setShowUserMenu(false)}
-                />
-                <div className="absolute right-0 top-full mt-2 w-56 bg-zinc-900 border border-zinc-800/50 rounded-lg shadow-lg z-50 py-1">
-                  {/* Developer Mode Toggle */}
-                  <div className="px-4 py-2.5 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <span className={developerMode ? "text-purple-400" : "text-zinc-500"}>
-                        <CodeIcon />
-                      </span>
-                      <span className="text-sm text-zinc-300">Advanced Mode</span>
+            {/* User menu */}
+            <div className="relative">
+              <button
+                onClick={() => setShowUserMenu(!showUserMenu)}
+                className="p-1 rounded-lg hover:bg-zinc-800/50 transition-colors"
+              >
+                <UserAvatar />
+              </button>
+
+              {showUserMenu && (
+                <>
+                  <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setShowUserMenu(false)}
+                  />
+                  <div className="absolute right-0 top-full mt-2 w-56 bg-zinc-800 border border-zinc-700 rounded-lg shadow-lg z-50 py-1">
+                    {/* Developer Mode Toggle */}
+                    <div className="px-4 py-2.5 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <span className={developerMode ? "text-purple-400" : "text-zinc-500"}>
+                          <CodeIcon />
+                        </span>
+                        <span className="text-sm text-zinc-300">Advanced Mode</span>
+                      </div>
+                      <Toggle checked={developerMode} onChange={handleToggleDeveloperMode} />
                     </div>
-                    <Toggle checked={developerMode} onChange={handleToggleDeveloperMode} />
+                    <div className="border-t border-zinc-700 my-1" />
+                    <button
+                      onClick={() => {
+                        onNavigate('settings');
+                        setShowUserMenu(false);
+                      }}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-700 hover:text-zinc-100 transition-colors"
+                    >
+                      <SettingsIcon />
+                      Settings
+                    </button>
+                    <button
+                      onClick={() => setShowUserMenu(false)}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-700 hover:text-zinc-100 transition-colors"
+                    >
+                      <HelpIcon />
+                      Help
+                    </button>
+                    <div className="border-t border-zinc-700 my-1" />
+                    <button
+                      onClick={() => setShowUserMenu(false)}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-700 hover:text-zinc-100 transition-colors"
+                    >
+                      <LogOutIcon />
+                      Sign Out
+                    </button>
                   </div>
-                  <div className="border-t border-zinc-800/50 my-1" />
-                  <button
-                    onClick={() => {
-                      onNavigate('settings');
-                      setShowUserMenu(false);
-                    }}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100 transition-colors"
-                  >
-                    <SettingsIcon />
-                    Settings
-                  </button>
-                  <button
-                    onClick={() => setShowUserMenu(false)}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100 transition-colors"
-                  >
-                    <HelpIcon />
-                    Help
-                  </button>
-                  <div className="border-t border-zinc-800/50 my-1" />
-                  <button
-                    onClick={() => setShowUserMenu(false)}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100 transition-colors"
-                  >
-                    <LogOutIcon />
-                    Sign Out
-                  </button>
-                </div>
-              </>
-            )}
+                </>
+              )}
+            </div>
           </div>
-        </div>
-      </header>
-
-      {/* Main content area */}
-      <div className="flex-1 flex min-h-0">
-        {/* Mobile sidebar overlay */}
-        {currentPage === 'dashboard' && showMobileSidebar && (
-          <div
-            className="fixed inset-0 z-40 bg-black/50 lg:hidden"
-            onClick={() => setShowMobileSidebar(false)}
-          />
-        )}
-
-        {/* Sidebar - hidden on mobile unless toggled */}
-        {currentPage === 'dashboard' && (
-          <div className={cn(
-            "fixed inset-y-0 left-0 z-50 w-72 transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 lg:z-auto",
-            showMobileSidebar ? "translate-x-0" : "-translate-x-full"
-          )}>
-            <Sidebar
-              activeJob={activeJob}
-              onPauseJob={onPauseJob}
-              onResumeJob={onResumeJob}
-              onCancelJob={onCancelJob}
-              developerMode={developerMode}
-              applications={applications}
-              onSelectApplication={(app) => {
-                onSelectApplication(app);
-                setShowMobileSidebar(false);
-              }}
-              onSelectConversation={handleSelectConversation}
-              onNewChat={handleNewChat}
-              selectedConversationId={selectedConversation?.id}
-            />
-          </div>
-        )}
+        </header>
 
         {/* Main content */}
         <main className="flex-1 flex flex-col min-h-0 relative bg-zinc-950">
@@ -406,20 +413,20 @@ export function Dashboard({
             <ChatPanel allocation={allocation} className="flex-1" conversationMessages={selectedConversation?.messages} />
           )}
 
-        {/* Cluster panel overlay */}
-        {showClusterPanel && (
-          <>
-            <div
-              className="fixed inset-0 z-40"
-              onClick={() => setShowClusterPanel(false)}
-            />
-            <div className="fixed top-14 right-2 sm:right-4 z-50 w-[calc(100%-1rem)] sm:w-80 max-w-sm bg-zinc-900 border border-zinc-800/50 rounded-lg shadow-lg">
-              <div className="p-4">
-                <ClusterHealth cluster={cluster} />
+          {/* Cluster panel overlay */}
+          {showClusterPanel && (
+            <>
+              <div
+                className="fixed inset-0 z-40"
+                onClick={() => setShowClusterPanel(false)}
+              />
+              <div className="fixed top-14 right-2 sm:right-4 z-50 w-[calc(100%-1rem)] sm:w-80 max-w-sm bg-zinc-800 border border-zinc-700 rounded-lg shadow-lg">
+                <div className="p-4">
+                  <ClusterHealth cluster={cluster} />
+                </div>
               </div>
-            </div>
-          </>
-        )}
+            </>
+          )}
         </main>
       </div>
 
@@ -430,7 +437,7 @@ export function Dashboard({
             className="fixed inset-0 z-50 bg-black/50"
             onClick={() => setShowDevModeConfirm(false)}
           />
-          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md bg-zinc-900 border border-zinc-800/50 rounded-lg shadow-lg p-6">
+          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md bg-zinc-800 border border-zinc-700 rounded-lg shadow-lg p-6">
             <div className="flex items-center gap-3 mb-4">
               <div className="p-2 rounded-lg bg-purple-500/20 text-purple-400">
                 <CodeIcon />
@@ -443,7 +450,7 @@ export function Dashboard({
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setShowDevModeConfirm(false)}
-                className="px-4 py-2 rounded-lg border border-zinc-700 text-zinc-300 text-sm hover:bg-zinc-800 transition-colors"
+                className="px-4 py-2 rounded-lg border border-zinc-600 text-zinc-300 text-sm hover:bg-zinc-700 transition-colors"
               >
                 Cancel
               </button>
