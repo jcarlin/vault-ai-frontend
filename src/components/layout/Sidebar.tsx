@@ -3,6 +3,7 @@ import { cn } from '@/lib/utils';
 import { mockActivity, formatActivityTime, type ActivityItem, type ChatConversation } from '@/mocks/activity';
 import { type TrainingJob, formatDuration, formatTimeAgo } from '@/mocks/training';
 import { UploadModal } from '@/components/upload';
+import { TrainingJobDetail } from '@/components/training';
 import { ApplicationsMenu } from './ApplicationsMenu';
 import { type Application } from '@/hooks/useDeveloperMode';
 
@@ -142,44 +143,50 @@ interface SidebarTrainingProgressProps {
   onPause: () => void;
   onResume: () => void;
   onCancel: () => void;
+  onViewDetails: () => void;
 }
 
-function SidebarTrainingProgress({ job, onPause, onResume, onCancel }: SidebarTrainingProgressProps) {
+function SidebarTrainingProgress({ job, onPause, onResume, onCancel, onViewDetails }: SidebarTrainingProgressProps) {
   const timeRemaining = job.estimatedCompletion
     ? new Date(job.estimatedCompletion).getTime() - Date.now()
     : null;
 
   return (
     <div className="border-t border-zinc-800/50 bg-zinc-900/50 p-4">
-      <div className="flex items-center justify-between mb-3">
-        <span className="text-sm font-medium text-zinc-100 truncate">{job.name}</span>
-        <span className="text-xs px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-500">
-          {job.status}
-        </span>
-      </div>
+      <button
+        onClick={onViewDetails}
+        className="w-full text-left hover:bg-zinc-800/30 -m-2 p-2 rounded-lg transition-colors"
+      >
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-sm font-medium text-zinc-100 truncate">{job.name}</span>
+          <span className="text-xs px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-500">
+            {job.status}
+          </span>
+        </div>
 
-      <div className="space-y-2">
-        <div className="flex justify-between text-xs text-zinc-400">
-          <span>{job.currentPhase}</span>
-          <span>{job.progress}%</span>
+        <div className="space-y-2">
+          <div className="flex justify-between text-xs text-zinc-400">
+            <span>{job.currentPhase}</span>
+            <span>{job.progress}%</span>
+          </div>
+          <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-emerald-500 rounded-full transition-all"
+              style={{ width: `${job.progress}%` }}
+            />
+          </div>
+          <div className="flex justify-between text-xs text-zinc-500">
+            <span>{job.startedAt && `Started ${formatTimeAgo(job.startedAt)}`}</span>
+            {timeRemaining && timeRemaining > 0 && (
+              <span>~{formatDuration(timeRemaining)} remaining</span>
+            )}
+          </div>
+          <div className="text-xs text-zinc-500">
+            {job.metrics.stepsComplete.toLocaleString()} / {job.metrics.totalSteps.toLocaleString()} steps
+            {job.metrics.currentLoss > 0 && ` • Loss: ${job.metrics.currentLoss.toFixed(4)}`}
+          </div>
         </div>
-        <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden">
-          <div
-            className="h-full bg-emerald-500 rounded-full transition-all"
-            style={{ width: `${job.progress}%` }}
-          />
-        </div>
-        <div className="flex justify-between text-xs text-zinc-500">
-          <span>{job.startedAt && `Started ${formatTimeAgo(job.startedAt)}`}</span>
-          {timeRemaining && timeRemaining > 0 && (
-            <span>~{formatDuration(timeRemaining)} remaining</span>
-          )}
-        </div>
-        <div className="text-xs text-zinc-500">
-          {job.metrics.stepsComplete.toLocaleString()} / {job.metrics.totalSteps.toLocaleString()} steps
-          {job.metrics.currentLoss > 0 && ` • Loss: ${job.metrics.currentLoss.toFixed(4)}`}
-        </div>
-      </div>
+      </button>
 
       <div className="flex gap-2 mt-3">
         <button
@@ -203,6 +210,7 @@ function SidebarTrainingProgress({ job, onPause, onResume, onCancel }: SidebarTr
 
 export function Sidebar({ activeJob, onPauseJob, onResumeJob, onCancelJob, developerMode, applications, onSelectApplication, onSelectConversation, onNewChat, selectedConversationId }: SidebarProps) {
   const [showUploadModal, setShowUploadModal] = useState(false);
+  const [showJobDetail, setShowJobDetail] = useState(false);
 
   const handleActivityClick = (item: ActivityItem) => {
     if (item.conversation && onSelectConversation) {
@@ -265,6 +273,7 @@ export function Sidebar({ activeJob, onPauseJob, onResumeJob, onCancelJob, devel
           onPause={() => onPauseJob(activeJob.id)}
           onResume={() => onResumeJob(activeJob.id)}
           onCancel={() => onCancelJob(activeJob.id)}
+          onViewDetails={() => setShowJobDetail(true)}
         />
       )}
 
@@ -274,6 +283,17 @@ export function Sidebar({ activeJob, onPauseJob, onResumeJob, onCancelJob, devel
       open={showUploadModal}
       onClose={() => setShowUploadModal(false)}
     />
+
+    {activeJob && (
+      <TrainingJobDetail
+        job={activeJob}
+        open={showJobDetail}
+        onClose={() => setShowJobDetail(false)}
+        onPause={() => onPauseJob(activeJob.id)}
+        onResume={() => onResumeJob(activeJob.id)}
+        onCancel={() => onCancelJob(activeJob.id)}
+      />
+    )}
     </>
   );
 }
