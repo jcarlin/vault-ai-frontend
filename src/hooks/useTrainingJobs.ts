@@ -70,7 +70,7 @@ export function useTrainingJobs(
       return prevJobs.map((job) => {
         if (job.status !== 'running') return job;
 
-        const progressIncrement = (trainingAllocation / 100) * 2;
+        const progressIncrement = (trainingAllocation / 100) * 0.25;
         const newProgress = Math.min(100, job.progress + progressIncrement);
         const newSteps = Math.min(
           job.metrics.totalSteps,
