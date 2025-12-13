@@ -3,10 +3,12 @@ import { cn } from '@/lib/utils';
 import { ClusterHealth } from '@/components/cluster';
 import { ChatPanel } from '@/components/chat';
 import { Sidebar } from './Sidebar';
+import { SettingsSidebar } from '@/components/settings/SettingsSidebar';
 import { type ClusterHealth as ClusterHealthType } from '@/mocks/cluster';
 import { type TrainingJob, type ResourceAllocation } from '@/mocks/training';
 import { type Application } from '@/hooks/useDeveloperMode';
 import { type ChatConversation } from '@/mocks/activity';
+import { type SettingsCategory } from '@/mocks/settings';
 
 type Page = 'dashboard' | 'insights' | 'models' | 'settings' | 'application';
 
@@ -26,6 +28,8 @@ interface DashboardProps {
   onToggleDeveloperMode: () => void;
   applications: Application[];
   onSelectApplication: (app: Application) => void;
+  settingsCategory: SettingsCategory;
+  onSettingsCategoryChange: (category: SettingsCategory) => void;
 }
 
 function VaultLogo() {
@@ -129,6 +133,15 @@ function CloseIcon() {
   );
 }
 
+function ArrowLeftIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
+      <line x1="19" y1="12" x2="5" y2="12" />
+      <polyline points="12 19 5 12 12 5" />
+    </svg>
+  );
+}
+
 function CodeIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
@@ -177,6 +190,8 @@ export function Dashboard({
   onToggleDeveloperMode,
   applications,
   onSelectApplication,
+  settingsCategory,
+  onSettingsCategoryChange,
 }: DashboardProps) {
   void _trainingJobs;
   void _onAllocationChange;
@@ -210,8 +225,9 @@ export function Dashboard({
     setShowDevModeConfirm(false);
   };
 
-  // Show sidebar on main pages (chat, insights, models)
-  const showSidebar = currentPage === 'dashboard' || currentPage === 'insights' || currentPage === 'models';
+  // Show sidebar on main pages and settings
+  const showSidebar = currentPage === 'dashboard' || currentPage === 'insights' || currentPage === 'models' || currentPage === 'settings';
+  const isSettingsPage = currentPage === 'settings';
 
   return (
     <div className="h-screen flex bg-zinc-950 text-zinc-100">
@@ -223,39 +239,59 @@ export function Dashboard({
         />
       )}
 
-      {/* Sidebar - full height, includes logo */}
+      {/* Sidebar - full height, includes logo or back button */}
       {showSidebar && (
         <div className={cn(
           "fixed inset-y-0 left-0 z-50 w-64 flex flex-col bg-zinc-900 border-r border-zinc-800/50 transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0",
           showMobileSidebar ? "translate-x-0" : "-translate-x-full"
         )}>
-          {/* Logo header in sidebar */}
+          {/* Header in sidebar - Logo or Back button */}
           <div className="h-14 flex items-center gap-2.5 px-4 border-b border-zinc-800/50 flex-shrink-0">
-            <VaultLogo />
-            <span className="font-semibold tracking-tight text-zinc-100">Vault AI</span>
-            {developerMode && (
-              <span className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-purple-500/20 text-purple-400">
-                <CodeIcon />
-              </span>
+            {isSettingsPage ? (
+              <button
+                onClick={() => onNavigate('dashboard')}
+                className="flex items-center gap-2 text-sm text-zinc-400 hover:text-zinc-100 transition-colors"
+              >
+                <ArrowLeftIcon />
+                <span>Back to Chat</span>
+              </button>
+            ) : (
+              <>
+                <VaultLogo />
+                <span className="font-semibold tracking-tight text-zinc-100">Vault AI</span>
+                {developerMode && (
+                  <span className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-purple-500/20 text-purple-400">
+                    <CodeIcon />
+                  </span>
+                )}
+              </>
             )}
           </div>
 
           {/* Sidebar content */}
-          <Sidebar
-            activeJob={activeJob}
-            onPauseJob={onPauseJob}
-            onResumeJob={onResumeJob}
-            onCancelJob={onCancelJob}
-            developerMode={developerMode}
-            applications={applications}
-            onSelectApplication={(app) => {
-              onSelectApplication(app);
-              setShowMobileSidebar(false);
-            }}
-            onSelectConversation={handleSelectConversation}
-            onNewChat={handleNewChat}
-            selectedConversationId={selectedConversation?.id}
-          />
+          {isSettingsPage ? (
+            <SettingsSidebar
+              activeCategory={settingsCategory}
+              onCategoryChange={onSettingsCategoryChange}
+              developerMode={developerMode}
+            />
+          ) : (
+            <Sidebar
+              activeJob={activeJob}
+              onPauseJob={onPauseJob}
+              onResumeJob={onResumeJob}
+              onCancelJob={onCancelJob}
+              developerMode={developerMode}
+              applications={applications}
+              onSelectApplication={(app) => {
+                onSelectApplication(app);
+                setShowMobileSidebar(false);
+              }}
+              onSelectConversation={handleSelectConversation}
+              onNewChat={handleNewChat}
+              selectedConversationId={selectedConversation?.id}
+            />
+          )}
         </div>
       )}
 
@@ -274,45 +310,49 @@ export function Dashboard({
               </button>
             )}
 
-            {/* View switcher - now on the left */}
-            <div className="flex rounded-lg border border-zinc-800/50 p-0.5">
-              <button
-                onClick={() => onNavigate('dashboard')}
-                className={cn(
-                  "flex items-center gap-1.5 h-7 px-2 sm:px-3 rounded-md text-xs font-medium transition-colors",
-                  currentPage === 'dashboard'
-                    ? "bg-zinc-800 text-zinc-100"
-                    : "text-zinc-500 hover:text-zinc-300"
-                )}
-              >
-                <MessageIcon />
-                <span className="hidden sm:inline">Chat</span>
-              </button>
-              <button
-                onClick={() => onNavigate('insights')}
-                className={cn(
-                  "flex items-center gap-1.5 h-7 px-2 sm:px-3 rounded-md text-xs font-medium transition-colors",
-                  currentPage === 'insights'
-                    ? "bg-zinc-800 text-zinc-100"
-                    : "text-zinc-500 hover:text-zinc-300"
-                )}
-              >
-                <ChartIcon />
-                <span className="hidden sm:inline">Insights</span>
-              </button>
-              <button
-                onClick={() => onNavigate('models')}
-                className={cn(
-                  "flex items-center gap-1.5 h-7 px-2 sm:px-3 rounded-md text-xs font-medium transition-colors",
-                  currentPage === 'models'
-                    ? "bg-zinc-800 text-zinc-100"
-                    : "text-zinc-500 hover:text-zinc-300"
-                )}
-              >
-                <CubeIcon />
-                <span className="hidden sm:inline">Models</span>
-              </button>
-            </div>
+            {/* View switcher or Settings title */}
+            {isSettingsPage ? (
+              <h1 className="text-base font-semibold text-zinc-100">Settings</h1>
+            ) : (
+              <div className="flex rounded-lg border border-zinc-800/50 p-0.5">
+                <button
+                  onClick={() => onNavigate('dashboard')}
+                  className={cn(
+                    "flex items-center gap-1.5 h-7 px-2 sm:px-3 rounded-md text-xs font-medium transition-colors",
+                    currentPage === 'dashboard'
+                      ? "bg-zinc-800 text-zinc-100"
+                      : "text-zinc-500 hover:text-zinc-300"
+                  )}
+                >
+                  <MessageIcon />
+                  <span className="hidden sm:inline">Chat</span>
+                </button>
+                <button
+                  onClick={() => onNavigate('insights')}
+                  className={cn(
+                    "flex items-center gap-1.5 h-7 px-2 sm:px-3 rounded-md text-xs font-medium transition-colors",
+                    currentPage === 'insights'
+                      ? "bg-zinc-800 text-zinc-100"
+                      : "text-zinc-500 hover:text-zinc-300"
+                  )}
+                >
+                  <ChartIcon />
+                  <span className="hidden sm:inline">Insights</span>
+                </button>
+                <button
+                  onClick={() => onNavigate('models')}
+                  className={cn(
+                    "flex items-center gap-1.5 h-7 px-2 sm:px-3 rounded-md text-xs font-medium transition-colors",
+                    currentPage === 'models'
+                      ? "bg-zinc-800 text-zinc-100"
+                      : "text-zinc-500 hover:text-zinc-300"
+                  )}
+                >
+                  <CubeIcon />
+                  <span className="hidden sm:inline">Models</span>
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="flex items-center gap-1 sm:gap-2">

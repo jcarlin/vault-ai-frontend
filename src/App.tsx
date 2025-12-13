@@ -8,12 +8,14 @@ import { useClusterHealth } from '@/hooks/useClusterHealth';
 import { useTrainingJobs } from '@/hooks/useTrainingJobs';
 import { useDeveloperMode, type Application } from '@/hooks/useDeveloperMode';
 import { useOnboarding } from '@/hooks/useOnboarding';
+import { type SettingsCategory } from '@/mocks/settings';
 
 type Page = 'dashboard' | 'insights' | 'models' | 'settings' | 'application';
 
 function App() {
   const [currentPage, setCurrentPage] = useState<Page>('dashboard');
   const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
+  const [settingsCategory, setSettingsCategory] = useState<SettingsCategory>('network');
   const cluster = useClusterHealth(30000);
   const {
     jobs,
@@ -78,6 +80,8 @@ function App() {
       onToggleDeveloperMode={toggleDeveloperMode}
       applications={applications}
       onSelectApplication={handleSelectApplication}
+      settingsCategory={settingsCategory}
+      onSettingsCategoryChange={setSettingsCategory}
     >
       {currentPage === 'insights' ? (
         <InsightsPage
@@ -91,7 +95,7 @@ function App() {
       ) : currentPage === 'models' ? (
         <ModelsPage />
       ) : currentPage === 'settings' ? (
-        <SettingsPage onClose={() => setCurrentPage('dashboard')} developerMode={developerMode} onRestartSetup={resetOnboarding} />
+        <SettingsPage activeCategory={settingsCategory} onRestartSetup={resetOnboarding} />
       ) : currentPage === 'application' && selectedApplication ? (
         <ApplicationPlaceholder application={selectedApplication} onClose={handleCloseApplication} />
       ) : null}
