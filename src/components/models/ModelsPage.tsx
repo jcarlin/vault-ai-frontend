@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ModelList } from './ModelList';
 import { ModelDetailDialog } from './ModelDetailDialog';
+import { AddModelModal } from './AddModelModal';
 import { StorageIndicator } from './StorageIndicator';
 import { UploadModal } from '@/components/upload';
 import { mockModels, mockStorage, type Model } from '@/mocks/models';
@@ -36,6 +37,7 @@ export function ModelsPage() {
   const [models, setModels] = useState<Model[]>(mockModels);
   const [selectedModel, setSelectedModel] = useState<Model | null>(null);
   const [showUploadModal, setShowUploadModal] = useState(false);
+  const [showAddModelModal, setShowAddModelModal] = useState(false);
 
   const handleSetDefault = (model: Model) => {
     setModels(prev =>
@@ -50,6 +52,10 @@ export function ModelsPage() {
   const handleDelete = (model: Model) => {
     setModels(prev => prev.filter(m => m.id !== model.id));
     setSelectedModel(null);
+  };
+
+  const handleAddModel = (model: Model) => {
+    setModels(prev => [...prev, model]);
   };
 
   return (
@@ -72,6 +78,7 @@ export function ModelsPage() {
               <span className="hidden sm:inline">Upload Data</span>
             </button>
             <button
+              onClick={() => setShowAddModelModal(true)}
               className="flex items-center gap-2 h-9 px-3 sm:px-4 rounded-lg bg-emerald-600 text-white hover:bg-emerald-500 transition-colors text-sm font-medium"
             >
               <PlusIcon />
@@ -109,6 +116,13 @@ export function ModelsPage() {
       <UploadModal
         open={showUploadModal}
         onClose={() => setShowUploadModal(false)}
+      />
+
+      {/* Add Model Modal */}
+      <AddModelModal
+        open={showAddModelModal}
+        onClose={() => setShowAddModelModal(false)}
+        onAddModel={handleAddModel}
       />
     </div>
   );
