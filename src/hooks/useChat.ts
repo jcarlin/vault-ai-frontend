@@ -29,6 +29,7 @@ interface UseChatReturn {
   streamingMetrics: StreamingMetrics | null;
   sendMessage: (content: string) => void;
   clearHistory: () => void;
+  loadConversation: (messages: ChatMessage[]) => void;
 }
 
 export function useChat(options: UseChatOptions = {}): UseChatReturn {
@@ -166,6 +167,15 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
     setStreamingMetrics(null);
   }, []);
 
+  const loadConversation = useCallback((conversationMessages: ChatMessage[]) => {
+    abortRef.current = true;
+    setMessages(conversationMessages);
+    setState('idle');
+    setCurrentThinking(null);
+    setStreamingContent('');
+    setStreamingMetrics(null);
+  }, []);
+
   return {
     messages,
     state,
@@ -174,5 +184,6 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
     streamingMetrics,
     sendMessage,
     clearHistory,
+    loadConversation,
   };
 }

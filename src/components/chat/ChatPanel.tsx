@@ -6,12 +6,13 @@ import { ThinkingIndicator, StreamingMessage } from './ThinkingIndicator';
 import { SuggestedPrompts } from './SuggestedPrompts';
 import { useChat } from '@/hooks/useChat';
 import { type ResourceAllocation } from '@/mocks/training';
-import { type SpeedMode } from '@/mocks/chat';
+import { type SpeedMode, type ChatMessage as ChatMessageType } from '@/mocks/chat';
 import { ChatSpeedIndicator } from '@/components/training';
 
 interface ChatPanelProps {
   allocation: ResourceAllocation;
   className?: string;
+  conversationMessages?: ChatMessageType[] | null;
 }
 
 // Convert resource allocation speed impact to chat speed mode
@@ -29,15 +30,28 @@ function getSpeedMode(speedImpact: ResourceAllocation['interactive']['speedImpac
   }
 }
 
-export function ChatPanel({ allocation, className }: ChatPanelProps) {
+export function ChatPanel({ allocation, className, conversationMessages }: ChatPanelProps) {
   const speedMode = useMemo(
     () => getSpeedMode(allocation.interactive.speedImpact),
     [allocation.interactive.speedImpact]
   );
-  const { messages, state, currentThinking, streamingContent, streamingMetrics, sendMessage } = useChat({ speedMode });
+  const { messages, state, currentThinking, streamingContent, streamingMetrics, sendMessage, loadConversation, clearHistory } = useChat({ speedMode });
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const isUnavailable = allocation.interactive.speedImpact === 'unavailable';
   const isEmpty = messages.length === 0;
+  const lastConversationRef = useRef<ChatMessageType[] | null | undefined>(undefined);
+
+  // Load conversation when prop changes
+  useEffect(() => {
+    if (conversationMessages !== lastConversationRef.current) {
+      lastConversationRef.current = conversationMessages;
+      if (conversationMessages) {
+        loadConversation(conversationMessages);
+      } else if (conversationMessages === null) {
+        clearHistory();
+      }
+    }
+  }, [conversationMessages, loadConversation, clearHistory]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });

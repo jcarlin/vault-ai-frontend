@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
-import { mockActivity, formatActivityTime, type ActivityItem } from '@/mocks/activity';
+import { mockActivity, formatActivityTime, type ActivityItem, type ChatConversation } from '@/mocks/activity';
 import { type TrainingJob, formatDuration, formatTimeAgo } from '@/mocks/training';
 import { UploadModal } from '@/components/upload';
 import { ApplicationsMenu } from './ApplicationsMenu';
@@ -14,6 +14,9 @@ interface SidebarProps {
   developerMode?: boolean;
   applications?: Application[];
   onSelectApplication?: (app: Application) => void;
+  onSelectConversation?: (conversation: ChatConversation) => void;
+  onNewChat?: () => void;
+  selectedConversationId?: string | null;
 }
 
 function PlusIcon() {
@@ -190,16 +193,24 @@ function SidebarTrainingProgress({ job, onPause, onResume, onCancel }: SidebarTr
   );
 }
 
-export function Sidebar({ activeJob, onPauseJob, onResumeJob, onCancelJob, developerMode, applications, onSelectApplication }: SidebarProps) {
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+export function Sidebar({ activeJob, onPauseJob, onResumeJob, onCancelJob, developerMode, applications, onSelectApplication, onSelectConversation, onNewChat, selectedConversationId }: SidebarProps) {
   const [showUploadModal, setShowUploadModal] = useState(false);
+
+  const handleActivityClick = (item: ActivityItem) => {
+    if (item.conversation && onSelectConversation) {
+      onSelectConversation(item.conversation);
+    }
+  };
 
   return (
     <>
     <aside className="w-72 h-full border-r border-zinc-800/50 flex flex-col bg-zinc-900 pt-14 lg:pt-0">
       {/* New chat and Upload buttons */}
       <div className="p-3 space-y-2">
-        <button className="w-full flex items-center gap-2 h-9 px-3 rounded-lg border border-zinc-800/50 text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100 transition-colors text-sm">
+        <button
+          onClick={onNewChat}
+          className="w-full flex items-center gap-2 h-9 px-3 rounded-lg border border-zinc-800/50 text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100 transition-colors text-sm"
+        >
           <PlusIcon />
           New chat
         </button>
@@ -232,8 +243,8 @@ export function Sidebar({ activeJob, onPauseJob, onResumeJob, onCancelJob, devel
             <ActivityItemCard
               key={item.id}
               item={item}
-              isSelected={selectedId === item.id}
-              onClick={() => setSelectedId(item.id)}
+              isSelected={item.conversation?.id === selectedConversationId}
+              onClick={() => handleActivityClick(item)}
             />
           ))}
         </div>

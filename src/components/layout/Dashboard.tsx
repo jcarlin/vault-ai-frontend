@@ -6,6 +6,7 @@ import { Sidebar } from './Sidebar';
 import { type ClusterHealth as ClusterHealthType } from '@/mocks/cluster';
 import { type TrainingJob, type ResourceAllocation } from '@/mocks/training';
 import { type Application } from '@/hooks/useDeveloperMode';
+import { type ChatConversation } from '@/mocks/activity';
 
 type Page = 'dashboard' | 'insights' | 'models' | 'settings' | 'application';
 
@@ -183,6 +184,17 @@ export function Dashboard({
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showDevModeConfirm, setShowDevModeConfirm] = useState(false);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
+  const [selectedConversation, setSelectedConversation] = useState<ChatConversation | null>(null);
+
+  const handleSelectConversation = (conversation: ChatConversation) => {
+    setSelectedConversation(conversation);
+    setShowMobileSidebar(false);
+  };
+
+  const handleNewChat = () => {
+    setSelectedConversation(null);
+    setShowMobileSidebar(false);
+  };
 
   const handleToggleDeveloperMode = () => {
     if (!developerMode) {
@@ -379,6 +391,9 @@ export function Dashboard({
                 onSelectApplication(app);
                 setShowMobileSidebar(false);
               }}
+              onSelectConversation={handleSelectConversation}
+              onNewChat={handleNewChat}
+              selectedConversationId={selectedConversation?.id}
             />
           </div>
         )}
@@ -388,7 +403,7 @@ export function Dashboard({
           {children ? (
             children
           ) : (
-            <ChatPanel allocation={allocation} className="flex-1" />
+            <ChatPanel allocation={allocation} className="flex-1" conversationMessages={selectedConversation?.messages} />
           )}
 
         {/* Cluster panel overlay */}
