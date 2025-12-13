@@ -155,14 +155,14 @@ export function ClusterHealth({ cluster, compact: _compact }: ClusterHealthProps
     <>
       <div className="space-y-4">
         {/* Header */}
-        <div className="flex items-start justify-between">
-          <div>
-            <h3 className="text-sm font-medium text-zinc-100">Cluster Status</h3>
-            <p className="text-xs text-zinc-500 mt-0.5">
-              {cluster.cubes.length} cubes • {totalMemory}GB VRAM • {avgLoad}% avg load
-            </p>
+        <div>
+          <h3 className="text-sm font-medium text-zinc-100">Cluster Status</h3>
+          <p className="text-xs text-zinc-500 mt-0.5">
+            {cluster.cubes.length} cubes • {totalMemory}GB VRAM • {avgLoad}% avg load
+          </p>
+          <div className="mt-2">
+            <AggregateStatus status={cluster.aggregateStatus} />
           </div>
-          <AggregateStatus status={cluster.aggregateStatus} />
         </div>
 
         {/* Cube grid */}
