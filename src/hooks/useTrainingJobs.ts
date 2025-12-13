@@ -38,16 +38,17 @@ export function useTrainingJobs(
   const [trainingAllocation, setTrainingAllocation] = useState(75);
   const [notifications, setNotifications] = useState<TrainingNotification[]>([]);
 
-  const activeJob = jobs.find((j) => j.status === 'running') || null;
+  const activeJob = jobs.find((j) => j.status === 'running' || j.status === 'paused') || null;
 
+  const isJobRunning = activeJob?.status === 'running';
   const allocation: ResourceAllocation = {
     training: {
-      allocation: activeJob ? trainingAllocation : 0,
+      allocation: isJobRunning ? trainingAllocation : 0,
       jobId: activeJob?.id || null,
     },
     interactive: {
-      allocation: activeJob ? 100 - trainingAllocation : 100,
-      speedImpact: activeJob ? getSpeedImpact(trainingAllocation) : 'normal',
+      allocation: isJobRunning ? 100 - trainingAllocation : 100,
+      speedImpact: isJobRunning ? getSpeedImpact(trainingAllocation) : 'normal',
     },
   };
 

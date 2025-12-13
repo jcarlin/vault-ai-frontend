@@ -150,6 +150,7 @@ function SidebarTrainingProgress({ job, onPause, onResume, onCancel, onViewDetai
   const timeRemaining = job.estimatedCompletion
     ? new Date(job.estimatedCompletion).getTime() - Date.now()
     : null;
+  const isPaused = job.status === 'paused';
 
   return (
     <div className="border-t border-zinc-800/50 bg-zinc-900/50 p-4">
@@ -159,7 +160,12 @@ function SidebarTrainingProgress({ job, onPause, onResume, onCancel, onViewDetai
       >
         <div className="flex items-center justify-between mb-3">
           <span className="text-sm font-medium text-zinc-100 truncate">{job.name}</span>
-          <span className="text-xs px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-500">
+          <span className={cn(
+            "text-xs px-1.5 py-0.5 rounded",
+            isPaused
+              ? "bg-amber-500/20 text-amber-500"
+              : "bg-emerald-500/20 text-emerald-500"
+          )}>
             {job.status}
           </span>
         </div>
@@ -171,16 +177,21 @@ function SidebarTrainingProgress({ job, onPause, onResume, onCancel, onViewDetai
           </div>
           <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden">
             <div
-              className="h-full bg-emerald-500 rounded-full transition-all"
+              className={cn(
+                "h-full rounded-full transition-all",
+                isPaused ? "bg-amber-500" : "bg-emerald-500"
+              )}
               style={{ width: `${job.progress}%` }}
             />
           </div>
-          <div className="flex justify-between text-xs text-zinc-500">
-            <span>{job.startedAt && `Started ${formatTimeAgo(job.startedAt)}`}</span>
-            {timeRemaining && timeRemaining > 0 && (
-              <span>~{formatDuration(timeRemaining)} remaining</span>
-            )}
-          </div>
+          {!isPaused && (
+            <div className="flex justify-between text-xs text-zinc-500">
+              <span>{job.startedAt && `Started ${formatTimeAgo(job.startedAt)}`}</span>
+              {timeRemaining && timeRemaining > 0 && (
+                <span>~{formatDuration(timeRemaining)} remaining</span>
+              )}
+            </div>
+          )}
           <div className="text-xs text-zinc-500">
             {job.metrics.stepsComplete.toLocaleString()} / {job.metrics.totalSteps.toLocaleString()} steps
             {job.metrics.currentLoss > 0 && ` • Loss: ${job.metrics.currentLoss.toFixed(4)}`}
