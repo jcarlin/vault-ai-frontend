@@ -68,20 +68,20 @@ function MiniCubeCard({ cube, onClick }: { cube: CubeMetrics; onClick: () => voi
   return (
     <button
       onClick={onClick}
-      className="p-3 rounded-lg bg-zinc-800/50 hover:bg-zinc-800 transition-colors text-left"
+      className="p-3 rounded-lg bg-zinc-900 border border-zinc-700/50 hover:border-zinc-600 hover:bg-zinc-900/80 transition-colors text-left"
     >
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-sm font-medium text-zinc-200">{cube.name}</span>
+      <div className="flex items-center justify-between mb-2.5">
+        <span className="text-sm font-medium text-zinc-100">{cube.name}</span>
         <span
           className={cn(
-            'h-2 w-2 rounded-full',
+            'h-2.5 w-2.5 rounded-full',
             cube.status === 'healthy' && 'bg-emerald-500',
             cube.status === 'warning' && 'bg-amber-500',
             (cube.status === 'error' || cube.status === 'offline') && 'bg-red-500'
           )}
         />
       </div>
-      <div className="space-y-1.5">
+      <div className="space-y-2">
         <CubeMetricRow
           icon={<TempIcon />}
           value={Math.min(cube.temperature / 100 * 100, 100)}
@@ -166,7 +166,7 @@ export function ClusterHealth({ cluster, compact: _compact }: ClusterHealthProps
         </div>
 
         {/* Cube grid */}
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-3">
           {cluster.cubes.map((cube) => (
             <MiniCubeCard
               key={cube.id}
