@@ -83,7 +83,7 @@ export function UploadModal({ open, onClose, onUploadComplete }: UploadModalProp
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-lg bg-zinc-900 border-zinc-800">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="text-zinc-100">Upload Training Data</DialogTitle>
         </DialogHeader>

@@ -32,10 +32,10 @@ interface MetricCardProps {
 
 function MetricCard({ label, value, subtext }: MetricCardProps) {
   return (
-    <div className="p-3 rounded-lg bg-muted/50">
-      <p className="text-xs text-muted-foreground mb-1">{label}</p>
-      <p className="text-lg font-semibold">{value}</p>
-      {subtext && <p className="text-xs text-muted-foreground">{subtext}</p>}
+    <div className="p-3 rounded-lg bg-zinc-900">
+      <p className="text-xs text-zinc-500 mb-1">{label}</p>
+      <p className="text-lg font-semibold text-zinc-100">{value}</p>
+      {subtext && <p className="text-xs text-zinc-500">{subtext}</p>}
     </div>
   );
 }
@@ -77,8 +77,8 @@ export function TrainingJobDetail({
           {isActive && (
             <div>
               <div className="flex justify-between text-sm mb-2">
-                <span className="text-muted-foreground">{job.currentPhase}</span>
-                <span className="font-medium">{job.progress}%</span>
+                <span className="text-zinc-400">{job.currentPhase}</span>
+                <span className="font-medium text-zinc-100">{job.progress}%</span>
               </div>
               <Progress value={job.progress} className="h-2" />
             </div>
@@ -107,25 +107,25 @@ export function TrainingJobDetail({
             />
           </div>
 
-          <div className="space-y-2 pt-2 border-t">
+          <div className="space-y-2 pt-2 border-t border-zinc-700">
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Started</span>
-              <span>{job.startedAt ? formatTimeAgo(job.startedAt) : '—'}</span>
+              <span className="text-zinc-500">Started</span>
+              <span className="text-zinc-200">{job.startedAt ? formatTimeAgo(job.startedAt) : '—'}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Elapsed Time</span>
-              <span>{elapsed > 0 ? formatDuration(elapsed) : '—'}</span>
+              <span className="text-zinc-500">Elapsed Time</span>
+              <span className="text-zinc-200">{elapsed > 0 ? formatDuration(elapsed) : '—'}</span>
             </div>
             {timeRemaining && timeRemaining > 0 && (
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Time Remaining</span>
-                <span>~{formatDuration(timeRemaining)}</span>
+                <span className="text-zinc-500">Time Remaining</span>
+                <span className="text-zinc-200">~{formatDuration(timeRemaining)}</span>
               </div>
             )}
             {job.completedAt && (
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Completed</span>
-                <span>{formatTimeAgo(job.completedAt)}</span>
+                <span className="text-zinc-500">Completed</span>
+                <span className="text-zinc-200">{formatTimeAgo(job.completedAt)}</span>
               </div>
             )}
           </div>
@@ -133,7 +133,7 @@ export function TrainingJobDetail({
           {job.status === 'failed' && job.error && (
             <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20">
               <p className="text-sm text-red-500 font-medium mb-1">Error</p>
-              <p className="text-sm text-muted-foreground">{job.error}</p>
+              <p className="text-sm text-zinc-400">{job.error}</p>
             </div>
           )}
 

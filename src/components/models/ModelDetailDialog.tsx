@@ -43,7 +43,7 @@ export function ModelDetailDialog({ model, open, onClose, onSetDefault, onDelete
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md bg-zinc-900 border-zinc-800">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <div className="flex items-center gap-2">
             <DialogTitle className="text-zinc-100">{model.displayName}</DialogTitle>
@@ -58,7 +58,7 @@ export function ModelDetailDialog({ model, open, onClose, onSetDefault, onDelete
         <div className="space-y-4">
           <p className="text-sm text-zinc-400">{model.description}</p>
 
-          <div className="rounded-lg bg-zinc-800/50 p-3">
+          <div className="rounded-lg bg-zinc-900 p-3">
             <MetricRow label="Type" value={isCustom ? 'Custom trained' : 'Base model'} />
             <MetricRow label="Parameters" value={model.parameters} />
             <MetricRow label="Size" value={model.size} />
@@ -72,7 +72,7 @@ export function ModelDetailDialog({ model, open, onClose, onSetDefault, onDelete
           </div>
 
           {isCustom && model.trainingData && (
-            <div className="rounded-lg bg-zinc-800/50 p-3">
+            <div className="rounded-lg bg-zinc-900 p-3">
               <h4 className="text-xs font-medium text-zinc-400 mb-2">Training Data</h4>
               <MetricRow label="Source" value={model.trainingData.source} />
               <MetricRow label="Files" value={model.trainingData.files} />

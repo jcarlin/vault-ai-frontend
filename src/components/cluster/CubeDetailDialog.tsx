@@ -44,10 +44,10 @@ function MetricRow({
   return (
     <div className="space-y-1">
       <div className="flex justify-between text-sm">
-        <span className="text-muted-foreground">{label}</span>
+        <span className="text-zinc-400">{label}</span>
         <span
           className={cn(
-            'font-medium',
+            'font-medium text-zinc-100',
             isWarning && 'text-amber-500',
             isError && 'text-red-500'
           )}
@@ -128,15 +128,15 @@ export function CubeDetailDialog({ cube, open, onClose }: CubeDetailDialogProps)
           />
 
           {cube.currentTask && (
-            <div className="pt-4 border-t">
-              <p className="text-sm text-muted-foreground mb-1">Current Task</p>
-              <p className="text-sm font-medium">{cube.currentTask}</p>
+            <div className="pt-4 border-t border-zinc-700">
+              <p className="text-sm text-zinc-500 mb-1">Current Task</p>
+              <p className="text-sm font-medium text-zinc-100">{cube.currentTask}</p>
             </div>
           )}
 
           {!cube.currentTask && (
-            <div className="pt-4 border-t">
-              <p className="text-sm text-muted-foreground">No active task</p>
+            <div className="pt-4 border-t border-zinc-700">
+              <p className="text-sm text-zinc-500">No active task</p>
             </div>
           )}
         </div>
