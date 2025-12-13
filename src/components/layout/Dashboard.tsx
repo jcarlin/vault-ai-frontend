@@ -210,8 +210,8 @@ export function Dashboard({
     setShowDevModeConfirm(false);
   };
 
-  // Show sidebar on chat page only
-  const showSidebar = currentPage === 'dashboard';
+  // Show sidebar on main pages (chat, insights, models)
+  const showSidebar = currentPage === 'dashboard' || currentPage === 'insights' || currentPage === 'models';
 
   return (
     <div className="h-screen flex bg-zinc-950 text-zinc-100">
