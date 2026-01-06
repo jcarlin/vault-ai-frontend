@@ -6,6 +6,19 @@
 @theme {
   --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 
+  /* Custom amber scale based on #f5b700 */
+  --color-amber-50: oklch(0.98 0.02 85);
+  --color-amber-100: oklch(0.95 0.05 85);
+  --color-amber-200: oklch(0.92 0.08 85);
+  --color-amber-300: oklch(0.89 0.11 85);
+  --color-amber-400: oklch(0.85 0.14 85);
+  --color-amber-500: oklch(0.81 0.17 85);
+  --color-amber-600: oklch(0.68 0.16 85);
+  --color-amber-700: oklch(0.55 0.15 85);
+  --color-amber-800: oklch(0.45 0.13 85);
+  --color-amber-900: oklch(0.35 0.11 85);
+  --color-amber-950: oklch(0.25 0.08 85);
+
   --color-background: hsl(240 10% 3.9%);
   --color-foreground: hsl(0 0% 98%);
   --color-card: hsl(240 10% 3.9%);
@@ -168,6 +181,19 @@ body {
   --green-200: oklch(0.88 0.06 155);
   --green-100: oklch(0.93 0.04 155);
   --green-50: oklch(0.97 0.02 155);
+
+  /* Amber/warning scale (gold from #f5b700) */
+  --amber-950: oklch(0.25 0.08 85);
+  --amber-900: oklch(0.35 0.11 85);
+  --amber-800: oklch(0.45 0.13 85);
+  --amber-700: oklch(0.55 0.15 85);
+  --amber-600: oklch(0.68 0.16 85);
+  --amber-500: oklch(0.81 0.17 85);   /* #f5b700 - base amber */
+  --amber-400: oklch(0.85 0.14 85);
+  --amber-300: oklch(0.89 0.11 85);
+  --amber-200: oklch(0.92 0.08 85);
+  --amber-100: oklch(0.95 0.05 85);
+  --amber-50: oklch(0.98 0.02 85);
 
   /* Semantic colors */
   --background: var(--gray-950);
