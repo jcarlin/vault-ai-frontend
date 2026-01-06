@@ -365,8 +365,7 @@ export function Dashboard({
                 )} />
                 <span className="text-muted-foreground hidden sm:inline">{cluster.cubes.length} cubes</span>
               </div>
-              <div className="flex items-center gap-1 sm:gap-1.5 text-muted-foreground">
-                <LockIcon />
+              <div className="flex items-center text-muted-foreground">
                 <svg
                   viewBox="0 0 24 24"
                   fill="none"
