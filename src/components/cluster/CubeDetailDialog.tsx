@@ -61,9 +61,9 @@ function MetricRow({
         value={percentage}
         className={cn(
           'h-1.5',
-          !isWarning && !isError && '[&>div]:bg-emerald-500',
-          isWarning && '[&>div]:bg-amber-500',
-          isError && '[&>div]:bg-red-500'
+          !isWarning && !isError && 'bg-emerald-500/20 [&>div]:bg-emerald-500',
+          isWarning && 'bg-amber-500/20 [&>div]:bg-amber-500',
+          isError && 'bg-red-500/20 [&>div]:bg-red-500'
         )}
       />
     </div>
