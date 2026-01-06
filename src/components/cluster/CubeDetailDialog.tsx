@@ -61,6 +61,7 @@ function MetricRow({
         value={percentage}
         className={cn(
           'h-1.5',
+          !isWarning && !isError && '[&>div]:bg-emerald-500',
           isWarning && '[&>div]:bg-amber-500',
           isError && '[&>div]:bg-red-500'
         )}
@@ -82,7 +83,7 @@ export function CubeDetailDialog({ cube, open, onClose }: CubeDetailDialogProps)
               variant="secondary"
               className={cn(
                 cube.status === 'healthy' &&
-                  'bg-green-500/10 text-green-500',
+                  'bg-emerald-500/10 text-emerald-400',
                 cube.status === 'warning' &&
                   'bg-amber-500/10 text-amber-500',
                 (cube.status === 'error' || cube.status === 'offline') &&
