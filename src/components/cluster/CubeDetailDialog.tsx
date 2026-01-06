@@ -45,13 +45,7 @@ function MetricRow({
     <div className="space-y-1">
       <div className="flex justify-between text-sm">
         <span className="text-zinc-400">{label}</span>
-        <span
-          className={cn(
-            'font-medium text-zinc-100',
-            isWarning && 'text-amber-500',
-            isError && 'text-red-500'
-          )}
-        >
+        <span className="font-medium text-zinc-100">
           {value}
           {unit}
           {max !== 100 && ` / ${max}${unit}`}
@@ -77,7 +71,7 @@ export function CubeDetailDialog({ cube, open, onClose }: CubeDetailDialogProps)
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <div className="flex items-center justify-between pr-6">
+          <div className="flex items-center gap-2">
             <DialogTitle>{cube.name}</DialogTitle>
             <Badge
               variant="secondary"
