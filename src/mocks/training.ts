@@ -53,22 +53,55 @@ export const mockTrainingJobs: TrainingJob[] = [
   {
     id: 'job-002',
     name: 'Customer Support Bot',
-    status: 'queued',
-    progress: 0,
-    currentPhase: 'Waiting in queue',
-    startedAt: null,
-    estimatedCompletion: null,
+    status: 'running',
+    progress: 34,
+    currentPhase: 'Epoch 2 of 6',
+    startedAt: new Date(Date.now() - 1.5 * 60 * 60 * 1000).toISOString(),
+    estimatedCompletion: new Date(Date.now() + 45 * 60 * 1000).toISOString(),
     completedAt: null,
     metrics: {
-      stepsComplete: 0,
+      stepsComplete: 28900,
       totalSteps: 85000,
-      currentLoss: 0,
+      currentLoss: 0.0456,
     },
     allocation: 75,
   },
   {
     id: 'job-003',
     name: 'Financial Report Analyzer',
+    status: 'running',
+    progress: 89,
+    currentPhase: 'Epoch 7 of 8',
+    startedAt: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
+    estimatedCompletion: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
+    completedAt: null,
+    metrics: {
+      stepsComplete: 40050,
+      totalSteps: 45000,
+      currentLoss: 0.0089,
+      validationAccuracy: 0.967,
+    },
+    allocation: 75,
+  },
+  {
+    id: 'job-004',
+    name: 'Sentiment Analysis Model',
+    status: 'paused',
+    progress: 52,
+    currentPhase: 'Paused',
+    startedAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
+    estimatedCompletion: null,
+    completedAt: null,
+    metrics: {
+      stepsComplete: 31200,
+      totalSteps: 60000,
+      currentLoss: 0.0312,
+    },
+    allocation: 75,
+  },
+  {
+    id: 'job-005',
+    name: 'Contract Review Assistant',
     status: 'completed',
     progress: 100,
     currentPhase: 'Complete',
@@ -76,10 +109,10 @@ export const mockTrainingJobs: TrainingJob[] = [
     estimatedCompletion: null,
     completedAt: new Date(Date.now() - 18 * 60 * 60 * 1000).toISOString(),
     metrics: {
-      stepsComplete: 45000,
-      totalSteps: 45000,
-      currentLoss: 0.0089,
-      validationAccuracy: 0.967,
+      stepsComplete: 72000,
+      totalSteps: 72000,
+      currentLoss: 0.0067,
+      validationAccuracy: 0.978,
     },
     allocation: 75,
   },
@@ -145,13 +178,13 @@ export function formatTimeAgo(isoString: string): string {
 export function getStatusColor(status: TrainingStatus): string {
   switch (status) {
     case 'running':
-      return 'text-blue-500';
+      return 'text-blue-400';
     case 'queued':
       return 'text-muted-foreground';
     case 'paused':
-      return 'text-amber-500';
+      return 'text-zinc-400';
     case 'completed':
-      return 'text-green-500';
+      return 'text-emerald-400';
     case 'failed':
       return 'text-red-500';
   }
@@ -160,14 +193,14 @@ export function getStatusColor(status: TrainingStatus): string {
 export function getStatusBgColor(status: TrainingStatus): string {
   switch (status) {
     case 'running':
-      return 'bg-[var(--green-500)]/10 text-[var(--green-500)] border-[var(--green-500)]/20';
+      return 'bg-blue-500/10 text-blue-400';
     case 'queued':
-      return 'bg-zinc-800/50 text-zinc-400 border-zinc-700/50';
+      return 'bg-zinc-500/10 text-zinc-400';
     case 'paused':
-      return 'bg-amber-500/10 text-amber-500 border-amber-500/20';
+      return 'bg-zinc-500/10 text-zinc-400';
     case 'completed':
-      return 'bg-green-500/10 text-green-500 border-green-500/20';
+      return 'bg-emerald-500/10 text-emerald-400';
     case 'failed':
-      return 'bg-red-500/10 text-red-500 border-red-500/20';
+      return 'bg-red-500/10 text-red-500';
   }
 }

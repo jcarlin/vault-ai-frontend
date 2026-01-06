@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
-import { mockActivity, formatActivityTime, type ActivityItem, type ChatConversation } from '@/mocks/activity';
-import { type TrainingJob, formatDuration, formatTimeAgo } from '@/mocks/training';
-import { TrainingJobDetail } from '@/components/training';
+import { mockActivity, type ActivityItem, type ChatConversation } from '@/mocks/activity';
+import { type TrainingJob } from '@/mocks/training';
+import { JobsOverviewModal } from '@/components/training';
 import { ApplicationsMenu } from './ApplicationsMenu';
 import { type Application } from '@/hooks/useDeveloperMode';
 
 interface SidebarProps {
-  activeJob: TrainingJob | null;
+  trainingJobs: TrainingJob[];
   onPauseJob: (jobId: string) => void;
   onResumeJob: (jobId: string) => void;
   onCancelJob: (jobId: string) => void;
@@ -37,46 +37,6 @@ function ClockIcon() {
   );
 }
 
-function ActivityIcon({ type }: { type: ActivityItem['type'] }) {
-  const className = "h-4 w-4 text-muted-foreground";
-
-  switch (type) {
-    case 'training':
-      return (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className={className}>
-          <rect x="4" y="4" width="16" height="16" rx="2" />
-          <rect x="9" y="9" width="6" height="6" />
-          <line x1="9" y1="1" x2="9" y2="4" />
-          <line x1="15" y1="1" x2="15" y2="4" />
-          <line x1="9" y1="20" x2="9" y2="23" />
-          <line x1="15" y1="20" x2="15" y2="23" />
-        </svg>
-      );
-    case 'upload':
-      return (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className={className}>
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-          <polyline points="17 8 12 3 7 8" />
-          <line x1="12" y1="3" x2="12" y2="15" />
-        </svg>
-      );
-    case 'analysis':
-      return (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className={className}>
-          <line x1="18" y1="20" x2="18" y2="10" />
-          <line x1="12" y1="20" x2="12" y2="4" />
-          <line x1="6" y1="20" x2="6" y2="14" />
-        </svg>
-      );
-    default:
-      return (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className={className}>
-          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-        </svg>
-      );
-  }
-}
-
 function ActivityItemCard({ item, isSelected, onClick }: { item: ActivityItem; isSelected: boolean; onClick: () => void }) {
   return (
     <button
@@ -94,119 +54,54 @@ function ActivityItemCard({ item, isSelected, onClick }: { item: ActivityItem; i
   );
 }
 
-function PauseIcon() {
+function TrainingIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="currentColor" className="h-3.5 w-3.5">
-      <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-4 w-4">
+      <rect x="4" y="4" width="16" height="16" rx="2" />
+      <rect x="9" y="9" width="6" height="6" />
+      <line x1="9" y1="1" x2="9" y2="4" />
+      <line x1="15" y1="1" x2="15" y2="4" />
+      <line x1="9" y1="20" x2="9" y2="23" />
+      <line x1="15" y1="20" x2="15" y2="23" />
     </svg>
   );
 }
 
-function PlayIcon() {
+function ChevronRightIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="currentColor" className="h-3.5 w-3.5">
-      <path d="M8 5v14l11-7z" />
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
+      <polyline points="9 18 15 12 9 6" />
     </svg>
   );
 }
 
-function StopIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" className="h-3.5 w-3.5">
-      <path d="M6 6h12v12H6z" />
-    </svg>
-  );
-}
-
-interface SidebarTrainingProgressProps {
-  job: TrainingJob;
-  onPause: () => void;
-  onResume: () => void;
-  onCancel: () => void;
-  onViewDetails: () => void;
-}
-
-function SidebarTrainingProgress({ job, onPause, onResume, onCancel, onViewDetails }: SidebarTrainingProgressProps) {
-  const timeRemaining = job.estimatedCompletion
-    ? new Date(job.estimatedCompletion).getTime() - Date.now()
-    : null;
-  const isPaused = job.status === 'paused';
-
-  return (
-    <div className="border-t border-border bg-card/50 p-4">
-      <button
-        onClick={onViewDetails}
-        className="w-full text-left hover:bg-secondary/30 -m-2 p-2 rounded-lg transition-colors"
-      >
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-sm font-medium text-foreground truncate">{job.name}</span>
-          <span className={cn(
-            "text-[10px] font-medium uppercase tracking-wide",
-            isPaused
-              ? "text-amber-500"
-              : "text-[var(--green-500)]"
-          )}>
-            {job.status}
-          </span>
-        </div>
-
-        <div className="space-y-2">
-          <div className="flex justify-between text-xs text-muted-foreground">
-            <span>{job.currentPhase}</span>
-            <span>{job.progress}%</span>
-          </div>
-          <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
-            <div
-              className={cn(
-                "h-full rounded-full transition-all",
-                isPaused ? "bg-amber-500" : "bg-[var(--green-500)]"
-              )}
-              style={{ width: `${job.progress}%` }}
-            />
-          </div>
-          {!isPaused && (
-            <div className="flex justify-between text-xs text-muted-foreground">
-              <span>{job.startedAt && `Started ${formatTimeAgo(job.startedAt)}`}</span>
-              {timeRemaining && timeRemaining > 0 && (
-                <span>~{formatDuration(timeRemaining)} remaining</span>
-              )}
-            </div>
-          )}
-          <div className="text-xs text-muted-foreground">
-            {job.metrics.stepsComplete.toLocaleString()} / {job.metrics.totalSteps.toLocaleString()} steps
-            {job.metrics.currentLoss > 0 && ` • Loss: ${job.metrics.currentLoss.toFixed(4)}`}
-          </div>
-        </div>
-      </button>
-
-      <div className="flex gap-2 mt-3">
-        <button
-          onClick={job.status === 'running' ? onPause : onResume}
-          className="flex-1 flex items-center justify-center gap-1.5 h-8 rounded-lg border border-border text-foreground/80 hover:bg-secondary/50 hover:text-foreground transition-colors text-xs"
-        >
-          {job.status === 'running' ? <PauseIcon /> : <PlayIcon />}
-          {job.status === 'running' ? 'Pause' : 'Resume'}
-        </button>
-        <button
-          onClick={onCancel}
-          className="flex items-center justify-center gap-1.5 h-8 px-3 rounded-lg border border-border text-primary hover:bg-primary/10 hover:text-primary transition-colors text-xs"
-        >
-          <StopIcon />
-          Cancel
-        </button>
-      </div>
-    </div>
-  );
-}
-
-export function Sidebar({ activeJob, onPauseJob, onResumeJob, onCancelJob, developerMode, applications, onSelectApplication, onSelectConversation, onNewChat, selectedConversationId }: SidebarProps) {
-  const [showJobDetail, setShowJobDetail] = useState(false);
+export function Sidebar({ trainingJobs, onPauseJob, onResumeJob, onCancelJob, developerMode, applications, onSelectApplication, onSelectConversation, onNewChat, selectedConversationId }: SidebarProps) {
+  const [showJobsModal, setShowJobsModal] = useState(false);
 
   const handleActivityClick = (item: ActivityItem) => {
     if (item.conversation && onSelectConversation) {
       onSelectConversation(item.conversation);
     }
   };
+
+  const activeJobs = trainingJobs.filter(j => j.status === 'running' || j.status === 'paused');
+  const runningCount = trainingJobs.filter(j => j.status === 'running').length;
+  const pausedCount = trainingJobs.filter(j => j.status === 'paused').length;
+
+  const getJobsLabel = () => {
+    if (runningCount > 0 && pausedCount > 0) {
+      return `${runningCount} running, ${pausedCount} paused`;
+    }
+    if (runningCount > 0) {
+      return `${runningCount} job${runningCount > 1 ? 's' : ''} running`;
+    }
+    if (pausedCount > 0) {
+      return `${pausedCount} job${pausedCount > 1 ? 's' : ''} paused`;
+    }
+    return null;
+  };
+
+  const jobsLabel = getJobsLabel();
 
   return (
     <>
@@ -251,29 +146,37 @@ export function Sidebar({ activeJob, onPauseJob, onResumeJob, onCancelJob, devel
         </div>
       </div>
 
-      {/* Active training job - fixed to bottom */}
-      {activeJob && (
-        <SidebarTrainingProgress
-          job={activeJob}
-          onPause={() => onPauseJob(activeJob.id)}
-          onResume={() => onResumeJob(activeJob.id)}
-          onCancel={() => onCancelJob(activeJob.id)}
-          onViewDetails={() => setShowJobDetail(true)}
-        />
+      {/* Training jobs summary - fixed to bottom */}
+      {activeJobs.length > 0 && jobsLabel && (
+        <div className="border-t border-border bg-card/50 p-3">
+          <button
+            onClick={() => setShowJobsModal(true)}
+            className="w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-secondary/50 transition-colors"
+          >
+            <div className="flex items-center gap-2">
+              <span className={cn(
+                "h-6 w-6 rounded-md flex items-center justify-center",
+                runningCount > 0 ? "bg-blue-500/15 text-blue-400" : "bg-zinc-500/15 text-zinc-400"
+              )}>
+                <TrainingIcon />
+              </span>
+              <span className="text-sm text-foreground">{jobsLabel}</span>
+            </div>
+            <ChevronRightIcon />
+          </button>
+        </div>
       )}
 
     </aside>
 
-    {activeJob && (
-      <TrainingJobDetail
-        job={activeJob}
-        open={showJobDetail}
-        onClose={() => setShowJobDetail(false)}
-        onPause={() => onPauseJob(activeJob.id)}
-        onResume={() => onResumeJob(activeJob.id)}
-        onCancel={() => onCancelJob(activeJob.id)}
-      />
-    )}
+    <JobsOverviewModal
+      open={showJobsModal}
+      onClose={() => setShowJobsModal(false)}
+      jobs={trainingJobs}
+      onPauseJob={onPauseJob}
+      onResumeJob={onResumeJob}
+      onCancelJob={onCancelJob}
+    />
     </>
   );
 }

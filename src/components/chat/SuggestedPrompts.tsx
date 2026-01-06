@@ -6,19 +6,6 @@ interface SuggestedPromptsProps {
   disabled?: boolean;
 }
 
-function SparkleIcon() {
-  return (
-    <div className="w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto mb-6">
-      <svg viewBox="0 0 24 24" fill="none" className="h-8 w-8 text-primary">
-        <path
-          d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z"
-          fill="currentColor"
-        />
-      </svg>
-    </div>
-  );
-}
-
 interface PromptCardProps {
   icon: ReactNode;
   label: string;
@@ -90,7 +77,6 @@ const prompts = [
 export function SuggestedPrompts({ onSelect, disabled }: SuggestedPromptsProps) {
   return (
     <div className="text-center max-w-lg mx-auto">
-      <SparkleIcon />
       <h2 className="text-xl sm:text-2xl font-semibold text-foreground mb-3">What would you like to work on?</h2>
       <p className="text-muted-foreground text-sm mb-6 sm:mb-8 leading-relaxed px-2 sm:px-0">
         Your secure AI cluster is ready. Train models, upload data, or

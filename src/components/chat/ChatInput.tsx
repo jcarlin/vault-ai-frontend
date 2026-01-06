@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, type KeyboardEvent } from 'react';
+import { Coins } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { mockModels, type Model } from '@/mocks/models';
 
@@ -35,13 +36,6 @@ function ChevronDownIcon() {
   );
 }
 
-function CubeIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-4 w-4">
-      <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-    </svg>
-  );
-}
 
 function CheckIcon() {
   return (
@@ -106,7 +100,7 @@ export function ChatInput({ onSend, disabled, placeholder, selectedModel, onMode
             'disabled:opacity-50 disabled:cursor-not-allowed'
           )}
         >
-          <CubeIcon />
+          <Coins className="h-4 w-4" />
           <span className="text-xs font-medium max-w-[80px] truncate hidden sm:block">
             {currentModel?.displayName || 'Select'}
           </span>

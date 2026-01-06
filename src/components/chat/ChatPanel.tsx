@@ -7,7 +7,6 @@ import { SuggestedPrompts } from './SuggestedPrompts';
 import { useChat } from '@/hooks/useChat';
 import { type ResourceAllocation } from '@/mocks/training';
 import { type SpeedMode, type ChatMessage as ChatMessageType } from '@/mocks/chat';
-import { ChatSpeedIndicator } from '@/components/training';
 
 interface ChatPanelProps {
   allocation: ResourceAllocation;
@@ -61,13 +60,6 @@ export function ChatPanel({ allocation, className, conversationMessages }: ChatP
     <div className={cn('flex flex-col h-full', className)}>
       {/* Messages area */}
       <div className="flex-1 overflow-auto relative">
-        {/* Speed indicator */}
-        {allocation.interactive.speedImpact !== 'normal' && (
-          <div className="max-w-3xl mx-auto px-4 pt-4">
-            <ChatSpeedIndicator allocation={allocation} className="mx-auto w-fit" />
-          </div>
-        )}
-
         {/* Empty state with suggestions */}
         {isEmpty && state === 'idle' && (
           <div className="absolute inset-0 flex items-center justify-center px-4">

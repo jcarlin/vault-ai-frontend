@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from 'react';
+import { Coins } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ClusterHealth } from '@/components/cluster';
 import { ChatPanel } from '@/components/chat';
@@ -69,15 +70,6 @@ function ChartIcon() {
   );
 }
 
-function CubeIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
-      <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-      <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
-      <line x1="12" y1="22.08" x2="12" y2="12" />
-    </svg>
-  );
-}
 
 function HelpIcon() {
   return (
@@ -169,7 +161,7 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: () => void 
 
 export function Dashboard({
   cluster,
-  trainingJobs: _trainingJobs,
+  trainingJobs,
   activeJob,
   allocation,
   onAllocationChange: _onAllocationChange,
@@ -186,7 +178,7 @@ export function Dashboard({
   settingsCategory,
   onSettingsCategoryChange,
 }: DashboardProps) {
-  void _trainingJobs;
+  void activeJob;
   void _onAllocationChange;
   const [showClusterPanel, setShowClusterPanel] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -269,7 +261,7 @@ export function Dashboard({
             />
           ) : (
             <Sidebar
-              activeJob={activeJob}
+              trainingJobs={trainingJobs}
               onPauseJob={onPauseJob}
               onResumeJob={onResumeJob}
               onCancelJob={onCancelJob}
@@ -340,7 +332,7 @@ export function Dashboard({
                       : "text-muted-foreground hover:text-foreground/80"
                   )}
                 >
-                  <CubeIcon />
+                  <Coins className="h-4 w-4" />
                   <span className="hidden sm:inline">Models</span>
                 </button>
               </div>
