@@ -64,22 +64,22 @@ export function ModelsPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-zinc-100">Models</h1>
-            <p className="text-zinc-500 text-sm mt-1 hidden sm:block">
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground">Models</h1>
+            <p className="text-muted-foreground text-sm mt-1 hidden sm:block">
               Manage your AI models and training data
             </p>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowUploadModal(true)}
-              className="flex items-center gap-2 h-9 px-3 sm:px-4 rounded-lg border border-zinc-700/50 text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100 transition-colors text-sm"
+              className="flex items-center gap-2 h-9 px-3 sm:px-4 rounded-lg border border-border text-foreground/80 hover:bg-secondary/50 hover:text-foreground transition-colors text-sm"
             >
               <UploadIcon />
               <span className="hidden sm:inline">Upload Data</span>
             </button>
             <button
               onClick={() => setShowAddModelModal(true)}
-              className="flex items-center gap-2 h-9 px-3 sm:px-4 rounded-lg bg-emerald-600 text-white hover:bg-emerald-500 transition-colors text-sm font-medium"
+              className="flex items-center gap-2 h-9 px-3 sm:px-4 rounded-lg bg-primary text-white hover:bg-primary/90 transition-colors text-sm font-medium"
             >
               <PlusIcon />
               <span className="hidden sm:inline">Add Model</span>
@@ -97,7 +97,7 @@ export function ModelsPage() {
         />
 
         {/* Security footer */}
-        <div className="flex items-center justify-center gap-1.5 text-xs text-emerald-500/80 pt-4">
+        <div className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground pt-4">
           <ShieldIcon />
           <span>All models run locally on your secure cluster</span>
         </div>

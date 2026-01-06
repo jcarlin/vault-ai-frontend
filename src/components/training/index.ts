@@ -3,3 +3,4 @@ export { TrainingJobList } from './TrainingJobList';
 export { TrainingJobDetail } from './TrainingJobDetail';
 export { AllocationSlider } from './AllocationSlider';
 export { ResourceWidget, ChatSpeedIndicator } from './ResourceWidget';
+export { JobsOverviewModal } from './JobsOverviewModal';

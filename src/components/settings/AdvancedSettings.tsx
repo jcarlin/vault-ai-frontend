@@ -45,7 +45,7 @@ function Toggle({ checked, onChange, label, description }: {
         onClick={() => onChange(!checked)}
         className={cn(
           "relative inline-flex h-5 w-9 items-center rounded-full transition-colors flex-shrink-0 ml-4",
-          checked ? 'bg-emerald-600' : 'bg-zinc-700'
+          checked ? 'bg-[var(--green-600)]' : 'bg-zinc-700'
         )}
       >
         <span
@@ -65,7 +65,7 @@ function DiagnosticItem({ label, status, value }: { label: string; status: 'ok' 
       <div className="flex items-center gap-2">
         <span className={cn(
           "h-2 w-2 rounded-full",
-          status === 'ok' && "bg-emerald-500",
+          status === 'ok' && "bg-[var(--green-500)]",
           status === 'warning' && "bg-amber-500",
           status === 'error' && "bg-red-500"
         )} />
@@ -189,7 +189,7 @@ export function AdvancedSettings({ onSave }: AdvancedSettingsProps) {
       <div className="flex justify-end">
         <button
           onClick={handleSave}
-          className="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-500 transition-colors"
+          className="px-4 py-2 rounded-lg bg-[var(--green-600)] text-white text-sm font-medium hover:bg-[var(--green-500)] transition-colors"
         >
           Save Changes
         </button>

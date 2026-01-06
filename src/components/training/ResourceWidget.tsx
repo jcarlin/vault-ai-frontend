@@ -110,20 +110,18 @@ export function ChatSpeedIndicator({
   return (
     <div
       className={cn(
-        'flex items-center gap-2 px-3 py-1.5 rounded-md text-xs',
-        allocation.interactive.speedImpact === 'moderate' && 'bg-amber-500/10 text-amber-500',
-        allocation.interactive.speedImpact === 'slow' && 'bg-amber-500/10 text-amber-500',
-        allocation.interactive.speedImpact === 'unavailable' && 'bg-red-500/10 text-red-500',
+        'flex items-center gap-1.5 px-2 py-1 rounded text-[11px] text-muted-foreground',
+        allocation.interactive.speedImpact === 'unavailable' && 'text-red-400',
         className
       )}
     >
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3.5 w-3.5">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3 w-3 opacity-60">
         <circle cx="12" cy="12" r="10" />
         <polyline points="12 6 12 12 16 14" />
       </svg>
       <span>
         {allocation.interactive.speedImpact === 'unavailable'
-          ? 'Chat unavailable during training'
+          ? 'Chat unavailable'
           : `Responses ${getSpeedImpactLabel(allocation.interactive.speedImpact).toLowerCase()}`}
       </span>
     </div>

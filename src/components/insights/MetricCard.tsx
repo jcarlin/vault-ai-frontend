@@ -34,30 +34,30 @@ export function MetricCard({ title, value, subtitle, change, icon }: MetricCardP
   return (
     <Card className="py-4">
       <CardContent>
-        <div className="flex items-start justify-between">
+        <div className="flex items-center gap-2 mb-1">
+          {icon && (
+            <div className="text-muted-foreground">
+              {icon}
+            </div>
+          )}
+          <p className="text-sm text-muted-foreground">{title}</p>
+        </div>
+        <div className="flex items-end justify-between">
           <div className="space-y-1">
-            <p className="text-sm text-muted-foreground">{title}</p>
             <p className="text-2xl font-bold">{value}</p>
             {subtitle && (
               <p className="text-xs text-muted-foreground">{subtitle}</p>
             )}
           </div>
-          <div className="flex flex-col items-end gap-1">
-            {icon && (
-              <div className="p-2 rounded-lg bg-muted">
-                {icon}
-              </div>
-            )}
-            {change !== undefined && (
-              <div className={cn(
-                'flex items-center gap-0.5 text-xs font-medium',
-                change >= 0 ? 'text-green-500' : 'text-red-500'
-              )}>
-                <TrendIcon direction={change >= 0 ? 'up' : 'down'} />
-                <span>{Math.abs(change).toFixed(1)}%</span>
-              </div>
-            )}
-          </div>
+          {change !== undefined && (
+            <div className={cn(
+              'flex items-center gap-0.5 text-xs font-medium',
+              change >= 0 ? 'text-green-500' : 'text-red-500'
+            )}>
+              <TrendIcon direction={change >= 0 ? 'up' : 'down'} />
+              <span>{Math.abs(change).toFixed(1)}%</span>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

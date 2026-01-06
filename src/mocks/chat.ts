@@ -99,7 +99,7 @@ Cube 4 is running hot due to the training workload. This is normal but I'm monit
   },
   'configure settings': {
     thinking: 'User wants to configure settings. I should present the main settings categories and offer to help with specific configurations.',
-    response: `I can help you configure your Vault AI system. What would you like to adjust?
+    response: `I can help you configure your Vault AI Systems cluster. What would you like to adjust?
 
 **System Settings:**
 - 🖥️ Resource allocation (training vs. chat)
@@ -142,7 +142,7 @@ What data would you like me to look at?`,
 
 const defaultResponse: MockResponse = {
   thinking: 'Processing the user\'s request. I should provide a helpful and informative response based on the context of a local AI compute appliance.',
-  response: `I understand you're asking about that. As your Vault AI assistant, I'm here to help with:
+  response: `I understand you're asking about that. As your Vault AI Systems assistant, I'm here to help with:
 
 - **Model Management** - Set up, train, and deploy models
 - **Data Operations** - Upload, process, and analyze data

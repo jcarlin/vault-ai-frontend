@@ -19,12 +19,7 @@ export function ThinkingIndicator({ thinking, className }: ThinkingIndicatorProp
   }, []);
 
   return (
-    <div className={cn('flex gap-3', className)}>
-      {/* Avatar */}
-      <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-muted text-muted-foreground text-sm font-medium">
-        V
-      </div>
-
+    <div className={cn('flex', className)}>
       {/* Thinking content */}
       <div className="flex flex-col items-start">
         <button
@@ -76,12 +71,7 @@ export function StreamingMessage({
   metrics?: StreamingMetrics | null;
 }) {
   return (
-    <div className="flex gap-3">
-      {/* Avatar */}
-      <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-muted text-muted-foreground text-sm font-medium">
-        V
-      </div>
-
+    <div className="flex">
       {/* Streaming content */}
       <div className="flex flex-col items-start max-w-[80%]">
         <div className="rounded-2xl rounded-tl-sm px-4 py-2.5 bg-muted">

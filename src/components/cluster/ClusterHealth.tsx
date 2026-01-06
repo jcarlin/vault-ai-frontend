@@ -24,14 +24,14 @@ function AggregateStatus({ status }: { status: ClusterHealthType['aggregateStatu
       <span
         className={cn(
           'inline-block h-2 w-2 rounded-full',
-          status === 'healthy' && 'bg-emerald-500',
+          status === 'healthy' && 'bg-[var(--green-500)]',
           status === 'warning' && 'bg-amber-500 animate-pulse',
           (status === 'error' || status === 'offline') && 'bg-red-500 animate-pulse'
         )}
       />
       <span className={cn(
         'text-sm font-medium',
-        status === 'healthy' && 'text-emerald-500',
+        status === 'healthy' && 'text-[var(--green-500)]',
         status === 'warning' && 'text-amber-500',
         (status === 'error' || status === 'offline') && 'text-red-500'
       )}>
@@ -41,9 +41,15 @@ function AggregateStatus({ status }: { status: ClusterHealthType['aggregateStatu
   );
 }
 
+function getMetricColor(value: number, warningThreshold: number, errorThreshold: number) {
+  if (value >= errorThreshold) return 'bg-red-500';
+  if (value >= warningThreshold) return 'bg-amber-500';
+  return 'bg-[var(--green-500)]';
+}
+
 function MetricBar({ value, color }: { value: number; color: string }) {
   return (
-    <div className="flex-1 h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+    <div className="flex-1 h-1.5 bg-secondary rounded-full overflow-hidden">
       <div
         className={cn('h-full rounded-full', color)}
         style={{ width: `${value}%` }}
@@ -55,9 +61,9 @@ function MetricBar({ value, color }: { value: number; color: string }) {
 function CubeMetricRow({ icon, value, label, color }: { icon: React.ReactNode; value: number; label: string; color: string }) {
   return (
     <div className="flex items-center gap-2 text-xs">
-      <span className="text-zinc-500">{icon}</span>
+      <span className="text-muted-foreground">{icon}</span>
       <MetricBar value={value} color={color} />
-      <span className="text-zinc-400 w-8 text-right">{label}</span>
+      <span className="text-muted-foreground w-8 text-right">{label}</span>
     </div>
   );
 }
@@ -68,14 +74,14 @@ function MiniCubeCard({ cube, onClick }: { cube: CubeMetrics; onClick: () => voi
   return (
     <button
       onClick={onClick}
-      className="p-3 rounded-lg bg-zinc-900 border border-zinc-700/50 hover:border-zinc-600 hover:bg-zinc-900/80 transition-colors text-left"
+      className="p-3 rounded-lg bg-card border border-border hover:border-muted-foreground/30 hover:bg-card/80 transition-colors text-left"
     >
       <div className="flex items-center justify-between mb-2.5">
-        <span className="text-sm font-medium text-zinc-100">{cube.name}</span>
+        <span className="text-sm font-medium text-foreground">{cube.name}</span>
         <span
           className={cn(
             'h-2.5 w-2.5 rounded-full',
-            cube.status === 'healthy' && 'bg-emerald-500',
+            cube.status === 'healthy' && 'bg-[var(--green-500)]',
             cube.status === 'warning' && 'bg-amber-500',
             (cube.status === 'error' || cube.status === 'offline') && 'bg-red-500'
           )}
@@ -86,19 +92,19 @@ function MiniCubeCard({ cube, onClick }: { cube: CubeMetrics; onClick: () => voi
           icon={<TempIcon />}
           value={Math.min(cube.temperature / 100 * 100, 100)}
           label={`${cube.temperature}°`}
-          color="bg-emerald-500"
+          color={getMetricColor(cube.temperature, 70, 85)}
         />
         <CubeMetricRow
           icon={<GpuIcon />}
           value={cube.gpuLoad}
           label={`${cube.gpuLoad}%`}
-          color="bg-emerald-500"
+          color={getMetricColor(cube.gpuLoad, 85, 98)}
         />
         <CubeMetricRow
           icon={<MemIcon />}
           value={memoryPercent}
           label={`${memoryPercent}%`}
-          color="bg-emerald-500"
+          color={getMetricColor(memoryPercent, 80, 95)}
         />
       </div>
     </button>
@@ -156,8 +162,8 @@ export function ClusterHealth({ cluster, compact: _compact }: ClusterHealthProps
       <div className="space-y-4">
         {/* Header */}
         <div>
-          <h3 className="text-sm font-medium text-zinc-100">Cluster Status</h3>
-          <p className="text-xs text-zinc-500 mt-0.5">
+          <h3 className="text-sm font-medium text-foreground">Cluster Status</h3>
+          <p className="text-xs text-muted-foreground mt-0.5">
             {cluster.cubes.length} cubes • {totalMemory}GB VRAM • {avgLoad}% avg load
           </p>
           <div className="mt-2">
@@ -177,14 +183,14 @@ export function ClusterHealth({ cluster, compact: _compact }: ClusterHealthProps
         </div>
 
         {cluster.cubes.length === 0 && (
-          <div className="text-center py-8 text-zinc-500">
+          <div className="text-center py-8 text-muted-foreground">
             <p className="text-sm">No cubes connected</p>
             <p className="text-xs mt-1">Connect hardware to get started</p>
           </div>
         )}
 
         {/* Security footer */}
-        <div className="flex items-center gap-1.5 text-xs text-emerald-500/80 pt-2">
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground pt-2">
           <ShieldIcon />
           <span>Air-gapped • No external network access</span>
         </div>

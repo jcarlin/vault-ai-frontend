@@ -88,7 +88,7 @@ export function SettingsSidebar({ activeCategory, onCategoryChange, developerMod
             )}
           >
             <span className={cn(
-              activeCategory === category.id ? "text-emerald-500" : "text-zinc-500"
+              activeCategory === category.id ? "text-[var(--green-500)]" : "text-zinc-500"
             )}>
               {getCategoryIcon(category.icon)}
             </span>

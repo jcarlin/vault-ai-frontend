@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from 'react';
+import { Coins } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ClusterHealth } from '@/components/cluster';
 import { ChatPanel } from '@/components/chat';
@@ -9,6 +10,7 @@ import { type TrainingJob, type ResourceAllocation } from '@/mocks/training';
 import { type Application } from '@/hooks/useDeveloperMode';
 import { type ChatConversation } from '@/mocks/activity';
 import { type SettingsCategory } from '@/mocks/settings';
+import VaultLogo from '@/assets/vault_logo_color.svg';
 
 type Page = 'dashboard' | 'insights' | 'models' | 'settings' | 'application';
 
@@ -30,23 +32,6 @@ interface DashboardProps {
   onSelectApplication: (app: Application) => void;
   settingsCategory: SettingsCategory;
   onSettingsCategoryChange: (category: SettingsCategory) => void;
-}
-
-function VaultLogo() {
-  return (
-    <div className="w-7 h-7 bg-emerald-500/10 border border-emerald-500/30 rounded flex items-center justify-center">
-      <div className="w-2.5 h-2.5 bg-emerald-500 rounded-sm" />
-    </div>
-  );
-}
-
-function LockIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3.5 w-3.5">
-      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-    </svg>
-  );
 }
 
 function SettingsIcon() {
@@ -76,15 +61,6 @@ function ChartIcon() {
   );
 }
 
-function CubeIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
-      <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-      <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
-      <line x1="12" y1="22.08" x2="12" y2="12" />
-    </svg>
-  );
-}
 
 function HelpIcon() {
   return (
@@ -108,7 +84,7 @@ function LogOutIcon() {
 
 function UserAvatar() {
   return (
-    <div className="h-8 w-8 rounded-full bg-emerald-500/20 flex items-center justify-center text-sm font-medium text-emerald-500">
+    <div className="h-8 w-8 rounded-full bg-secondary border border-border flex items-center justify-center text-sm font-medium text-muted-foreground">
       A
     </div>
   );
@@ -160,7 +136,7 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: () => void 
       onClick={onChange}
       className={cn(
         "relative inline-flex h-5 w-9 items-center rounded-full transition-colors",
-        checked ? 'bg-purple-600' : 'bg-zinc-700'
+        checked ? 'bg-purple-600' : 'bg-secondary'
       )}
     >
       <span
@@ -176,7 +152,7 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: () => void 
 
 export function Dashboard({
   cluster,
-  trainingJobs: _trainingJobs,
+  trainingJobs,
   activeJob,
   allocation,
   onAllocationChange: _onAllocationChange,
@@ -193,7 +169,7 @@ export function Dashboard({
   settingsCategory,
   onSettingsCategoryChange,
 }: DashboardProps) {
-  void _trainingJobs;
+  void activeJob;
   void _onAllocationChange;
   const [showClusterPanel, setShowClusterPanel] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -230,7 +206,7 @@ export function Dashboard({
   const isSettingsPage = currentPage === 'settings';
 
   return (
-    <div className="h-screen flex bg-zinc-950 text-zinc-100">
+    <div className="h-screen flex bg-background text-foreground">
       {/* Mobile sidebar overlay */}
       {showSidebar && showMobileSidebar && (
         <div
@@ -242,23 +218,22 @@ export function Dashboard({
       {/* Sidebar - full height, includes logo or back button */}
       {showSidebar && (
         <div className={cn(
-          "fixed inset-y-0 left-0 z-50 w-64 flex flex-col bg-zinc-900 border-r border-zinc-800/50 transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0",
+          "fixed inset-y-0 left-0 z-50 w-64 flex flex-col bg-card border-r border-border transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0",
           showMobileSidebar ? "translate-x-0" : "-translate-x-full"
         )}>
           {/* Header in sidebar - Logo or Back button */}
-          <div className="h-14 flex items-center gap-2.5 px-4 border-b border-zinc-800/50 flex-shrink-0">
+          <div className="h-14 flex items-center gap-2.5 px-4 border-b border-border flex-shrink-0">
             {isSettingsPage ? (
               <button
                 onClick={() => onNavigate('dashboard')}
-                className="flex items-center gap-2 text-sm text-zinc-400 hover:text-zinc-100 transition-colors"
+                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
                 <ArrowLeftIcon />
                 <span>Back to Chat</span>
               </button>
             ) : (
               <>
-                <VaultLogo />
-                <span className="font-semibold tracking-tight text-zinc-100">Vault AI</span>
+                <img src={VaultLogo} alt="Vault AI Systems" className="h-6" />
                 {developerMode && (
                   <span className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-purple-500/20 text-purple-400">
                     <CodeIcon />
@@ -277,7 +252,7 @@ export function Dashboard({
             />
           ) : (
             <Sidebar
-              activeJob={activeJob}
+              trainingJobs={trainingJobs}
               onPauseJob={onPauseJob}
               onResumeJob={onResumeJob}
               onCancelJob={onCancelJob}
@@ -298,13 +273,13 @@ export function Dashboard({
       {/* Main content area (header + content) */}
       <div className="flex-1 flex flex-col min-h-0 min-w-0">
         {/* Header - only spans content area */}
-        <header className="h-14 border-b border-zinc-800/50 flex items-center justify-between px-4 flex-shrink-0 bg-zinc-950">
+        <header className="h-14 border-b border-border flex items-center justify-between px-4 flex-shrink-0 bg-background">
           <div className="flex items-center gap-3">
             {/* Mobile menu button */}
             {showSidebar && (
               <button
                 onClick={() => setShowMobileSidebar(!showMobileSidebar)}
-                className="lg:hidden p-1.5 -ml-1.5 rounded-lg hover:bg-zinc-800/50 transition-colors"
+                className="lg:hidden p-1.5 -ml-1.5 rounded-lg hover:bg-secondary/50 transition-colors"
               >
                 {showMobileSidebar ? <CloseIcon /> : <MenuIcon />}
               </button>
@@ -312,16 +287,16 @@ export function Dashboard({
 
             {/* View switcher or Settings title */}
             {isSettingsPage ? (
-              <h1 className="text-base font-semibold text-zinc-100">Settings</h1>
+              <h1 className="text-base font-semibold text-foreground">Settings</h1>
             ) : (
-              <div className="flex rounded-lg border border-zinc-800/50 p-0.5">
+              <div className="flex rounded-lg border border-border p-0.5">
                 <button
                   onClick={() => onNavigate('dashboard')}
                   className={cn(
                     "flex items-center gap-1.5 h-7 px-2 sm:px-3 rounded-md text-xs font-medium transition-colors",
                     currentPage === 'dashboard'
-                      ? "bg-zinc-800 text-zinc-100"
-                      : "text-zinc-500 hover:text-zinc-300"
+                      ? "bg-secondary text-foreground"
+                      : "text-muted-foreground hover:text-foreground/80"
                   )}
                 >
                   <MessageIcon />
@@ -332,8 +307,8 @@ export function Dashboard({
                   className={cn(
                     "flex items-center gap-1.5 h-7 px-2 sm:px-3 rounded-md text-xs font-medium transition-colors",
                     currentPage === 'insights'
-                      ? "bg-zinc-800 text-zinc-100"
-                      : "text-zinc-500 hover:text-zinc-300"
+                      ? "bg-secondary text-foreground"
+                      : "text-muted-foreground hover:text-foreground/80"
                   )}
                 >
                   <ChartIcon />
@@ -344,33 +319,36 @@ export function Dashboard({
                   className={cn(
                     "flex items-center gap-1.5 h-7 px-2 sm:px-3 rounded-md text-xs font-medium transition-colors",
                     currentPage === 'models'
-                      ? "bg-zinc-800 text-zinc-100"
-                      : "text-zinc-500 hover:text-zinc-300"
+                      ? "bg-secondary text-foreground"
+                      : "text-muted-foreground hover:text-foreground/80"
                   )}
                 >
-                  <CubeIcon />
+                  <Coins className="h-4 w-4" />
                   <span className="hidden sm:inline">Models</span>
                 </button>
               </div>
             )}
           </div>
 
-          <div className="flex items-center gap-1 sm:gap-2">
+          <div className="flex items-center gap-2 sm:gap-3">
             {/* Cluster status & Security */}
             <button
               className={cn(
                 "flex items-center gap-2 sm:gap-3 text-sm px-2 sm:px-3 py-1.5 rounded-lg transition-colors",
-                showClusterPanel ? "bg-zinc-800/50" : "hover:bg-zinc-800/50"
+                showClusterPanel ? "bg-secondary/50" : "hover:bg-secondary/50"
               )}
               onClick={() => setShowClusterPanel(!showClusterPanel)}
             >
               <div className="flex items-center gap-1.5 sm:gap-2">
-                <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                <span className="text-zinc-400 hidden sm:inline">{cluster.cubes.length} cubes</span>
+                <span className={cn(
+                  "h-2 w-2 rounded-full",
+                  cluster.aggregateStatus === 'healthy' && 'bg-[var(--green-500)]',
+                  cluster.aggregateStatus === 'warning' && 'bg-amber-500',
+                  (cluster.aggregateStatus === 'error' || cluster.aggregateStatus === 'offline') && 'bg-red-500'
+                )} />
+                <span className="text-muted-foreground hidden sm:inline">{cluster.cubes.length} cubes</span>
               </div>
-              <div className="flex items-center gap-1 sm:gap-1.5 text-zinc-500">
-                <LockIcon />
-                <span className="hidden md:inline">Secure</span>
+              <div className="flex items-center text-muted-foreground">
                 <svg
                   viewBox="0 0 24 24"
                   fill="none"
@@ -390,7 +368,7 @@ export function Dashboard({
             <div className="relative">
               <button
                 onClick={() => setShowUserMenu(!showUserMenu)}
-                className="p-1 rounded-lg hover:bg-zinc-800/50 transition-colors"
+                className="p-1 rounded-lg hover:bg-secondary/50 transition-colors"
               >
                 <UserAvatar />
               </button>
@@ -401,39 +379,39 @@ export function Dashboard({
                     className="fixed inset-0 z-40"
                     onClick={() => setShowUserMenu(false)}
                   />
-                  <div className="absolute right-0 top-full mt-2 w-56 bg-zinc-800 border border-zinc-700 rounded-lg shadow-lg z-50 py-1">
+                  <div className="absolute right-0 top-full mt-2 w-56 bg-secondary border border-border rounded-lg shadow-lg z-50 py-1">
                     {/* Developer Mode Toggle */}
                     <div className="px-4 py-2.5 flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <span className={developerMode ? "text-purple-400" : "text-zinc-500"}>
+                        <span className={developerMode ? "text-purple-400" : "text-muted-foreground"}>
                           <CodeIcon />
                         </span>
-                        <span className="text-sm text-zinc-300">Advanced Mode</span>
+                        <span className="text-sm text-foreground/80">Advanced Mode</span>
                       </div>
                       <Toggle checked={developerMode} onChange={handleToggleDeveloperMode} />
                     </div>
-                    <div className="border-t border-zinc-700 my-1" />
+                    <div className="border-t border-border my-1" />
                     <button
                       onClick={() => {
                         onNavigate('settings');
                         setShowUserMenu(false);
                       }}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-700 hover:text-zinc-100 transition-colors"
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/80 hover:bg-card hover:text-foreground transition-colors"
                     >
                       <SettingsIcon />
                       Settings
                     </button>
                     <button
                       onClick={() => setShowUserMenu(false)}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-700 hover:text-zinc-100 transition-colors"
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/80 hover:bg-card hover:text-foreground transition-colors"
                     >
                       <HelpIcon />
                       Help
                     </button>
-                    <div className="border-t border-zinc-700 my-1" />
+                    <div className="border-t border-border my-1" />
                     <button
                       onClick={() => setShowUserMenu(false)}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-700 hover:text-zinc-100 transition-colors"
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/80 hover:bg-card hover:text-foreground transition-colors"
                     >
                       <LogOutIcon />
                       Sign Out
@@ -446,7 +424,7 @@ export function Dashboard({
         </header>
 
         {/* Main content */}
-        <main className="flex-1 flex flex-col min-h-0 relative bg-zinc-950">
+        <main className="flex-1 flex flex-col min-h-0 relative bg-background">
           {children ? (
             children
           ) : (
@@ -460,7 +438,7 @@ export function Dashboard({
                 className="fixed inset-0 z-40"
                 onClick={() => setShowClusterPanel(false)}
               />
-              <div className="fixed top-14 right-2 sm:right-4 z-50 w-[calc(100%-1rem)] sm:w-80 max-w-sm bg-zinc-800 border border-zinc-700 rounded-lg shadow-lg">
+              <div className="fixed top-14 right-2 sm:right-4 z-50 w-[calc(100%-1rem)] sm:w-80 max-w-sm bg-secondary border border-border rounded-lg shadow-lg">
                 <div className="p-4">
                   <ClusterHealth cluster={cluster} />
                 </div>
@@ -477,20 +455,20 @@ export function Dashboard({
             className="fixed inset-0 z-50 bg-black/50"
             onClick={() => setShowDevModeConfirm(false)}
           />
-          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md bg-zinc-800 border border-zinc-700 rounded-lg shadow-lg p-6">
+          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md bg-secondary border border-border rounded-lg shadow-lg p-6">
             <div className="flex items-center gap-3 mb-4">
               <div className="p-2 rounded-lg bg-purple-500/20 text-purple-400">
                 <CodeIcon />
               </div>
-              <h2 className="text-lg font-semibold text-zinc-100">Enable Advanced Mode?</h2>
+              <h2 className="text-lg font-semibold text-foreground">Enable Advanced Mode?</h2>
             </div>
-            <p className="text-sm text-zinc-400 mb-6">
+            <p className="text-sm text-muted-foreground mb-6">
               This will show additional development tools including Python Console, Jupyter Notebooks, Terminal, and system diagnostics. These features are intended for developers and system administrators.
             </p>
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setShowDevModeConfirm(false)}
-                className="px-4 py-2 rounded-lg border border-zinc-600 text-zinc-300 text-sm hover:bg-zinc-700 transition-colors"
+                className="px-4 py-2 rounded-lg border border-border text-foreground/80 text-sm hover:bg-card transition-colors"
               >
                 Cancel
               </button>

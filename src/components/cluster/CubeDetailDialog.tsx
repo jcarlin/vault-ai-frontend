@@ -27,6 +27,46 @@ interface MetricRowProps {
   unit?: string;
   warningThreshold?: number;
   errorThreshold?: number;
+  icon?: React.ReactNode;
+}
+
+function TempIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
+      <path d="M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z" />
+    </svg>
+  );
+}
+
+function GpuIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
+      <rect x="4" y="4" width="16" height="16" rx="2" />
+      <rect x="9" y="9" width="6" height="6" />
+    </svg>
+  );
+}
+
+function MemIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
+      <rect x="2" y="6" width="20" height="12" rx="2" />
+      <path d="M6 6V4" />
+      <path d="M10 6V4" />
+      <path d="M14 6V4" />
+      <path d="M18 6V4" />
+    </svg>
+  );
+}
+
+function CpuIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
+      <rect x="4" y="4" width="16" height="16" rx="2" />
+      <rect x="9" y="9" width="6" height="6" />
+      <path d="M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 14h3M1 9h3M1 14h3" />
+    </svg>
+  );
 }
 
 function MetricRow({
@@ -36,6 +76,7 @@ function MetricRow({
   unit = '%',
   warningThreshold = 80,
   errorThreshold = 95,
+  icon,
 }: MetricRowProps) {
   const percentage = (value / max) * 100;
   const isWarning = percentage >= warningThreshold && percentage < errorThreshold;
@@ -44,14 +85,11 @@ function MetricRow({
   return (
     <div className="space-y-1">
       <div className="flex justify-between text-sm">
-        <span className="text-zinc-400">{label}</span>
-        <span
-          className={cn(
-            'font-medium text-zinc-100',
-            isWarning && 'text-amber-500',
-            isError && 'text-red-500'
-          )}
-        >
+        <span className="text-zinc-400 flex items-center gap-2">
+          {icon && <span className="text-zinc-500">{icon}</span>}
+          {label}
+        </span>
+        <span className="font-medium text-zinc-100">
           {value}
           {unit}
           {max !== 100 && ` / ${max}${unit}`}
@@ -61,8 +99,9 @@ function MetricRow({
         value={percentage}
         className={cn(
           'h-1.5',
-          isWarning && '[&>div]:bg-amber-500',
-          isError && '[&>div]:bg-red-500'
+          !isWarning && !isError && 'bg-emerald-500/20 [&>div]:bg-emerald-500',
+          isWarning && 'bg-amber-500/20 [&>div]:bg-amber-500',
+          isError && 'bg-red-500/20 [&>div]:bg-red-500'
         )}
       />
     </div>
@@ -76,13 +115,13 @@ export function CubeDetailDialog({ cube, open, onClose }: CubeDetailDialogProps)
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <div className="flex items-center justify-between pr-6">
+          <div className="flex items-center gap-2">
             <DialogTitle>{cube.name}</DialogTitle>
             <Badge
               variant="secondary"
               className={cn(
                 cube.status === 'healthy' &&
-                  'bg-green-500/10 text-green-500',
+                  'bg-emerald-500/10 text-emerald-400',
                 cube.status === 'warning' &&
                   'bg-amber-500/10 text-amber-500',
                 (cube.status === 'error' || cube.status === 'offline') &&
@@ -99,19 +138,24 @@ export function CubeDetailDialog({ cube, open, onClose }: CubeDetailDialogProps)
 
         <div className="space-y-4 mt-2">
           <MetricRow
-            label="CPU Utilization"
-            value={cube.cpuLoad}
-            warningThreshold={80}
-            errorThreshold={95}
+            label="Temperature"
+            icon={<TempIcon />}
+            value={cube.temperature}
+            max={100}
+            unit="°C"
+            warningThreshold={70}
+            errorThreshold={85}
           />
           <MetricRow
             label="GPU Utilization"
+            icon={<GpuIcon />}
             value={cube.gpuLoad}
             warningThreshold={85}
             errorThreshold={98}
           />
           <MetricRow
             label="Memory Usage"
+            icon={<MemIcon />}
             value={cube.memoryUsed}
             max={cube.memoryTotal}
             unit=" GB"
@@ -119,12 +163,11 @@ export function CubeDetailDialog({ cube, open, onClose }: CubeDetailDialogProps)
             errorThreshold={95}
           />
           <MetricRow
-            label="Temperature"
-            value={cube.temperature}
-            max={100}
-            unit="°C"
-            warningThreshold={70}
-            errorThreshold={85}
+            label="CPU Utilization"
+            icon={<CpuIcon />}
+            value={cube.cpuLoad}
+            warningThreshold={80}
+            errorThreshold={95}
           />
 
           {cube.currentTask && (

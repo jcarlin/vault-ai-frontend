@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from 'react';
+import { Copy, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { type ChatMessage as ChatMessageType } from '@/mocks/chat';
 
@@ -235,7 +236,7 @@ function MarkdownContent({ content }: { content: string }) {
   return <div className="space-y-1">{renderMarkdown(content)}</div>;
 }
 
-function ThinkingPanel({ thinking }: { thinking: ChatMessageType['thinking'] }) {
+function ThinkingPanel({ thinking, timestamp }: { thinking: ChatMessageType['thinking']; timestamp?: number }) {
   const [expanded, setExpanded] = useState(false);
 
   if (!thinking) return null;
@@ -256,6 +257,12 @@ function ThinkingPanel({ thinking }: { thinking: ChatMessageType['thinking'] }) 
           <polyline points="9 18 15 12 9 6" />
         </svg>
         <span>Thought for {(thinking.durationMs / 1000).toFixed(1)}s</span>
+        {timestamp && (
+          <>
+            <span className="text-muted-foreground/50 mx-1">•</span>
+            <span>{formatTime(timestamp)}</span>
+          </>
+        )}
       </button>
       {expanded && (
         <div className="mt-2 pl-4 border-l-2 border-muted text-sm text-muted-foreground italic">
@@ -287,27 +294,24 @@ function GenerationStatsDisplay({ stats }: { stats: ChatMessageType['generationS
 
 export function ChatMessage({ message }: ChatMessageProps) {
   const isUser = message.role === 'user';
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(message.content);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   return (
-    <div className={cn('flex gap-3', isUser ? 'flex-row-reverse' : 'flex-row')}>
-      {/* Avatar */}
-      <div
-        className={cn(
-          'flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium',
-          isUser ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
-        )}
-      >
-        {isUser ? 'U' : 'V'}
-      </div>
-
+    <div className={cn('flex', isUser ? 'justify-end' : 'justify-start')}>
       {/* Message content */}
       <div className={cn('flex flex-col max-w-[80%]', isUser ? 'items-end' : 'items-start')}>
-        {!isUser && message.thinking && <ThinkingPanel thinking={message.thinking} />}
+        {!isUser && message.thinking && <ThinkingPanel thinking={message.thinking} timestamp={message.timestamp} />}
         <div
           className={cn(
             'rounded-2xl px-4 py-2.5',
             isUser
-              ? 'bg-primary text-primary-foreground rounded-tr-sm'
+              ? 'bg-blue-500/15 text-foreground rounded-tr-sm'
               : 'bg-muted rounded-tl-sm'
           )}
         >
@@ -319,10 +323,20 @@ export function ChatMessage({ message }: ChatMessageProps) {
             </div>
           )}
         </div>
-        <div className="flex items-center gap-2 px-1">
-          <span className="text-xs text-muted-foreground mt-1">
-            {formatTime(message.timestamp)}
-          </span>
+        <div className="flex items-center gap-2 pt-1 mt-2">
+          {!isUser && (
+            <button
+              onClick={handleCopy}
+              className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+            >
+              {copied ? <Check className="h-5 w-5" /> : <Copy className="h-5 w-5" />}
+            </button>
+          )}
+          {(isUser || !message.thinking) && (
+            <span className="text-xs text-muted-foreground">
+              {formatTime(message.timestamp)}
+            </span>
+          )}
           {!isUser && message.generationStats && (
             <GenerationStatsDisplay stats={message.generationStats} />
           )}
