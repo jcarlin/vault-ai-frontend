@@ -41,6 +41,12 @@ function AggregateStatus({ status }: { status: ClusterHealthType['aggregateStatu
   );
 }
 
+function getMetricColor(value: number, warningThreshold: number, errorThreshold: number) {
+  if (value >= errorThreshold) return 'bg-red-500';
+  if (value >= warningThreshold) return 'bg-amber-500';
+  return 'bg-[var(--green-500)]';
+}
+
 function MetricBar({ value, color }: { value: number; color: string }) {
   return (
     <div className="flex-1 h-1.5 bg-secondary rounded-full overflow-hidden">
@@ -86,19 +92,19 @@ function MiniCubeCard({ cube, onClick }: { cube: CubeMetrics; onClick: () => voi
           icon={<TempIcon />}
           value={Math.min(cube.temperature / 100 * 100, 100)}
           label={`${cube.temperature}°`}
-          color="bg-[var(--green-500)]"
+          color={getMetricColor(cube.temperature, 70, 85)}
         />
         <CubeMetricRow
           icon={<GpuIcon />}
           value={cube.gpuLoad}
           label={`${cube.gpuLoad}%`}
-          color="bg-[var(--green-500)]"
+          color={getMetricColor(cube.gpuLoad, 85, 98)}
         />
         <CubeMetricRow
           icon={<MemIcon />}
           value={memoryPercent}
           label={`${memoryPercent}%`}
-          color="bg-[var(--green-500)]"
+          color={getMetricColor(memoryPercent, 80, 95)}
         />
       </div>
     </button>
