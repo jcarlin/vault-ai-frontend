@@ -138,11 +138,13 @@ export function CubeDetailDialog({ cube, open, onClose }: CubeDetailDialogProps)
 
         <div className="space-y-4 mt-2">
           <MetricRow
-            label="CPU Utilization"
-            icon={<CpuIcon />}
-            value={cube.cpuLoad}
-            warningThreshold={80}
-            errorThreshold={95}
+            label="Temperature"
+            icon={<TempIcon />}
+            value={cube.temperature}
+            max={100}
+            unit="°C"
+            warningThreshold={70}
+            errorThreshold={85}
           />
           <MetricRow
             label="GPU Utilization"
@@ -161,13 +163,11 @@ export function CubeDetailDialog({ cube, open, onClose }: CubeDetailDialogProps)
             errorThreshold={95}
           />
           <MetricRow
-            label="Temperature"
-            icon={<TempIcon />}
-            value={cube.temperature}
-            max={100}
-            unit="°C"
-            warningThreshold={70}
-            errorThreshold={85}
+            label="CPU Utilization"
+            icon={<CpuIcon />}
+            value={cube.cpuLoad}
+            warningThreshold={80}
+            errorThreshold={95}
           />
 
           {cube.currentTask && (
