@@ -362,7 +362,6 @@ export function Dashboard({
               </div>
               <div className="flex items-center gap-1 sm:gap-1.5 text-muted-foreground">
                 <LockIcon />
-                <span className="hidden md:inline">Secure</span>
                 <svg
                   viewBox="0 0 24 24"
                   fill="none"
