@@ -185,7 +185,9 @@ export function ChatInput({ onSend, disabled, placeholder, selectedModel, onMode
           disabled={disabled || !value.trim()}
           className={cn(
             'p-2 rounded-lg transition-colors',
-            'bg-secondary text-muted-foreground hover:text-foreground hover:bg-card',
+            value.trim()
+              ? 'bg-blue-500/15 text-blue-500 hover:bg-blue-500/25'
+              : 'text-muted-foreground',
             'disabled:opacity-50 disabled:cursor-not-allowed'
           )}
         >
