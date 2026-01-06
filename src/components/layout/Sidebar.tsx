@@ -164,7 +164,7 @@ function SidebarTrainingProgress({ job, onPause, onResume, onCancel, onViewDetai
             "text-[10px] font-medium uppercase tracking-wide",
             isPaused
               ? "text-amber-500"
-              : "text-emerald-500"
+              : "text-[var(--green-500)]"
           )}>
             {job.status}
           </span>
@@ -179,7 +179,7 @@ function SidebarTrainingProgress({ job, onPause, onResume, onCancel, onViewDetai
             <div
               className={cn(
                 "h-full rounded-full transition-all",
-                isPaused ? "bg-amber-500" : "bg-emerald-500"
+                isPaused ? "bg-amber-500" : "bg-[var(--green-500)]"
               )}
               style={{ width: `${job.progress}%` }}
             />

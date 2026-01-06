@@ -35,15 +35,15 @@ export function NetworkSettings() {
       {/* Status banner */}
       <div className={cn(
         "flex items-center gap-3 p-4 rounded-lg",
-        isConnected ? "bg-emerald-500/10 border border-emerald-500/20" : "bg-red-500/10 border border-red-500/20"
+        isConnected ? "bg-[var(--green-500)]/10 border border-[var(--green-500)]/20" : "bg-red-500/10 border border-red-500/20"
       )}>
-        <span className={isConnected ? "text-emerald-500" : "text-red-500"}>
+        <span className={isConnected ? "text-[var(--green-500)]" : "text-red-500"}>
           <CheckCircleIcon />
         </span>
         <div>
           <p className={cn(
             "text-sm font-medium",
-            isConnected ? "text-emerald-500" : "text-red-500"
+            isConnected ? "text-[var(--green-500)]" : "text-red-500"
           )}>
             {isConnected ? 'Network is configured correctly' : 'Network connection issue'}
           </p>

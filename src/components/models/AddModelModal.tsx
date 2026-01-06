@@ -200,7 +200,7 @@ export function AddModelModal({ open, onClose, onAddModel }: AddModelModalProps)
               </>
             ) : uploadedFile ? (
               <>
-                <span className="text-emerald-500"><CheckIcon /></span>
+                <span className="text-[var(--green-500)]"><CheckIcon /></span>
                 <span className="text-sm text-zinc-400">Uploaded: {uploadedFile}</span>
               </>
             ) : (
@@ -247,7 +247,7 @@ export function AddModelModal({ open, onClose, onAddModel }: AddModelModalProps)
                     className={cn(
                       "flex items-center gap-1.5 h-8 px-3 rounded-lg text-xs font-medium transition-colors",
                       isDownloaded
-                        ? "bg-emerald-500/20 text-emerald-500 cursor-default"
+                        ? "bg-[var(--green-500)]/20 text-[var(--green-500)] cursor-default"
                         : isDownloading
                         ? "bg-zinc-700 text-zinc-400 cursor-wait"
                         : "bg-zinc-700 text-zinc-100 hover:bg-zinc-600"

@@ -52,7 +52,7 @@ function UploadingFileItem({ file }: { file: UploadedFile }) {
     <div className="flex items-center gap-3 p-3 rounded-lg bg-zinc-800/50">
       <div className={cn(
         "p-2 rounded-lg",
-        isComplete ? "bg-emerald-500/20 text-emerald-500" :
+        isComplete ? "bg-[var(--green-500)]/20 text-[var(--green-500)]" :
         isError ? "bg-red-500/20 text-red-500" :
         "bg-zinc-700 text-zinc-400"
       )}>
@@ -66,7 +66,7 @@ function UploadingFileItem({ file }: { file: UploadedFile }) {
         <div className="w-20">
           <div className="h-1.5 bg-zinc-700 rounded-full overflow-hidden">
             <div
-              className="h-full bg-emerald-500 rounded-full transition-all duration-300"
+              className="h-full bg-[var(--green-500)] rounded-full transition-all duration-300"
               style={{ width: `${file.progress}%` }}
             />
           </div>
@@ -74,7 +74,7 @@ function UploadingFileItem({ file }: { file: UploadedFile }) {
         </div>
       )}
       {isComplete && (
-        <span className="text-xs text-emerald-500">Complete</span>
+        <span className="text-xs text-[var(--green-500)]">Complete</span>
       )}
       {isError && (
         <span className="text-xs text-red-500">Failed</span>
@@ -143,7 +143,7 @@ export function UploadDropzone({ onFilesSelected, uploading = [], disabled, clas
         className={cn(
           "relative border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all",
           isDragging
-            ? "border-emerald-500 bg-emerald-500/10"
+            ? "border-[var(--green-500)] bg-[var(--green-500)]/10"
             : "border-zinc-700 hover:border-zinc-600 hover:bg-zinc-800/30",
           disabled && "opacity-50 cursor-not-allowed"
         )}
@@ -160,7 +160,7 @@ export function UploadDropzone({ onFilesSelected, uploading = [], disabled, clas
 
         <div className={cn(
           "mx-auto w-12 h-12 rounded-full flex items-center justify-center mb-4",
-          isDragging ? "bg-emerald-500/20 text-emerald-500" : "bg-zinc-800 text-zinc-400"
+          isDragging ? "bg-[var(--green-500)]/20 text-[var(--green-500)]" : "bg-zinc-800 text-zinc-400"
         )}>
           <UploadIcon />
         </div>
@@ -181,7 +181,7 @@ export function UploadDropzone({ onFilesSelected, uploading = [], disabled, clas
         </div>
       )}
 
-      <div className="flex items-center justify-center gap-1.5 text-xs text-emerald-500/80">
+      <div className="flex items-center justify-center gap-1.5 text-xs text-[var(--green-500)]/80">
         <ShieldIcon />
         <span>Your data stays on this device</span>
       </div>

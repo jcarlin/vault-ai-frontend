@@ -98,7 +98,7 @@ export function UploadModal({ open, onClose, onUploadComplete }: UploadModalProp
           <div className="flex justify-end">
             <button
               onClick={handleClose}
-              className="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-500 transition-colors"
+              className="px-4 py-2 rounded-lg bg-[var(--green-600)] text-white text-sm font-medium hover:bg-[var(--green-500)] transition-colors"
             >
               Done
             </button>

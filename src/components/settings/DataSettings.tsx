@@ -142,7 +142,7 @@ export function DataSettings({ onSave }: DataSettingsProps) {
               "h-full rounded-full transition-all",
               percentage >= 90 ? "bg-red-500" :
               percentage >= 70 ? "bg-amber-500" :
-              "bg-emerald-500"
+              "bg-[var(--green-500)]"
             )}
             style={{ width: `${percentage}%` }}
           />

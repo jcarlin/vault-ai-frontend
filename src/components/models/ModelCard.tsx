@@ -43,7 +43,7 @@ export function ModelCard({ model, onClick }: ModelCardProps) {
       <div className="flex items-start gap-3">
         <div className={cn(
           "p-2 rounded-lg",
-          isCustom ? "bg-purple-500/20 text-purple-400" : "bg-emerald-500/20 text-emerald-500"
+          isCustom ? "bg-purple-500/20 text-purple-400" : "bg-[var(--green-500)]/20 text-[var(--green-500)]"
         )}>
           <CubeIcon />
         </div>

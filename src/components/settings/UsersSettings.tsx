@@ -39,7 +39,7 @@ function getRoleBadgeStyles(role: UserRole) {
     case 'admin':
       return 'bg-purple-500/20 text-purple-400';
     case 'user':
-      return 'bg-emerald-500/20 text-emerald-400';
+      return 'bg-[var(--green-500)]/20 text-[var(--green-400)]';
     case 'viewer':
       return 'bg-zinc-500/20 text-zinc-400';
   }
@@ -128,7 +128,7 @@ function UserFormDialog({
               type="text"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-100 text-sm focus:outline-none focus:border-emerald-500"
+              className="w-full px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-100 text-sm focus:outline-none focus:border-[var(--green-500)]"
               required
             />
           </div>
@@ -138,7 +138,7 @@ function UserFormDialog({
               type="email"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              className="w-full px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-100 text-sm focus:outline-none focus:border-emerald-500"
+              className="w-full px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-100 text-sm focus:outline-none focus:border-[var(--green-500)]"
               required
             />
           </div>
@@ -147,7 +147,7 @@ function UserFormDialog({
             <select
               value={formData.role}
               onChange={(e) => setFormData({ ...formData, role: e.target.value as UserRole })}
-              className="w-full px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-100 text-sm focus:outline-none focus:border-emerald-500"
+              className="w-full px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-100 text-sm focus:outline-none focus:border-[var(--green-500)]"
             >
               <option value="admin">Admin</option>
               <option value="user">User</option>
@@ -164,7 +164,7 @@ function UserFormDialog({
             </button>
             <button
               type="submit"
-              className="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-500 transition-colors"
+              className="px-4 py-2 rounded-lg bg-[var(--green-600)] text-white text-sm font-medium hover:bg-[var(--green-500)] transition-colors"
             >
               {initialData ? 'Save Changes' : 'Add User'}
             </button>
@@ -216,7 +216,7 @@ export function UsersSettings({ onSave }: UsersSettingsProps) {
         </div>
         <button
           onClick={() => setShowAddDialog(true)}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-500 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--green-600)] text-white text-sm font-medium hover:bg-[var(--green-500)] transition-colors"
         >
           <PlusIcon />
           Add User
@@ -243,7 +243,7 @@ export function UsersSettings({ onSave }: UsersSettingsProps) {
         <h3 className="text-sm font-medium text-zinc-400 mb-3">Role Permissions</h3>
         <div className="space-y-2 text-xs text-zinc-500">
           <p><span className="text-purple-400 font-medium">Admin:</span> Full system access, user management, settings</p>
-          <p><span className="text-emerald-400 font-medium">User:</span> Run queries, upload data, train models</p>
+          <p><span className="text-[var(--green-400)] font-medium">User:</span> Run queries, upload data, train models</p>
           <p><span className="text-zinc-400 font-medium">Viewer:</span> View-only access, no modifications</p>
         </div>
       </div>

@@ -44,7 +44,7 @@ export function SettingsPage({ activeCategory, onRestartSetup }: SettingsPagePro
 
       {/* Save toast */}
       {saveMessage && (
-        <div className="fixed bottom-4 right-4 px-4 py-2 bg-emerald-600 text-white text-sm rounded-lg shadow-lg animate-in fade-in slide-in-from-bottom-2">
+        <div className="fixed bottom-4 right-4 px-4 py-2 bg-[var(--green-600)] text-white text-sm rounded-lg shadow-lg animate-in fade-in slide-in-from-bottom-2">
           {saveMessage}
         </div>
       )}

@@ -24,14 +24,14 @@ function AggregateStatus({ status }: { status: ClusterHealthType['aggregateStatu
       <span
         className={cn(
           'inline-block h-2 w-2 rounded-full',
-          status === 'healthy' && 'bg-emerald-500',
+          status === 'healthy' && 'bg-[var(--green-500)]',
           status === 'warning' && 'bg-amber-500 animate-pulse',
           (status === 'error' || status === 'offline') && 'bg-red-500 animate-pulse'
         )}
       />
       <span className={cn(
         'text-sm font-medium',
-        status === 'healthy' && 'text-emerald-500',
+        status === 'healthy' && 'text-[var(--green-500)]',
         status === 'warning' && 'text-amber-500',
         (status === 'error' || status === 'offline') && 'text-red-500'
       )}>
@@ -75,7 +75,7 @@ function MiniCubeCard({ cube, onClick }: { cube: CubeMetrics; onClick: () => voi
         <span
           className={cn(
             'h-2.5 w-2.5 rounded-full',
-            cube.status === 'healthy' && 'bg-emerald-500',
+            cube.status === 'healthy' && 'bg-[var(--green-500)]',
             cube.status === 'warning' && 'bg-amber-500',
             (cube.status === 'error' || cube.status === 'offline') && 'bg-red-500'
           )}
@@ -86,19 +86,19 @@ function MiniCubeCard({ cube, onClick }: { cube: CubeMetrics; onClick: () => voi
           icon={<TempIcon />}
           value={Math.min(cube.temperature / 100 * 100, 100)}
           label={`${cube.temperature}°`}
-          color="bg-emerald-500"
+          color="bg-[var(--green-500)]"
         />
         <CubeMetricRow
           icon={<GpuIcon />}
           value={cube.gpuLoad}
           label={`${cube.gpuLoad}%`}
-          color="bg-emerald-500"
+          color="bg-[var(--green-500)]"
         />
         <CubeMetricRow
           icon={<MemIcon />}
           value={memoryPercent}
           label={`${memoryPercent}%`}
-          color="bg-emerald-500"
+          color="bg-[var(--green-500)]"
         />
       </div>
     </button>

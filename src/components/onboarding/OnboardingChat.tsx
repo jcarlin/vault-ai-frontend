@@ -106,7 +106,7 @@ function ClusterScanAnimation({ onComplete }: { onComplete: (cubes: number) => v
     <div className="py-4 space-y-4">
       <div className="flex items-center gap-3">
         <div className="relative">
-          <div className="h-10 w-10 rounded-full border-2 border-emerald-500/30 border-t-emerald-500 animate-spin" />
+          <div className="h-10 w-10 rounded-full border-2 border-[var(--green-500)]/30 border-t-[var(--green-500)] animate-spin" />
         </div>
         <span className="text-sm text-muted-foreground">
           {stage === 0 && 'Initializing scan...'}
@@ -124,13 +124,13 @@ function ClusterScanAnimation({ onComplete }: { onComplete: (cubes: number) => v
             className={cn(
               'h-16 w-16 rounded-xl border-2 flex items-center justify-center transition-all duration-500',
               cubesFound >= cube
-                ? 'border-emerald-500 bg-emerald-500/10'
+                ? 'border-[var(--green-500)] bg-[var(--green-500)]/10'
                 : 'border-border bg-card/50'
             )}
           >
             <svg viewBox="0 0 24 24" fill="none" className={cn(
               'h-8 w-8 transition-colors duration-500',
-              cubesFound >= cube ? 'text-emerald-500' : 'text-muted-foreground/30'
+              cubesFound >= cube ? 'text-[var(--green-500)]' : 'text-muted-foreground/30'
             )}>
               <path
                 d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"
@@ -143,7 +143,7 @@ function ClusterScanAnimation({ onComplete }: { onComplete: (cubes: number) => v
       </div>
 
       {cubesFound > 0 && (
-        <p className="text-sm text-emerald-500">
+        <p className="text-sm text-[var(--green-500)]">
           {cubesFound} cube{cubesFound > 1 ? 's' : ''} detected
         </p>
       )}

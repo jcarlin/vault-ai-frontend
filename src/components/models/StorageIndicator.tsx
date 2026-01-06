@@ -44,7 +44,7 @@ export function StorageIndicator({ storage, className }: StorageIndicatorProps) 
             "h-full rounded-full transition-all",
             isCritical ? "bg-red-500" :
             isWarning ? "bg-amber-500" :
-            "bg-emerald-500"
+            "bg-[var(--green-500)]"
           )}
           style={{ width: `${percentage}%` }}
         />

@@ -16,7 +16,7 @@ function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (che
         aria-checked={checked}
         onClick={() => onChange(!checked)}
         className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
-          checked ? 'bg-emerald-600' : 'bg-zinc-700'
+          checked ? 'bg-[var(--green-600)]' : 'bg-zinc-700'
         }`}
       >
         <span
@@ -64,7 +64,7 @@ export function SystemSettings({ onSave, onRestartSetup }: SystemSettingsProps) 
           <select
             value={config.timezone}
             onChange={(e) => setConfig({ ...config, timezone: e.target.value })}
-            className="w-full px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-100 text-sm focus:outline-none focus:border-emerald-500"
+            className="w-full px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-100 text-sm focus:outline-none focus:border-[var(--green-500)]"
           >
             {timezones.map((tz) => (
               <option key={tz.value} value={tz.value}>{tz.label}</option>
@@ -77,7 +77,7 @@ export function SystemSettings({ onSave, onRestartSetup }: SystemSettingsProps) 
           <select
             value={config.language}
             onChange={(e) => setConfig({ ...config, language: e.target.value })}
-            className="w-full px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-100 text-sm focus:outline-none focus:border-emerald-500"
+            className="w-full px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-100 text-sm focus:outline-none focus:border-[var(--green-500)]"
           >
             {languages.map((lang) => (
               <option key={lang.value} value={lang.value}>{lang.label}</option>
@@ -150,7 +150,7 @@ export function SystemSettings({ onSave, onRestartSetup }: SystemSettingsProps) 
       <div className="flex justify-end">
         <button
           onClick={handleSave}
-          className="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-500 transition-colors"
+          className="px-4 py-2 rounded-lg bg-[var(--green-600)] text-white text-sm font-medium hover:bg-[var(--green-500)] transition-colors"
         >
           Save Changes
         </button>
