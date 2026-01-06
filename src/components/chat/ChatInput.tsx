@@ -86,7 +86,7 @@ export function ChatInput({ onSend, disabled, placeholder, selectedModel, onMode
   };
 
   return (
-    <div className="flex items-center gap-3 px-3 py-3 rounded-xl bg-card/80 border border-border">
+    <div className="flex items-center gap-3 px-3 py-3 rounded-xl border border-border">
       {/* Model selector */}
       <div className="relative">
         <button

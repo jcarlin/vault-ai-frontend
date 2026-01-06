@@ -236,7 +236,7 @@ function MarkdownContent({ content }: { content: string }) {
   return <div className="space-y-1">{renderMarkdown(content)}</div>;
 }
 
-function ThinkingPanel({ thinking }: { thinking: ChatMessageType['thinking'] }) {
+function ThinkingPanel({ thinking, timestamp }: { thinking: ChatMessageType['thinking']; timestamp?: number }) {
   const [expanded, setExpanded] = useState(false);
 
   if (!thinking) return null;
@@ -257,6 +257,12 @@ function ThinkingPanel({ thinking }: { thinking: ChatMessageType['thinking'] }) 
           <polyline points="9 18 15 12 9 6" />
         </svg>
         <span>Thought for {(thinking.durationMs / 1000).toFixed(1)}s</span>
+        {timestamp && (
+          <>
+            <span className="text-muted-foreground/50 mx-1">•</span>
+            <span>{formatTime(timestamp)}</span>
+          </>
+        )}
       </button>
       {expanded && (
         <div className="mt-2 pl-4 border-l-2 border-muted text-sm text-muted-foreground italic">
@@ -300,7 +306,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
     <div className={cn('flex', isUser ? 'justify-end' : 'justify-start')}>
       {/* Message content */}
       <div className={cn('flex flex-col max-w-[80%]', isUser ? 'items-end' : 'items-start')}>
-        {!isUser && message.thinking && <ThinkingPanel thinking={message.thinking} />}
+        {!isUser && message.thinking && <ThinkingPanel thinking={message.thinking} timestamp={message.timestamp} />}
         <div
           className={cn(
             'rounded-2xl px-4 py-2.5',
@@ -326,9 +332,11 @@ export function ChatMessage({ message }: ChatMessageProps) {
               {copied ? <Check className="h-5 w-5" /> : <Copy className="h-5 w-5" />}
             </button>
           )}
-          <span className="text-xs text-muted-foreground">
-            {formatTime(message.timestamp)}
-          </span>
+          {(isUser || !message.thinking) && (
+            <span className="text-xs text-muted-foreground">
+              {formatTime(message.timestamp)}
+            </span>
+          )}
           {!isUser && message.generationStats && (
             <GenerationStatsDisplay stats={message.generationStats} />
           )}

@@ -59,7 +59,7 @@ export function ChatPanel({ allocation, className, conversationMessages }: ChatP
   return (
     <div className={cn('flex flex-col h-full', className)}>
       {/* Messages area */}
-      <div className="flex-1 overflow-auto relative">
+      <div className="flex-1 overflow-auto relative" style={{ scrollbarGutter: 'stable' }}>
         {/* Empty state with suggestions */}
         {isEmpty && state === 'idle' && (
           <div className="absolute inset-0 flex items-center justify-center px-4">
@@ -94,7 +94,7 @@ export function ChatPanel({ allocation, className, conversationMessages }: ChatP
       </div>
 
       {/* Input area */}
-      <div className="pb-4">
+      <div className="pb-4 bg-background">
         <div className="max-w-3xl mx-auto px-4">
           <ChatInput
             onSend={sendMessage}
