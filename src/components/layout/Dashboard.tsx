@@ -357,7 +357,12 @@ export function Dashboard({
               onClick={() => setShowClusterPanel(!showClusterPanel)}
             >
               <div className="flex items-center gap-1.5 sm:gap-2">
-                <span className="h-2 w-2 rounded-full bg-[var(--green-500)]" />
+                <span className={cn(
+                  "h-2 w-2 rounded-full",
+                  cluster.aggregateStatus === 'healthy' && 'bg-[var(--green-500)]',
+                  cluster.aggregateStatus === 'warning' && 'bg-amber-500',
+                  (cluster.aggregateStatus === 'error' || cluster.aggregateStatus === 'offline') && 'bg-red-500'
+                )} />
                 <span className="text-muted-foreground hidden sm:inline">{cluster.cubes.length} cubes</span>
               </div>
               <div className="flex items-center gap-1 sm:gap-1.5 text-muted-foreground">
