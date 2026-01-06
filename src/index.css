@@ -19,6 +19,19 @@
   --color-amber-900: oklch(0.40 0.10 85);
   --color-amber-950: oklch(0.30 0.08 85);
 
+  /* Interaction blue scale based on #638BFF */
+  --color-blue-50: oklch(0.97 0.02 265);
+  --color-blue-100: oklch(0.94 0.05 265);
+  --color-blue-200: oklch(0.90 0.08 265);
+  --color-blue-300: oklch(0.82 0.12 265);
+  --color-blue-400: oklch(0.74 0.15 265);
+  --color-blue-500: oklch(0.65 0.18 265);   /* #638BFF */
+  --color-blue-600: oklch(0.55 0.18 265);
+  --color-blue-700: oklch(0.46 0.16 265);
+  --color-blue-800: oklch(0.38 0.14 265);
+  --color-blue-900: oklch(0.32 0.11 265);
+  --color-blue-950: oklch(0.25 0.08 265);
+
   --color-background: hsl(240 10% 3.9%);
   --color-foreground: hsl(0 0% 98%);
   --color-card: hsl(240 10% 3.9%);

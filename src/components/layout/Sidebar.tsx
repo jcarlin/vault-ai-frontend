@@ -224,9 +224,9 @@ export function Sidebar({ activeJob, onPauseJob, onResumeJob, onCancelJob, devel
       <div className="p-3">
         <button
           onClick={onNewChat}
-          className="w-full flex items-center gap-2 h-9 px-3 rounded-lg border border-border text-foreground/80 hover:bg-secondary/50 hover:text-foreground transition-colors text-sm"
+          className="w-full flex items-center gap-2 h-9 px-3 rounded-lg border border-blue-500 bg-blue-500/10 text-foreground/90 hover:bg-blue-500/20 transition-colors text-sm"
         >
-          <PlusIcon />
+          <span className="text-blue-500"><PlusIcon /></span>
           New chat
         </button>
       </div>
