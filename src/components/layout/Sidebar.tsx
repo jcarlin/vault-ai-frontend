@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { mockActivity, formatActivityTime, type ActivityItem, type ChatConversation } from '@/mocks/activity';
 import { type TrainingJob, formatDuration, formatTimeAgo } from '@/mocks/training';
-import { UploadModal } from '@/components/upload';
 import { TrainingJobDetail } from '@/components/training';
 import { ApplicationsMenu } from './ApplicationsMenu';
 import { type Application } from '@/hooks/useDeveloperMode';
@@ -25,16 +24,6 @@ function PlusIcon() {
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
       <line x1="12" y1="5" x2="12" y2="19" />
       <line x1="5" y1="12" x2="19" y2="12" />
-    </svg>
-  );
-}
-
-function UploadIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
-      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-      <polyline points="17 8 12 3 7 8" />
-      <line x1="12" y1="3" x2="12" y2="15" />
     </svg>
   );
 }
@@ -220,7 +209,6 @@ function SidebarTrainingProgress({ job, onPause, onResume, onCancel, onViewDetai
 }
 
 export function Sidebar({ activeJob, onPauseJob, onResumeJob, onCancelJob, developerMode, applications, onSelectApplication, onSelectConversation, onNewChat, selectedConversationId }: SidebarProps) {
-  const [showUploadModal, setShowUploadModal] = useState(false);
   const [showJobDetail, setShowJobDetail] = useState(false);
 
   const handleActivityClick = (item: ActivityItem) => {
@@ -232,21 +220,14 @@ export function Sidebar({ activeJob, onPauseJob, onResumeJob, onCancelJob, devel
   return (
     <>
     <aside className="flex-1 flex flex-col min-h-0">
-      {/* New chat and Upload buttons */}
-      <div className="p-3 space-y-2">
+      {/* New chat button */}
+      <div className="p-3">
         <button
           onClick={onNewChat}
           className="w-full flex items-center gap-2 h-9 px-3 rounded-lg border border-border text-foreground/80 hover:bg-secondary/50 hover:text-foreground transition-colors text-sm"
         >
           <PlusIcon />
           New chat
-        </button>
-        <button
-          onClick={() => setShowUploadModal(true)}
-          className="w-full flex items-center gap-2 h-9 px-3 rounded-lg border border-border text-foreground/80 hover:bg-secondary/50 hover:text-foreground transition-colors text-sm"
-        >
-          <UploadIcon />
-          Upload data
         </button>
       </div>
 
@@ -289,11 +270,6 @@ export function Sidebar({ activeJob, onPauseJob, onResumeJob, onCancelJob, devel
       )}
 
     </aside>
-
-    <UploadModal
-      open={showUploadModal}
-      onClose={() => setShowUploadModal(false)}
-    />
 
     {activeJob && (
       <TrainingJobDetail
