@@ -135,7 +135,7 @@ export function SystemSettings({ onSave, onRestartSetup }: SystemSettingsProps) 
         <div className="rounded-lg bg-zinc-800/50 p-4">
           <h3 className="text-sm font-medium text-zinc-300 mb-3">Setup</h3>
           <p className="text-sm text-zinc-500 mb-4">
-            Re-run the initial setup wizard to reconfigure your Vault AI cluster.
+            Re-run the initial setup wizard to reconfigure your Vault AI Systems cluster.
           </p>
           <button
             onClick={onRestartSetup}

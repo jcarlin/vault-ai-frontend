@@ -115,7 +115,7 @@ export function ChatPanel({ allocation, className, conversationMessages }: ChatP
                 : undefined
             }
           />
-          <p className="text-center text-xs text-zinc-600 mt-3">
+          <p className="text-center text-xs text-muted-foreground/70 mt-3">
             All processing happens locally on your secure cluster
           </p>
         </div>

@@ -92,7 +92,7 @@ export function ChatInput({ onSend, disabled, placeholder, selectedModel, onMode
   };
 
   return (
-    <div className="flex items-center gap-3 px-3 py-3 rounded-xl bg-zinc-900/80 border border-zinc-800/50">
+    <div className="flex items-center gap-3 px-3 py-3 rounded-xl bg-card/80 border border-border">
       {/* Model selector */}
       <div className="relative">
         <button
@@ -101,8 +101,8 @@ export function ChatInput({ onSend, disabled, placeholder, selectedModel, onMode
           disabled={disabled}
           className={cn(
             'flex items-center gap-1.5 h-8 px-2.5 rounded-lg transition-colors',
-            'bg-zinc-800/50 border border-zinc-700/50',
-            'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800',
+            'bg-secondary/50 border border-border',
+            'text-muted-foreground hover:text-foreground hover:bg-secondary',
             'disabled:opacity-50 disabled:cursor-not-allowed'
           )}
         >
@@ -119,9 +119,9 @@ export function ChatInput({ onSend, disabled, placeholder, selectedModel, onMode
               className="fixed inset-0 z-40"
               onClick={() => setShowModelPicker(false)}
             />
-            <div className="absolute bottom-full left-0 mb-2 w-56 bg-zinc-800 border border-zinc-700 rounded-lg shadow-lg z-50 py-1">
-              <div className="px-3 py-2 border-b border-zinc-700">
-                <p className="text-xs font-medium text-zinc-400">Select Model</p>
+            <div className="absolute bottom-full left-0 mb-2 w-56 bg-secondary border border-border rounded-lg shadow-lg z-50 py-1">
+              <div className="px-3 py-2 border-b border-border">
+                <p className="text-xs font-medium text-muted-foreground">Select Model</p>
               </div>
               <div className="max-h-64 overflow-auto py-1">
                 {availableModels.map((model) => (
@@ -131,16 +131,16 @@ export function ChatInput({ onSend, disabled, placeholder, selectedModel, onMode
                     className={cn(
                       'w-full flex items-center gap-3 px-3 py-2 text-left transition-colors',
                       model.id === currentModel?.id
-                        ? 'bg-zinc-700/50 text-zinc-100'
-                        : 'text-zinc-300 hover:bg-zinc-700/30'
+                        ? 'bg-card/50 text-foreground'
+                        : 'text-foreground/80 hover:bg-card/30'
                     )}
                   >
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{model.displayName}</p>
-                      <p className="text-xs text-zinc-500 truncate">{model.parameters}</p>
+                      <p className="text-xs text-muted-foreground truncate">{model.parameters}</p>
                     </div>
                     {model.id === currentModel?.id && (
-                      <span className="text-emerald-500">
+                      <span className="text-primary">
                         <CheckIcon />
                       </span>
                     )}
@@ -157,15 +157,15 @@ export function ChatInput({ onSend, disabled, placeholder, selectedModel, onMode
         value={value}
         onChange={(e) => setValue(e.target.value)}
         onKeyDown={handleKeyDown}
-        placeholder={placeholder || 'Message Vault AI...'}
+        placeholder={placeholder || 'Message Vault AI Systems...'}
         disabled={disabled}
         rows={1}
         className={cn(
           'flex-1 bg-transparent resize-none overflow-hidden',
           'focus:outline-none',
           'disabled:opacity-50 disabled:cursor-not-allowed',
-          'placeholder:text-zinc-500',
-          'text-sm leading-relaxed text-zinc-100'
+          'placeholder:text-muted-foreground',
+          'text-sm leading-relaxed text-foreground'
         )}
       />
       <div className="flex items-center gap-2">
@@ -174,7 +174,7 @@ export function ChatInput({ onSend, disabled, placeholder, selectedModel, onMode
           disabled={disabled}
           className={cn(
             'p-1.5 rounded-md transition-colors',
-            'text-zinc-500 hover:text-zinc-300',
+            'text-muted-foreground hover:text-foreground/80',
             'disabled:opacity-50 disabled:cursor-not-allowed'
           )}
         >
@@ -185,7 +185,7 @@ export function ChatInput({ onSend, disabled, placeholder, selectedModel, onMode
           disabled={disabled || !value.trim()}
           className={cn(
             'p-2 rounded-lg transition-colors',
-            'bg-zinc-800 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-700',
+            'bg-secondary text-muted-foreground hover:text-foreground hover:bg-card',
             'disabled:opacity-50 disabled:cursor-not-allowed'
           )}
         >

@@ -160,14 +160,14 @@ export function getStatusColor(status: TrainingStatus): string {
 export function getStatusBgColor(status: TrainingStatus): string {
   switch (status) {
     case 'running':
-      return 'bg-emerald-500/20 text-emerald-500';
+      return 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20';
     case 'queued':
-      return 'bg-muted text-muted-foreground';
+      return 'bg-zinc-800/50 text-zinc-400 border-zinc-700/50';
     case 'paused':
-      return 'bg-amber-500/20 text-amber-500';
+      return 'bg-amber-500/10 text-amber-500 border-amber-500/20';
     case 'completed':
-      return 'bg-green-500/10 text-green-500';
+      return 'bg-green-500/10 text-green-500 border-green-500/20';
     case 'failed':
-      return 'bg-red-500/10 text-red-500';
+      return 'bg-red-500/10 text-red-500 border-red-500/20';
   }
 }

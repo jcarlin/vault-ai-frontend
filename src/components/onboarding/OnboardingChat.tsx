@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { type OnboardingStep } from '@/hooks/useOnboarding';
+import VaultLogo from '@/assets/vault_logo_color.svg';
 
 interface Message {
   id: string;
@@ -21,8 +22,8 @@ interface OnboardingChatProps {
 
 function VaultIcon() {
   return (
-    <div className="h-8 w-8 rounded-lg bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
-      <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4 text-emerald-500">
+    <div className="h-8 w-8 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0">
+      <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4 text-primary">
         <path
           d="M12 2L2 7v10l10 5 10-5V7L12 2z"
           stroke="currentColor"
@@ -51,9 +52,9 @@ function SendIcon() {
 function TypingIndicator() {
   return (
     <div className="flex gap-1">
-      <span className="h-2 w-2 rounded-full bg-zinc-500 animate-bounce" style={{ animationDelay: '0ms' }} />
-      <span className="h-2 w-2 rounded-full bg-zinc-500 animate-bounce" style={{ animationDelay: '150ms' }} />
-      <span className="h-2 w-2 rounded-full bg-zinc-500 animate-bounce" style={{ animationDelay: '300ms' }} />
+      <span className="h-2 w-2 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: '0ms' }} />
+      <span className="h-2 w-2 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: '150ms' }} />
+      <span className="h-2 w-2 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: '300ms' }} />
     </div>
   );
 }
@@ -107,7 +108,7 @@ function ClusterScanAnimation({ onComplete }: { onComplete: (cubes: number) => v
         <div className="relative">
           <div className="h-10 w-10 rounded-full border-2 border-emerald-500/30 border-t-emerald-500 animate-spin" />
         </div>
-        <span className="text-sm text-zinc-400">
+        <span className="text-sm text-muted-foreground">
           {stage === 0 && 'Initializing scan...'}
           {stage === 1 && 'Scanning network...'}
           {stage === 2 && 'Detecting hardware...'}
@@ -124,12 +125,12 @@ function ClusterScanAnimation({ onComplete }: { onComplete: (cubes: number) => v
               'h-16 w-16 rounded-xl border-2 flex items-center justify-center transition-all duration-500',
               cubesFound >= cube
                 ? 'border-emerald-500 bg-emerald-500/10'
-                : 'border-zinc-800 bg-zinc-900/50'
+                : 'border-border bg-card/50'
             )}
           >
             <svg viewBox="0 0 24 24" fill="none" className={cn(
               'h-8 w-8 transition-colors duration-500',
-              cubesFound >= cube ? 'text-emerald-500' : 'text-zinc-700'
+              cubesFound >= cube ? 'text-emerald-500' : 'text-muted-foreground/30'
             )}>
               <path
                 d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"
@@ -186,13 +187,13 @@ export function OnboardingChat({
       switch (currentStep) {
         case 'timezone':
           addAssistantMessage(
-            "Welcome! I'm here to help you configure your Vault AI cluster. First, let's set your timezone. What timezone are you in?",
+            "Welcome! I'm here to help you configure your Vault AI Systems cluster. First, let's set your timezone. What timezone are you in?",
             TIMEZONES
           );
           break;
         case 'admin':
           addAssistantMessage(
-            "Let's continue setting up your Vault AI cluster. What email would you like to use for your administrator account?"
+            "Let's continue setting up your Vault AI Systems cluster. What email would you like to use for your administrator account?"
           );
           break;
         case 'cluster':
@@ -209,7 +210,7 @@ export function OnboardingChat({
           break;
         case 'complete':
           addAssistantMessage(
-            "Your Vault AI cluster is configured and secure. What would you like to do first?",
+            "Your Vault AI Systems cluster is configured and secure. What would you like to do first?",
             ['Upload training data', 'Start a chat', 'View cluster status']
           );
           break;
@@ -280,12 +281,12 @@ export function OnboardingChat({
       onCompleteTour(skipped);
       if (skipped) {
         addAssistantMessage(
-          `No problem! You can always explore on your own. Your Vault AI cluster is now configured and secure. What would you like to do first?`,
+          `No problem! You can always explore on your own. Your Vault AI Systems cluster is now configured and secure. What would you like to do first?`,
           ['Upload training data', 'Start a chat', 'View cluster status']
         );
       } else {
         addAssistantMessage(
-          `I'd love to show you around, but this feature is coming soon! For now, your Vault AI cluster is configured and secure. What would you like to do first?`,
+          `I'd love to show you around, but this feature is coming soon! For now, your Vault AI Systems cluster is configured and secure. What would you like to do first?`,
           ['Upload training data', 'Start a chat', 'View cluster status']
         );
       }
@@ -337,20 +338,14 @@ export function OnboardingChat({
   const lastMessage = messages[messages.length - 1];
 
   return (
-    <div className="min-h-screen bg-zinc-950 flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
-      <header className="h-14 border-b border-zinc-800/50 flex items-center px-4 sm:px-6 bg-zinc-900">
+      <header className="h-14 border-b border-border/50 flex items-center px-4 sm:px-6 bg-card">
         <div className="flex items-center gap-2 sm:gap-3">
-          <div className="h-8 w-8 rounded-lg bg-emerald-500/20 flex items-center justify-center">
-            <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4 text-emerald-500">
-              <path d="M12 2L2 7v10l10 5 10-5V7L12 2z" stroke="currentColor" strokeWidth="1.5" />
-              <circle cx="12" cy="12" r="2" fill="currentColor" />
-            </svg>
-          </div>
-          <span className="font-semibold text-zinc-100 text-sm sm:text-base">Vault AI Setup</span>
+          <img src={VaultLogo} alt="Vault AI Systems" className="h-6 sm:h-7" />
         </div>
         <div className="ml-auto flex items-center gap-2">
-          <span className="text-xs text-zinc-500 hidden sm:inline">Step {
+          <span className="text-xs text-muted-foreground hidden sm:inline">Step {
             currentStep === 'timezone' ? '1' :
             currentStep === 'admin' ? '2' :
             currentStep === 'cluster' ? '3' :
@@ -363,10 +358,10 @@ export function OnboardingChat({
                 className={cn(
                   'h-1.5 w-4 sm:w-6 rounded-full transition-colors',
                   i < ['timezone', 'admin', 'cluster', 'tour', 'complete'].indexOf(currentStep)
-                    ? 'bg-emerald-500'
+                    ? 'bg-primary'
                     : i === ['timezone', 'admin', 'cluster', 'tour', 'complete'].indexOf(currentStep)
-                    ? 'bg-emerald-500/50'
-                    : 'bg-zinc-800'
+                    ? 'bg-primary/50'
+                    : 'bg-secondary'
                 )}
               />
             ))}
@@ -390,8 +385,8 @@ export function OnboardingChat({
                 className={cn(
                   'max-w-[80%] rounded-2xl px-4 py-3',
                   message.role === 'assistant'
-                    ? 'bg-zinc-900 text-zinc-100'
-                    : 'bg-emerald-600 text-white'
+                    ? 'bg-card text-foreground'
+                    : 'bg-primary text-white'
                 )}
               >
                 <p className="text-sm leading-relaxed">{message.content}</p>
@@ -402,7 +397,7 @@ export function OnboardingChat({
           {isProcessing && (
             <div className="flex gap-3">
               <VaultIcon />
-              <div className="bg-zinc-900 rounded-2xl px-4 py-3">
+              <div className="bg-card rounded-2xl px-4 py-3">
                 <TypingIndicator />
               </div>
             </div>
@@ -411,7 +406,7 @@ export function OnboardingChat({
           {showClusterScan && (
             <div className="flex gap-3">
               <VaultIcon />
-              <div className="bg-zinc-900 rounded-2xl px-4 py-3">
+              <div className="bg-card rounded-2xl px-4 py-3">
                 <ClusterScanAnimation onComplete={handleClusterVerified} />
               </div>
             </div>
@@ -429,7 +424,7 @@ export function OnboardingChat({
               <button
                 key={suggestion}
                 onClick={() => handleSuggestionClick(suggestion)}
-                className="px-3 sm:px-4 py-2 rounded-xl border border-zinc-700/50 bg-zinc-800/50 text-xs sm:text-sm text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100 transition-colors"
+                className="px-3 sm:px-4 py-2 rounded-xl border border-border/50 bg-secondary/50 text-xs sm:text-sm text-foreground/80 hover:bg-secondary hover:text-foreground transition-colors"
               >
                 {suggestion}
               </button>
@@ -439,7 +434,7 @@ export function OnboardingChat({
       )}
 
       {/* Input */}
-      <div className="p-4 sm:p-6 border-t border-zinc-800/50 bg-zinc-900/50">
+      <div className="p-4 sm:p-6 border-t border-border/50 bg-card/50">
         <form onSubmit={handleSubmit} className="max-w-2xl mx-auto">
           <div className="flex gap-2 sm:gap-3">
             <input
@@ -453,12 +448,12 @@ export function OnboardingChat({
                 'Type a message...'
               }
               disabled={isProcessing || showClusterScan}
-              className="flex-1 h-11 sm:h-12 px-4 rounded-xl bg-zinc-800/50 border border-zinc-700/50 text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:border-emerald-500/50 disabled:opacity-50 text-sm sm:text-base"
+              className="flex-1 h-11 sm:h-12 px-4 rounded-xl bg-secondary/50 border border-border/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 disabled:opacity-50 text-sm sm:text-base"
             />
             <button
               type="submit"
               disabled={!input.trim() || isProcessing || showClusterScan}
-              className="h-11 w-11 sm:h-12 sm:w-12 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:bg-zinc-700 disabled:cursor-not-allowed text-white flex items-center justify-center transition-colors flex-shrink-0"
+              className="h-11 w-11 sm:h-12 sm:w-12 rounded-xl bg-primary hover:bg-primary/90 disabled:bg-secondary disabled:cursor-not-allowed text-white flex items-center justify-center transition-colors flex-shrink-0"
             >
               <SendIcon />
             </button>

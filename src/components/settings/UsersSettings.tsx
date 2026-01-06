@@ -211,7 +211,7 @@ export function UsersSettings({ onSave }: UsersSettingsProps) {
         <div>
           <h2 className="text-xl font-semibold text-zinc-100">Users & Permissions</h2>
           <p className="text-sm text-zinc-500 mt-1">
-            Manage who has access to your Vault AI system
+            Manage who has access to your Vault AI Systems cluster
           </p>
         </div>
         <button

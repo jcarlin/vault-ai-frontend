@@ -49,7 +49,7 @@ function ClockIcon() {
 }
 
 function ActivityIcon({ type }: { type: ActivityItem['type'] }) {
-  const className = "h-4 w-4 text-zinc-500";
+  const className = "h-4 w-4 text-muted-foreground";
 
   switch (type) {
     case 'training':
@@ -94,7 +94,7 @@ function ActivityItemCard({ item, isSelected, onClick }: { item: ActivityItem; i
       onClick={onClick}
       className={cn(
         "w-full text-left p-3 rounded-lg transition-colors group",
-        isSelected ? "bg-zinc-800/80" : "hover:bg-zinc-800/40"
+        isSelected ? "bg-secondary/80" : "hover:bg-secondary/40"
       )}
     >
       <div className="flex gap-3">
@@ -104,10 +104,10 @@ function ActivityItemCard({ item, isSelected, onClick }: { item: ActivityItem; i
         <div className="flex-1 min-w-0">
           <p className={cn(
             "text-sm font-medium truncate",
-            isSelected ? "text-zinc-100" : "text-zinc-300"
+            isSelected ? "text-foreground" : "text-foreground/80"
           )}>{item.title}</p>
-          <p className="text-xs text-zinc-500 mt-0.5 line-clamp-2">{item.description}</p>
-          <p className="text-xs text-zinc-600 mt-1">{formatActivityTime(item.timestamp)}</p>
+          <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{item.description}</p>
+          <p className="text-xs text-muted-foreground/70 mt-1">{formatActivityTime(item.timestamp)}</p>
         </div>
       </div>
     </button>
@@ -153,29 +153,29 @@ function SidebarTrainingProgress({ job, onPause, onResume, onCancel, onViewDetai
   const isPaused = job.status === 'paused';
 
   return (
-    <div className="border-t border-zinc-800/50 bg-zinc-900/50 p-4">
+    <div className="border-t border-border bg-card/50 p-4">
       <button
         onClick={onViewDetails}
-        className="w-full text-left hover:bg-zinc-800/30 -m-2 p-2 rounded-lg transition-colors"
+        className="w-full text-left hover:bg-secondary/30 -m-2 p-2 rounded-lg transition-colors"
       >
         <div className="flex items-center justify-between mb-3">
-          <span className="text-sm font-medium text-zinc-100 truncate">{job.name}</span>
+          <span className="text-sm font-medium text-foreground truncate">{job.name}</span>
           <span className={cn(
-            "text-xs px-1.5 py-0.5 rounded",
+            "text-[10px] font-medium uppercase tracking-wide",
             isPaused
-              ? "bg-amber-500/20 text-amber-500"
-              : "bg-emerald-500/20 text-emerald-500"
+              ? "text-amber-500"
+              : "text-emerald-500"
           )}>
             {job.status}
           </span>
         </div>
 
         <div className="space-y-2">
-          <div className="flex justify-between text-xs text-zinc-400">
+          <div className="flex justify-between text-xs text-muted-foreground">
             <span>{job.currentPhase}</span>
             <span>{job.progress}%</span>
           </div>
-          <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+          <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
             <div
               className={cn(
                 "h-full rounded-full transition-all",
@@ -185,14 +185,14 @@ function SidebarTrainingProgress({ job, onPause, onResume, onCancel, onViewDetai
             />
           </div>
           {!isPaused && (
-            <div className="flex justify-between text-xs text-zinc-500">
+            <div className="flex justify-between text-xs text-muted-foreground">
               <span>{job.startedAt && `Started ${formatTimeAgo(job.startedAt)}`}</span>
               {timeRemaining && timeRemaining > 0 && (
                 <span>~{formatDuration(timeRemaining)} remaining</span>
               )}
             </div>
           )}
-          <div className="text-xs text-zinc-500">
+          <div className="text-xs text-muted-foreground">
             {job.metrics.stepsComplete.toLocaleString()} / {job.metrics.totalSteps.toLocaleString()} steps
             {job.metrics.currentLoss > 0 && ` • Loss: ${job.metrics.currentLoss.toFixed(4)}`}
           </div>
@@ -202,14 +202,14 @@ function SidebarTrainingProgress({ job, onPause, onResume, onCancel, onViewDetai
       <div className="flex gap-2 mt-3">
         <button
           onClick={job.status === 'running' ? onPause : onResume}
-          className="flex-1 flex items-center justify-center gap-1.5 h-8 rounded-lg border border-zinc-700/50 text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100 transition-colors text-xs"
+          className="flex-1 flex items-center justify-center gap-1.5 h-8 rounded-lg border border-border text-foreground/80 hover:bg-secondary/50 hover:text-foreground transition-colors text-xs"
         >
           {job.status === 'running' ? <PauseIcon /> : <PlayIcon />}
           {job.status === 'running' ? 'Pause' : 'Resume'}
         </button>
         <button
           onClick={onCancel}
-          className="flex items-center justify-center gap-1.5 h-8 px-3 rounded-lg border border-zinc-700/50 text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors text-xs"
+          className="flex items-center justify-center gap-1.5 h-8 px-3 rounded-lg border border-border text-primary hover:bg-primary/10 hover:text-primary transition-colors text-xs"
         >
           <StopIcon />
           Cancel
@@ -236,14 +236,14 @@ export function Sidebar({ activeJob, onPauseJob, onResumeJob, onCancelJob, devel
       <div className="p-3 space-y-2">
         <button
           onClick={onNewChat}
-          className="w-full flex items-center gap-2 h-9 px-3 rounded-lg border border-zinc-800/50 text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100 transition-colors text-sm"
+          className="w-full flex items-center gap-2 h-9 px-3 rounded-lg border border-border text-foreground/80 hover:bg-secondary/50 hover:text-foreground transition-colors text-sm"
         >
           <PlusIcon />
           New chat
         </button>
         <button
           onClick={() => setShowUploadModal(true)}
-          className="w-full flex items-center gap-2 h-9 px-3 rounded-lg border border-zinc-800/50 text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100 transition-colors text-sm"
+          className="w-full flex items-center gap-2 h-9 px-3 rounded-lg border border-border text-foreground/80 hover:bg-secondary/50 hover:text-foreground transition-colors text-sm"
         >
           <UploadIcon />
           Upload data
@@ -252,20 +252,20 @@ export function Sidebar({ activeJob, onPauseJob, onResumeJob, onCancelJob, devel
 
       {/* Applications section - Developer Mode only */}
       {developerMode && applications && onSelectApplication && (
-        <div className="border-b border-zinc-800/50">
+        <div className="border-b border-border">
           <ApplicationsMenu applications={applications} onSelect={onSelectApplication} />
         </div>
       )}
 
       {/* Activity section */}
       <div className="flex-1 overflow-auto min-h-0">
-        <div className="px-4 py-2">
-          <div className="flex items-center gap-2 text-[10px] font-medium text-zinc-500 uppercase tracking-widest">
+        <div className="px-4 pt-4 pb-2">
+          <div className="flex items-center gap-2 text-[10px] font-medium text-muted-foreground uppercase tracking-widest">
             <ClockIcon />
             Activity
           </div>
         </div>
-        <div className="px-2 space-y-0.5">
+        <div className="px-2 space-y-1">
           {mockActivity.map((item) => (
             <ActivityItemCard
               key={item.id}

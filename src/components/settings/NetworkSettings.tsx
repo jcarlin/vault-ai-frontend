@@ -49,7 +49,7 @@ export function NetworkSettings() {
           </p>
           <p className="text-xs text-zinc-500 mt-0.5">
             {isConnected
-              ? 'Your Vault AI system is connected to the local network'
+              ? 'Your Vault AI Systems cluster is connected to the local network'
               : 'Check your network cables and configuration'}
           </p>
         </div>
