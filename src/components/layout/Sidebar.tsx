@@ -82,23 +82,14 @@ function ActivityItemCard({ item, isSelected, onClick }: { item: ActivityItem; i
     <button
       onClick={onClick}
       className={cn(
-        "w-full text-left p-3 rounded-lg transition-colors group",
+        "w-full text-left px-3 py-2 rounded-lg transition-colors",
         isSelected ? "bg-secondary/80" : "hover:bg-secondary/40"
       )}
     >
-      <div className="flex gap-3">
-        <div className="mt-0.5 flex-shrink-0">
-          <ActivityIcon type={item.type} />
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className={cn(
-            "text-sm font-medium truncate",
-            isSelected ? "text-foreground" : "text-foreground/80"
-          )}>{item.title}</p>
-          <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{item.description}</p>
-          <p className="text-xs text-muted-foreground/70 mt-1">{formatActivityTime(item.timestamp)}</p>
-        </div>
-      </div>
+      <p className={cn(
+        "text-xs truncate",
+        isSelected ? "text-foreground" : "text-foreground/70"
+      )}>{item.title}</p>
     </button>
   );
 }
