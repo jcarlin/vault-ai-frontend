@@ -34,7 +34,7 @@ export function ChatPanel({ allocation, className, conversationMessages }: ChatP
     () => getSpeedMode(allocation.interactive.speedImpact),
     [allocation.interactive.speedImpact]
   );
-  const { messages, state, currentThinking, streamingContent, streamingMetrics, sendMessage, loadConversation, clearHistory } = useChat({ speedMode });
+  const { messages, state, currentThinking, streamingContent, sendMessage, loadConversation, clearHistory } = useChat({ speedMode });
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const isUnavailable = allocation.interactive.speedImpact === 'unavailable';
   const isEmpty = messages.length === 0;
@@ -84,7 +84,6 @@ export function ChatPanel({ allocation, className, conversationMessages }: ChatP
               <StreamingMessage
                 content={streamingContent}
                 isComplete={false}
-                metrics={streamingMetrics}
               />
             )}
 

@@ -55,20 +55,12 @@ export function ThinkingIndicator({ thinking, className }: ThinkingIndicatorProp
   );
 }
 
-interface StreamingMetrics {
-  tokensPerSecond: number;
-  tokensGenerated: number;
-  startTime: number;
-}
-
 export function StreamingMessage({
   content,
   isComplete,
-  metrics,
 }: {
   content: string;
   isComplete: boolean;
-  metrics?: StreamingMetrics | null;
 }) {
   return (
     <div className="flex">
@@ -82,18 +74,6 @@ export function StreamingMessage({
             )}
           </p>
         </div>
-        {/* Live metrics during generation */}
-        {!isComplete && metrics && (
-          <div className="flex items-center gap-2 mt-1.5 px-1 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3 w-3 text-green-500">
-                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-              </svg>
-              <span className="font-medium text-green-500">{metrics.tokensPerSecond.toLocaleString()}</span>
-              <span>tok/s</span>
-            </span>
-          </div>
-        )}
       </div>
     </div>
   );

@@ -77,11 +77,7 @@ const prompts = [
 export function SuggestedPrompts({ onSelect, disabled }: SuggestedPromptsProps) {
   return (
     <div className="text-center max-w-lg mx-auto">
-      <h2 className="text-xl sm:text-2xl font-semibold text-foreground mb-3">What would you like to work on?</h2>
-      <p className="text-muted-foreground text-sm mb-6 sm:mb-8 leading-relaxed px-2 sm:px-0">
-        Your secure AI cluster is ready. Train models, upload data, or
-        run inference—all locally on your hardware.
-      </p>
+      <h2 className="text-xl sm:text-2xl font-semibold text-foreground mb-6 sm:mb-8">What would you like to work on?</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {prompts.map((prompt) => (
           <PromptCard

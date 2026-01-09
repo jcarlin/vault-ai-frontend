@@ -273,24 +273,6 @@ function ThinkingPanel({ thinking, timestamp }: { thinking: ChatMessageType['thi
   );
 }
 
-function GenerationStatsDisplay({ stats }: { stats: ChatMessageType['generationStats'] }) {
-  if (!stats) return null;
-
-  return (
-    <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
-      <span className="flex items-center gap-1">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3 w-3">
-          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-        </svg>
-        {stats.tokensPerSecond.toLocaleString()} tok/s
-      </span>
-      <span className="text-muted-foreground/50">•</span>
-      <span>{stats.tokensGenerated} tokens</span>
-      <span className="text-muted-foreground/50">•</span>
-      <span>{(stats.generationTimeMs / 1000).toFixed(1)}s</span>
-    </div>
-  );
-}
 
 export function ChatMessage({ message }: ChatMessageProps) {
   const isUser = message.role === 'user';
@@ -336,9 +318,6 @@ export function ChatMessage({ message }: ChatMessageProps) {
             <span className="text-xs text-muted-foreground">
               {formatTime(message.timestamp)}
             </span>
-          )}
-          {!isUser && message.generationStats && (
-            <GenerationStatsDisplay stats={message.generationStats} />
           )}
         </div>
       </div>

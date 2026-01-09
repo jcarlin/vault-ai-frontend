@@ -134,7 +134,7 @@ export function ChatInput({ onSend, disabled, placeholder, selectedModel, onMode
                       <p className="text-xs text-muted-foreground truncate">{model.parameters}</p>
                     </div>
                     {model.id === currentModel?.id && (
-                      <span className="text-primary">
+                      <span className="text-blue-500">
                         <CheckIcon />
                       </span>
                     )}

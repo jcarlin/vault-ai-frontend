@@ -66,9 +66,9 @@ function JobCard({
   const isActive = isRunning || isPaused;
 
   return (
-    <div className="p-3 rounded-lg bg-secondary/30 space-y-3">
+    <div className="p-3 rounded-lg bg-zinc-800/50 border border-zinc-700/50 space-y-3">
       <div className="flex items-center justify-between">
-        <span className="text-sm font-medium text-foreground">{job.name}</span>
+        <span className="text-sm font-medium text-zinc-100">{job.name}</span>
         <span
           className={cn(
             'text-[10px] font-medium uppercase tracking-wide px-2 py-0.5 rounded-full',
@@ -81,11 +81,11 @@ function JobCard({
 
       {isActive && (
         <div className="space-y-1.5">
-          <div className="flex justify-between text-xs text-muted-foreground">
+          <div className="flex justify-between text-xs text-zinc-400">
             <span>{job.currentPhase}</span>
-            <span>{job.progress}%</span>
+            <span className="text-zinc-100">{job.progress}%</span>
           </div>
-          <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
+          <div className="h-1.5 bg-zinc-700 rounded-full overflow-hidden">
             <div
               className={cn(
                 'h-full rounded-full transition-all',
@@ -94,7 +94,7 @@ function JobCard({
               style={{ width: `${job.progress}%` }}
             />
           </div>
-          <div className="flex justify-between text-xs text-muted-foreground">
+          <div className="flex justify-between text-xs text-zinc-500">
             <span>
               {job.metrics.stepsComplete.toLocaleString()} /{' '}
               {job.metrics.totalSteps.toLocaleString()} steps
@@ -107,11 +107,11 @@ function JobCard({
       )}
 
       {job.status === 'queued' && (
-        <p className="text-xs text-muted-foreground">{job.currentPhase}</p>
+        <p className="text-xs text-zinc-500">{job.currentPhase}</p>
       )}
 
       {job.status === 'completed' && job.completedAt && (
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-zinc-500">
           Completed {formatTimeAgo(job.completedAt)}
         </p>
       )}
@@ -120,14 +120,14 @@ function JobCard({
         <div className="flex gap-2 pt-1">
           <button
             onClick={isRunning ? onPause : onResume}
-            className="flex-1 flex items-center justify-center gap-1.5 h-7 rounded-md border border-border text-foreground/80 hover:bg-secondary/50 hover:text-foreground transition-colors text-xs"
+            className="flex-1 flex items-center justify-center gap-1.5 h-7 rounded-md border border-zinc-700 text-zinc-300 hover:bg-zinc-700/50 hover:text-zinc-100 transition-colors text-xs"
           >
             {isRunning ? <PauseIcon /> : <PlayIcon />}
             {isRunning ? 'Pause' : 'Resume'}
           </button>
           <button
             onClick={onCancel}
-            className="flex items-center justify-center gap-1.5 h-7 px-3 rounded-md border border-border text-red-400 hover:bg-red-500/10 transition-colors text-xs"
+            className="flex items-center justify-center gap-1.5 h-7 px-3 rounded-md border border-zinc-700 text-red-400 hover:bg-red-500/10 transition-colors text-xs"
           >
             <StopIcon />
             Cancel
@@ -163,8 +163,8 @@ export function JobsOverviewModal({
 
         <div className="space-y-6 mt-2 overflow-y-auto flex-1 pr-2">
           {activeJobs.length > 0 && (
-            <div className="space-y-2">
-              <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <div className="space-y-3">
+              <h3 className="text-xs font-medium text-zinc-500 uppercase tracking-wider">
                 Active
               </h3>
               <div className="space-y-2">
@@ -183,8 +183,8 @@ export function JobsOverviewModal({
           )}
 
           {queuedJobs.length > 0 && (
-            <div className="space-y-2">
-              <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <div className="space-y-3">
+              <h3 className="text-xs font-medium text-zinc-500 uppercase tracking-wider">
                 Queued ({queuedJobs.length})
               </h3>
               <div className="space-y-2">
@@ -196,8 +196,8 @@ export function JobsOverviewModal({
           )}
 
           {recentJobs.length > 0 && (
-            <div className="space-y-2">
-              <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <div className="space-y-3">
+              <h3 className="text-xs font-medium text-zinc-500 uppercase tracking-wider">
                 Recent
               </h3>
               <div className="space-y-2">
@@ -209,7 +209,7 @@ export function JobsOverviewModal({
           )}
 
           {jobs.length === 0 && (
-            <p className="text-sm text-muted-foreground text-center py-8">
+            <p className="text-sm text-zinc-500 text-center py-8">
               No training jobs
             </p>
           )}
