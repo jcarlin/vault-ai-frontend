@@ -5,6 +5,14 @@ import { type TrainingJob } from '@/mocks/training';
 import { JobsOverviewModal } from '@/components/training';
 import { ApplicationsMenu } from './ApplicationsMenu';
 import { type Application } from '@/hooks/useDeveloperMode';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
 
 interface SidebarProps {
   trainingJobs: TrainingJob[];
@@ -180,6 +188,7 @@ function ChevronRightIcon() {
 export function Sidebar({ trainingJobs, onPauseJob, onResumeJob, onCancelJob, developerMode, applications, onSelectApplication, onSelectConversation, onNewChat, selectedConversationId }: SidebarProps) {
   const [showJobsModal, setShowJobsModal] = useState(false);
   const [activityItems, setActivityItems] = useState<ActivityItem[]>(mockActivity);
+  const [itemToDelete, setItemToDelete] = useState<ActivityItem | null>(null);
 
   const handleActivityClick = (item: ActivityItem) => {
     if (item.conversation && onSelectConversation) {
@@ -203,8 +212,15 @@ export function Sidebar({ trainingJobs, onPauseJob, onResumeJob, onCancelJob, de
     );
   };
 
-  const handleDeleteActivity = (itemId: string) => {
-    setActivityItems(items => items.filter(item => item.id !== itemId));
+  const handleDeleteActivity = (item: ActivityItem) => {
+    setItemToDelete(item);
+  };
+
+  const handleConfirmDelete = () => {
+    if (itemToDelete) {
+      setActivityItems(items => items.filter(item => item.id !== itemToDelete.id));
+      setItemToDelete(null);
+    }
   };
 
   const activeJobs = trainingJobs.filter(j => j.status === 'running' || j.status === 'paused');
@@ -265,7 +281,7 @@ export function Sidebar({ trainingJobs, onPauseJob, onResumeJob, onCancelJob, de
               isSelected={item.conversation?.id === selectedConversationId}
               onClick={() => handleActivityClick(item)}
               onRename={(newTitle) => handleRenameActivity(item.id, newTitle)}
-              onDelete={() => handleDeleteActivity(item.id)}
+              onDelete={() => handleDeleteActivity(item)}
             />
           ))}
         </div>
@@ -302,6 +318,32 @@ export function Sidebar({ trainingJobs, onPauseJob, onResumeJob, onCancelJob, de
       onResumeJob={onResumeJob}
       onCancelJob={onCancelJob}
     />
+
+    {/* Delete activity confirmation dialog */}
+    <Dialog open={!!itemToDelete} onOpenChange={(isOpen) => !isOpen && setItemToDelete(null)}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader className="space-y-3">
+          <DialogTitle>Delete Chat?</DialogTitle>
+          <DialogDescription>
+            Are you sure you want to delete "{itemToDelete?.title}"? This action cannot be undone.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter className="gap-3 mt-4">
+          <button
+            onClick={() => setItemToDelete(null)}
+            className="px-4 py-2 rounded-md bg-zinc-700 text-zinc-200 hover:bg-zinc-600 transition-colors text-sm font-medium"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleConfirmDelete}
+            className="px-4 py-2 rounded-md bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-colors text-sm font-medium"
+          >
+            Delete
+          </button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
     </>
   );
 }
