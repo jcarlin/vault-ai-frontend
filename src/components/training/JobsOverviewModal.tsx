@@ -162,14 +162,9 @@ function JobCard({
       )}
 
       {job.status === 'completed' && job.completedAt && (
-        <div className="flex items-center justify-between">
-          <p className="text-xs text-muted-foreground">
-            Completed {formatTimeAgo(job.completedAt)}
-          </p>
-          {isClickable && (
-            <p className="text-xs text-blue-400">View model</p>
-          )}
-        </div>
+        <p className="text-xs text-muted-foreground">
+          Completed {formatTimeAgo(job.completedAt)}
+        </p>
       )}
 
       {job.status === 'cancelled' && job.completedAt && (

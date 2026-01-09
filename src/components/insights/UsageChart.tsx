@@ -71,7 +71,7 @@ export function UsageChart({ data, timeRange, onTimeRangeChange }: UsageChartPro
                   key={range.value}
                   variant={timeRange === range.value ? 'default' : 'ghost'}
                   size="sm"
-                  className="h-7 px-3 text-xs"
+                  className={`h-7 px-3 text-xs ${timeRange === range.value ? 'bg-blue-500 hover:bg-blue-600 text-white' : ''}`}
                   onClick={() => onTimeRangeChange(range.value)}
                 >
                   {range.label}
@@ -124,7 +124,7 @@ export function UsageChart({ data, timeRange, onTimeRangeChange }: UsageChartPro
                   type="monotone"
                   dataKey="queries"
                   name="Queries"
-                  stroke="hsl(var(--primary))"
+                  stroke="#3b82f6"
                   strokeWidth={2}
                   dot={false}
                   activeDot={{ r: 4 }}
@@ -136,7 +136,7 @@ export function UsageChart({ data, timeRange, onTimeRangeChange }: UsageChartPro
                   type="monotone"
                   dataKey="avgTokensPerSec"
                   name="Avg Tokens/sec"
-                  stroke="hsl(142 76% 36%)"
+                  stroke="#60a5fa"
                   strokeWidth={2}
                   dot={false}
                   activeDot={{ r: 4 }}

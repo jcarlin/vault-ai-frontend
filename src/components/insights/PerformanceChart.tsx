@@ -16,11 +16,11 @@ interface PerformanceChartProps {
 }
 
 const COLORS = [
-  'hsl(142 76% 36%)', // green - fastest
-  'hsl(142 76% 46%)',
-  'hsl(48 96% 53%)', // yellow
-  'hsl(38 92% 50%)', // amber
-  'hsl(0 84% 60%)',  // red - slowest
+  '#10b981', // emerald-500 - fastest
+  '#10b981', // emerald-500
+  '#f59e0b', // amber-500
+  '#f59e0b', // amber-500
+  '#ef4444', // red-500 - slowest
 ];
 
 interface CustomTooltipProps {

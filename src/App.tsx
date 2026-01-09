@@ -100,14 +100,7 @@ function App() {
       onNavigateToDashboard={handleNavigateToDashboard}
     >
       {currentPage === 'insights' ? (
-        <InsightsPage
-          trainingJobs={jobs}
-          allocation={allocation}
-          onAllocationChange={setAllocation}
-          onPauseJob={pauseJob}
-          onResumeJob={resumeJob}
-          onCancelJob={cancelJob}
-        />
+        <InsightsPage />
       ) : currentPage === 'models' ? (
         <ModelsPage
           initialModelId={initialModelId}

@@ -1,11 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MetricCard } from './MetricCard';
 import { UsageChart } from './UsageChart';
 import { PerformanceChart } from './PerformanceChart';
 import { ModelUsageChart } from './ModelUsageChart';
-import { TrainingJobList } from '@/components/training';
 import {
   getInsightsData,
   formatNumber,
@@ -13,7 +11,6 @@ import {
   type TimeRange,
   type InsightsData,
 } from '@/mocks/insights';
-import { type TrainingJob, type ResourceAllocation } from '@/mocks/training';
 
 function DownloadIcon() {
   return (
@@ -97,35 +94,7 @@ function CheckCircleIcon() {
   );
 }
 
-function LiveIndicator() {
-  return (
-    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-      <span className="relative flex h-2 w-2">
-        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-        <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-      </span>
-      Live
-    </div>
-  );
-}
-
-interface InsightsPageProps {
-  trainingJobs: TrainingJob[];
-  allocation: ResourceAllocation;
-  onAllocationChange: (value: number) => void;
-  onPauseJob: (jobId: string) => void;
-  onResumeJob: (jobId: string) => void;
-  onCancelJob: (jobId: string) => void;
-}
-
-export function InsightsPage({
-  trainingJobs,
-  allocation,
-  onAllocationChange,
-  onPauseJob,
-  onResumeJob,
-  onCancelJob,
-}: InsightsPageProps) {
+export function InsightsPage() {
   const [timeRange, setTimeRange] = useState<TimeRange>('7d');
   const [data, setData] = useState<InsightsData | null>(null);
 
@@ -157,13 +126,12 @@ export function InsightsPage({
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold">Performance Insights</h1>
+            <h1 className="text-xl sm:text-2xl font-bold">Insights</h1>
             <p className="text-muted-foreground text-sm mt-1 hidden sm:block">
-              Monitor your AI infrastructure performance and usage patterns
+              Monitor your cluster performance and usage patterns
             </p>
           </div>
           <div className="flex items-center gap-2 sm:gap-4">
-            <LiveIndicator />
             <span className="text-xs text-muted-foreground hidden sm:inline">
               Updated {lastUpdated}
             </span>
@@ -215,78 +183,6 @@ export function InsightsPage({
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <PerformanceChart data={data.responseTimeDistribution} />
           <ModelUsageChart data={data.modelUsage} />
-        </div>
-
-        {/* Resources & Training Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {/* Resource Allocation */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base">Resource Allocation</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-3">
-                <div className="space-y-1">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Training</span>
-                    <span className="font-medium">{allocation.training.allocation}%</span>
-                  </div>
-                  <div className="h-2 rounded-full bg-muted overflow-hidden">
-                    <div
-                      className="h-full rounded-full bg-blue-500 transition-all duration-300"
-                      style={{ width: `${allocation.training.allocation}%` }}
-                    />
-                  </div>
-                </div>
-                <div className="space-y-1">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Chat / Inference</span>
-                    <span className="font-medium">{allocation.interactive.allocation}%</span>
-                  </div>
-                  <div className="h-2 rounded-full bg-muted overflow-hidden">
-                    <div
-                      className="h-full rounded-full bg-green-500 transition-all duration-300"
-                      style={{ width: `${allocation.interactive.allocation}%` }}
-                    />
-                  </div>
-                </div>
-              </div>
-              <div className="pt-2">
-                <label className="text-xs text-muted-foreground">Adjust Training Allocation</label>
-                <input
-                  type="range"
-                  min={0}
-                  max={100}
-                  step={25}
-                  value={allocation.training.allocation}
-                  onChange={(e) => onAllocationChange(Number(e.target.value))}
-                  className="w-full mt-1"
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Training Jobs */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base">Training Jobs</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {trainingJobs.length > 0 ? (
-                <TrainingJobList
-                  jobs={trainingJobs}
-                  onPause={onPauseJob}
-                  onResume={onResumeJob}
-                  onCancel={onCancelJob}
-                />
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  <p className="text-sm">No training jobs</p>
-                  <p className="text-xs mt-1">Start a new training job from the chat</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
         </div>
       </div>
     </div>
