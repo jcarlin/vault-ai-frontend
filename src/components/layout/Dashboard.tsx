@@ -32,6 +32,8 @@ interface DashboardProps {
   onSelectApplication: (app: Application) => void;
   settingsCategory: SettingsCategory;
   onSettingsCategoryChange: (category: SettingsCategory) => void;
+  onNavigateToModel?: (modelId: string) => void;
+  onNavigateToDashboard?: () => void;
 }
 
 function SettingsIcon() {
@@ -168,6 +170,8 @@ export function Dashboard({
   onSelectApplication,
   settingsCategory,
   onSettingsCategoryChange,
+  onNavigateToModel,
+  onNavigateToDashboard,
 }: DashboardProps) {
   void activeJob;
   void _onAllocationChange;
@@ -180,11 +184,13 @@ export function Dashboard({
   const handleSelectConversation = (conversation: ChatConversation) => {
     setSelectedConversation(conversation);
     setShowMobileSidebar(false);
+    onNavigateToDashboard?.();
   };
 
   const handleNewChat = () => {
     setSelectedConversation(null);
     setShowMobileSidebar(false);
+    onNavigateToDashboard?.();
   };
 
   const handleToggleDeveloperMode = () => {
@@ -232,14 +238,17 @@ export function Dashboard({
                 <span>Back to Chat</span>
               </button>
             ) : (
-              <>
+              <button
+                onClick={handleNewChat}
+                className="flex items-center gap-2.5 hover:opacity-80 transition-opacity"
+              >
                 <img src={VaultLogo} alt="Vault AI Systems" className="h-6" />
                 {developerMode && (
                   <span className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-purple-500/20 text-purple-400">
                     <CodeIcon />
                   </span>
                 )}
-              </>
+              </button>
             )}
           </div>
 
@@ -265,6 +274,7 @@ export function Dashboard({
               onSelectConversation={handleSelectConversation}
               onNewChat={handleNewChat}
               selectedConversationId={selectedConversation?.id}
+              onNavigateToModel={onNavigateToModel}
             />
           )}
         </div>

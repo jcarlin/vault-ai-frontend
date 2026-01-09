@@ -16,6 +16,7 @@ function App() {
   const [currentPage, setCurrentPage] = useState<Page>('dashboard');
   const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
   const [settingsCategory, setSettingsCategory] = useState<SettingsCategory>('network');
+  const [initialModelId, setInitialModelId] = useState<string | null>(null);
   const cluster = useClusterHealth(30000);
   const {
     jobs,
@@ -46,6 +47,19 @@ function App() {
 
   const handleCloseApplication = () => {
     setSelectedApplication(null);
+    setCurrentPage('dashboard');
+  };
+
+  const handleNavigateToModel = (modelId: string) => {
+    setInitialModelId(modelId);
+    setCurrentPage('models');
+  };
+
+  const handleClearInitialModel = () => {
+    setInitialModelId(null);
+  };
+
+  const handleNavigateToDashboard = () => {
     setCurrentPage('dashboard');
   };
 
@@ -82,6 +96,8 @@ function App() {
       onSelectApplication={handleSelectApplication}
       settingsCategory={settingsCategory}
       onSettingsCategoryChange={setSettingsCategory}
+      onNavigateToModel={handleNavigateToModel}
+      onNavigateToDashboard={handleNavigateToDashboard}
     >
       {currentPage === 'insights' ? (
         <InsightsPage
@@ -93,7 +109,10 @@ function App() {
           onCancelJob={cancelJob}
         />
       ) : currentPage === 'models' ? (
-        <ModelsPage />
+        <ModelsPage
+          initialModelId={initialModelId}
+          onClearInitialModel={handleClearInitialModel}
+        />
       ) : currentPage === 'settings' ? (
         <SettingsPage activeCategory={settingsCategory} onRestartSetup={resetOnboarding} />
       ) : currentPage === 'application' && selectedApplication ? (

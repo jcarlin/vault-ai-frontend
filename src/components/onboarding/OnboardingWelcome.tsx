@@ -41,7 +41,7 @@ export function OnboardingWelcome({ onStart }: OnboardingWelcomeProps) {
         <div className="space-y-3">
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Welcome to Vault AI Systems</h1>
           <p className="text-muted-foreground text-base sm:text-lg">
-            Let's get your secure AI cluster set up in just a few minutes.
+            Let's get your secure AI cluster set up.
           </p>
         </div>
 
@@ -66,10 +66,6 @@ export function OnboardingWelcome({ onStart }: OnboardingWelcomeProps) {
         >
           Get Started
         </button>
-
-        <p className="text-xs text-muted-foreground/70">
-          Setup takes approximately 2-3 minutes
-        </p>
       </div>
     </div>
   );

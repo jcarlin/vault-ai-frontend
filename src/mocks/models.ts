@@ -22,6 +22,7 @@ export interface Model {
     tokensPerSecond: number;
     accuracy?: number;
   };
+  trainingJobId?: string;
 }
 
 export interface UploadedFile {
@@ -117,6 +118,52 @@ export const mockModels: Model[] = [
       tokensPerSecond: 40,
       accuracy: 91.8,
     },
+  },
+  {
+    id: 'contract-review-assistant',
+    name: 'contract-review-assistant',
+    displayName: 'Contract Review Assistant',
+    type: 'custom',
+    status: 'ready',
+    size: '144GB',
+    parameters: '70B (fine-tuned)',
+    description: 'Trained on contract documents to assist with review and risk identification',
+    isDefault: false,
+    createdAt: new Date(Date.now() - 18 * 60 * 60 * 1000).toISOString(),
+    updatedAt: new Date(Date.now() - 18 * 60 * 60 * 1000).toISOString(),
+    trainingData: {
+      source: 'contracts/',
+      files: 245,
+      totalSize: '12.3GB',
+    },
+    metrics: {
+      tokensPerSecond: 38,
+      accuracy: 97.8,
+    },
+    trainingJobId: 'job-005',
+  },
+  {
+    id: 'medical-records-summarizer',
+    name: 'medical-records-summarizer',
+    displayName: 'Medical Records Summarizer',
+    type: 'custom',
+    status: 'ready',
+    size: '145GB',
+    parameters: '70B (fine-tuned)',
+    description: 'Summarizes and extracts key information from medical records and clinical notes',
+    isDefault: false,
+    createdAt: new Date(Date.now() - 42 * 60 * 60 * 1000).toISOString(),
+    updatedAt: new Date(Date.now() - 42 * 60 * 60 * 1000).toISOString(),
+    trainingData: {
+      source: 'medical-records/',
+      files: 512,
+      totalSize: '18.9GB',
+    },
+    metrics: {
+      tokensPerSecond: 36,
+      accuracy: 98.5,
+    },
+    trainingJobId: 'job-006',
   },
 ];
 

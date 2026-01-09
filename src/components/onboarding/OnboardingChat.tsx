@@ -386,7 +386,7 @@ export function OnboardingChat({
                   'max-w-[80%] rounded-2xl px-4 py-3',
                   message.role === 'assistant'
                     ? 'bg-card text-foreground'
-                    : 'bg-primary text-white'
+                    : 'bg-blue-500/15 text-blue-400'
                 )}
               >
                 <p className="text-sm leading-relaxed">{message.content}</p>
@@ -453,7 +453,12 @@ export function OnboardingChat({
             <button
               type="submit"
               disabled={!input.trim() || isProcessing || showClusterScan}
-              className="h-11 w-11 sm:h-12 sm:w-12 rounded-xl bg-primary hover:bg-primary/90 disabled:bg-secondary disabled:cursor-not-allowed text-white flex items-center justify-center transition-colors flex-shrink-0"
+              className={cn(
+                "h-11 w-11 sm:h-12 sm:w-12 rounded-xl flex items-center justify-center transition-colors flex-shrink-0",
+                input.trim()
+                  ? "bg-blue-500/15 text-blue-500 hover:bg-blue-500/25"
+                  : "bg-secondary text-muted-foreground cursor-not-allowed"
+              )}
             >
               <SendIcon />
             </button>

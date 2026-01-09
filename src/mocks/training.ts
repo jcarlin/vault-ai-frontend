@@ -116,6 +116,23 @@ export const mockTrainingJobs: TrainingJob[] = [
     },
     allocation: 75,
   },
+  {
+    id: 'job-006',
+    name: 'Medical Records Summarizer',
+    status: 'completed',
+    progress: 100,
+    currentPhase: 'Complete',
+    startedAt: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString(),
+    estimatedCompletion: null,
+    completedAt: new Date(Date.now() - 42 * 60 * 60 * 1000).toISOString(),
+    metrics: {
+      stepsComplete: 95000,
+      totalSteps: 95000,
+      currentLoss: 0.0054,
+      validationAccuracy: 0.985,
+    },
+    allocation: 75,
+  },
 ];
 
 export const mockResourceAllocation: ResourceAllocation = {

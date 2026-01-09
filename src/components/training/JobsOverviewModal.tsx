@@ -14,6 +14,7 @@ import {
   formatTimeAgo,
   formatDuration,
 } from '@/mocks/training';
+import { mockModels } from '@/mocks/models';
 
 interface JobsOverviewModalProps {
   open: boolean;
@@ -22,6 +23,7 @@ interface JobsOverviewModalProps {
   onPauseJob: (jobId: string) => void;
   onResumeJob: (jobId: string) => void;
   onCancelJob: (jobId: string) => void;
+  onNavigateToModel?: (modelId: string) => void;
 }
 
 function PauseIcon() {
@@ -48,18 +50,30 @@ function StopIcon() {
   );
 }
 
+function ChevronRightIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
+      <polyline points="9 18 15 12 9 6" />
+    </svg>
+  );
+}
+
 function JobCard({
   job,
   onPause,
   onResume,
   onCancel,
+  onClick,
   showActions = false,
+  isClickable = false,
 }: {
   job: TrainingJob;
   onPause?: () => void;
   onResume?: () => void;
   onCancel?: () => void;
+  onClick?: () => void;
   showActions?: boolean;
+  isClickable?: boolean;
 }) {
   const timeRemaining = job.estimatedCompletion
     ? new Date(job.estimatedCompletion).getTime() - Date.now()
@@ -68,18 +82,33 @@ function JobCard({
   const isRunning = job.status === 'running';
   const isActive = isRunning || isPaused;
 
+  const CardWrapper = isClickable ? 'button' : 'div';
+
   return (
-    <div className="p-4 rounded-lg bg-zinc-800 border border-zinc-700 space-y-3">
+    <CardWrapper
+      onClick={isClickable ? onClick : undefined}
+      className={cn(
+        "p-4 rounded-lg bg-zinc-800 border border-zinc-700 space-y-3 w-full text-left",
+        isClickable && "hover:bg-zinc-700/50 hover:border-zinc-600 transition-colors cursor-pointer"
+      )}
+    >
       <div className="flex items-center justify-between">
         <span className="text-sm font-medium text-foreground">{job.name}</span>
-        <span
-          className={cn(
-            'text-[10px] font-medium uppercase tracking-wide px-2 py-0.5 rounded-full',
-            getStatusBgColor(job.status)
+        <div className="flex items-center gap-2">
+          <span
+            className={cn(
+              'text-[10px] font-medium uppercase tracking-wide px-2 py-0.5 rounded-full',
+              getStatusBgColor(job.status)
+            )}
+          >
+            {job.status}
+          </span>
+          {isClickable && (
+            <span className="text-muted-foreground">
+              <ChevronRightIcon />
+            </span>
           )}
-        >
-          {job.status}
-        </span>
+        </div>
       </div>
 
       {isActive && (
@@ -103,14 +132,20 @@ function JobCard({
             {showActions && (
               <div className="flex items-center gap-2">
                 <button
-                  onClick={isRunning ? onPause : onResume}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    isRunning ? onPause?.() : onResume?.();
+                  }}
                   className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-zinc-700 text-zinc-200 hover:bg-zinc-600 transition-colors text-xs font-medium"
                 >
                   {isRunning ? <PauseIcon /> : <PlayIcon />}
                   {isRunning ? 'Pause' : 'Resume'}
                 </button>
                 <button
-                  onClick={onCancel}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onCancel?.();
+                  }}
                   className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-zinc-700 text-red-400 hover:bg-red-500/20 transition-colors text-xs font-medium"
                 >
                   <StopIcon />
@@ -127,9 +162,14 @@ function JobCard({
       )}
 
       {job.status === 'completed' && job.completedAt && (
-        <p className="text-xs text-muted-foreground">
-          Completed {formatTimeAgo(job.completedAt)}
-        </p>
+        <div className="flex items-center justify-between">
+          <p className="text-xs text-muted-foreground">
+            Completed {formatTimeAgo(job.completedAt)}
+          </p>
+          {isClickable && (
+            <p className="text-xs text-blue-400">View model</p>
+          )}
+        </div>
       )}
 
       {job.status === 'cancelled' && job.completedAt && (
@@ -137,7 +177,7 @@ function JobCard({
           Cancelled {formatTimeAgo(job.completedAt)}
         </p>
       )}
-    </div>
+    </CardWrapper>
   );
 }
 
@@ -148,6 +188,7 @@ export function JobsOverviewModal({
   onPauseJob,
   onResumeJob,
   onCancelJob,
+  onNavigateToModel,
 }: JobsOverviewModalProps) {
   const [jobToCancel, setJobToCancel] = useState<TrainingJob | null>(null);
 
@@ -163,6 +204,18 @@ export function JobsOverviewModal({
     if (jobToCancel) {
       onCancelJob(jobToCancel.id);
       setJobToCancel(null);
+    }
+  };
+
+  const getModelIdForJob = (jobId: string): string | null => {
+    const model = mockModels.find(m => m.trainingJobId === jobId);
+    return model?.id || null;
+  };
+
+  const handleCompletedJobClick = (job: TrainingJob) => {
+    const modelId = getModelIdForJob(job.id);
+    if (modelId && onNavigateToModel) {
+      onNavigateToModel(modelId);
     }
   };
 
@@ -214,9 +267,17 @@ export function JobsOverviewModal({
                   Recent
                 </h3>
                 <div className="space-y-2">
-                  {recentJobs.map((job) => (
-                    <JobCard key={job.id} job={job} />
-                  ))}
+                  {recentJobs.map((job) => {
+                    const hasModel = job.status === 'completed' && getModelIdForJob(job.id);
+                    return (
+                      <JobCard
+                        key={job.id}
+                        job={job}
+                        isClickable={!!hasModel}
+                        onClick={() => handleCompletedJobClick(job)}
+                      />
+                    );
+                  })}
                 </div>
               </div>
             )}

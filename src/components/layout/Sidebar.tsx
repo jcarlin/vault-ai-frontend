@@ -25,6 +25,7 @@ interface SidebarProps {
   onSelectConversation?: (conversation: ChatConversation) => void;
   onNewChat?: () => void;
   selectedConversationId?: string | null;
+  onNavigateToModel?: (modelId: string) => void;
 }
 
 function PlusIcon() {
@@ -185,7 +186,7 @@ function ChevronRightIcon() {
   );
 }
 
-export function Sidebar({ trainingJobs, onPauseJob, onResumeJob, onCancelJob, developerMode, applications, onSelectApplication, onSelectConversation, onNewChat, selectedConversationId }: SidebarProps) {
+export function Sidebar({ trainingJobs, onPauseJob, onResumeJob, onCancelJob, developerMode, applications, onSelectApplication, onSelectConversation, onNewChat, selectedConversationId, onNavigateToModel }: SidebarProps) {
   const [showJobsModal, setShowJobsModal] = useState(false);
   const [activityItems, setActivityItems] = useState<ActivityItem[]>(mockActivity);
   const [itemToDelete, setItemToDelete] = useState<ActivityItem | null>(null);
@@ -317,6 +318,10 @@ export function Sidebar({ trainingJobs, onPauseJob, onResumeJob, onCancelJob, de
       onPauseJob={onPauseJob}
       onResumeJob={onResumeJob}
       onCancelJob={onCancelJob}
+      onNavigateToModel={(modelId) => {
+        setShowJobsModal(false);
+        onNavigateToModel?.(modelId);
+      }}
     />
 
     {/* Delete activity confirmation dialog */}

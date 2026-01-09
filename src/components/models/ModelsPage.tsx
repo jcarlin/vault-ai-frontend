@@ -1,10 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ModelList } from './ModelList';
 import { ModelDetailDialog } from './ModelDetailDialog';
 import { AddModelModal } from './AddModelModal';
 import { StorageIndicator } from './StorageIndicator';
 import { UploadModal } from '@/components/upload';
 import { mockModels, mockStorage, type Model } from '@/mocks/models';
+
+interface ModelsPageProps {
+  initialModelId?: string | null;
+  onClearInitialModel?: () => void;
+}
 
 function PlusIcon() {
   return (
@@ -33,11 +38,22 @@ function ShieldIcon() {
   );
 }
 
-export function ModelsPage() {
+export function ModelsPage({ initialModelId, onClearInitialModel }: ModelsPageProps) {
   const [models, setModels] = useState<Model[]>(mockModels);
   const [selectedModel, setSelectedModel] = useState<Model | null>(null);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showAddModelModal, setShowAddModelModal] = useState(false);
+
+  // Open initial model if provided
+  useEffect(() => {
+    if (initialModelId) {
+      const model = models.find(m => m.id === initialModelId);
+      if (model) {
+        setSelectedModel(model);
+      }
+      onClearInitialModel?.();
+    }
+  }, [initialModelId, models, onClearInitialModel]);
 
   const handleSetDefault = (model: Model) => {
     setModels(prev =>
