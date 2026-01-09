@@ -1,8 +1,11 @@
+import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
+  DialogFooter,
 } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import {
@@ -66,9 +69,9 @@ function JobCard({
   const isActive = isRunning || isPaused;
 
   return (
-    <div className="p-3 rounded-lg bg-zinc-800/50 border border-zinc-700/50 space-y-3">
+    <div className="p-4 rounded-lg bg-zinc-800 border border-zinc-700 space-y-3">
       <div className="flex items-center justify-between">
-        <span className="text-sm font-medium text-zinc-100">{job.name}</span>
+        <span className="text-sm font-medium text-foreground">{job.name}</span>
         <span
           className={cn(
             'text-[10px] font-medium uppercase tracking-wide px-2 py-0.5 rounded-full',
@@ -80,12 +83,8 @@ function JobCard({
       </div>
 
       {isActive && (
-        <div className="space-y-1.5">
-          <div className="flex justify-between text-xs text-zinc-400">
-            <span>{job.currentPhase}</span>
-            <span className="text-zinc-100">{job.progress}%</span>
-          </div>
-          <div className="h-1.5 bg-zinc-700 rounded-full overflow-hidden">
+        <div className="space-y-3">
+          <div className="h-2 bg-zinc-700 rounded-full overflow-hidden">
             <div
               className={cn(
                 'h-full rounded-full transition-all',
@@ -94,45 +93,49 @@ function JobCard({
               style={{ width: `${job.progress}%` }}
             />
           </div>
-          <div className="flex justify-between text-xs text-zinc-500">
+          <div className="flex items-center justify-between text-xs text-zinc-400">
             <span>
-              {job.metrics.stepsComplete.toLocaleString()} /{' '}
-              {job.metrics.totalSteps.toLocaleString()} steps
+              {job.progress}%
+              {!isPaused && timeRemaining && timeRemaining > 0 && ` • ${formatDuration(timeRemaining)}`}
+              {' • '}
+              {job.metrics.stepsComplete.toLocaleString()} / {job.metrics.totalSteps.toLocaleString()} steps
             </span>
-            {!isPaused && timeRemaining && timeRemaining > 0 && (
-              <span>~{formatDuration(timeRemaining)} left</span>
+            {showActions && (
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={isRunning ? onPause : onResume}
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-zinc-700 text-zinc-200 hover:bg-zinc-600 transition-colors text-xs font-medium"
+                >
+                  {isRunning ? <PauseIcon /> : <PlayIcon />}
+                  {isRunning ? 'Pause' : 'Resume'}
+                </button>
+                <button
+                  onClick={onCancel}
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-zinc-700 text-red-400 hover:bg-red-500/20 transition-colors text-xs font-medium"
+                >
+                  <StopIcon />
+                  Cancel
+                </button>
+              </div>
             )}
           </div>
         </div>
       )}
 
       {job.status === 'queued' && (
-        <p className="text-xs text-zinc-500">{job.currentPhase}</p>
+        <p className="text-xs text-muted-foreground">{job.currentPhase}</p>
       )}
 
       {job.status === 'completed' && job.completedAt && (
-        <p className="text-xs text-zinc-500">
+        <p className="text-xs text-muted-foreground">
           Completed {formatTimeAgo(job.completedAt)}
         </p>
       )}
 
-      {showActions && isActive && (
-        <div className="flex gap-2 pt-1">
-          <button
-            onClick={isRunning ? onPause : onResume}
-            className="flex-1 flex items-center justify-center gap-1.5 h-7 rounded-md border border-zinc-700 text-zinc-300 hover:bg-zinc-700/50 hover:text-zinc-100 transition-colors text-xs"
-          >
-            {isRunning ? <PauseIcon /> : <PlayIcon />}
-            {isRunning ? 'Pause' : 'Resume'}
-          </button>
-          <button
-            onClick={onCancel}
-            className="flex items-center justify-center gap-1.5 h-7 px-3 rounded-md border border-zinc-700 text-red-400 hover:bg-red-500/10 transition-colors text-xs"
-          >
-            <StopIcon />
-            Cancel
-          </button>
-        </div>
+      {job.status === 'cancelled' && job.completedAt && (
+        <p className="text-xs text-muted-foreground">
+          Cancelled {formatTimeAgo(job.completedAt)}
+        </p>
       )}
     </div>
   );
@@ -146,75 +149,112 @@ export function JobsOverviewModal({
   onResumeJob,
   onCancelJob,
 }: JobsOverviewModalProps) {
+  const [jobToCancel, setJobToCancel] = useState<TrainingJob | null>(null);
+
   const activeJobs = jobs.filter(
     (j) => j.status === 'running' || j.status === 'paused'
   );
   const queuedJobs = jobs.filter((j) => j.status === 'queued');
   const recentJobs = jobs.filter(
-    (j) => j.status === 'completed' || j.status === 'failed'
+    (j) => j.status === 'completed' || j.status === 'failed' || j.status === 'cancelled'
   );
 
+  const handleCancelConfirm = () => {
+    if (jobToCancel) {
+      onCancelJob(jobToCancel.id);
+      setJobToCancel(null);
+    }
+  };
+
   return (
-    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-      <DialogContent className="max-w-lg max-h-[70vh] flex flex-col">
-        <DialogHeader>
-          <DialogTitle>Training Jobs</DialogTitle>
-        </DialogHeader>
+    <>
+      <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
+        <DialogContent className="max-w-lg max-h-[70vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle>Training Jobs</DialogTitle>
+          </DialogHeader>
 
-        <div className="space-y-6 mt-2 overflow-y-auto flex-1 pr-2">
-          {activeJobs.length > 0 && (
-            <div className="space-y-3">
-              <h3 className="text-xs font-medium text-zinc-500 uppercase tracking-wider">
-                Active
-              </h3>
-              <div className="space-y-2">
-                {activeJobs.map((job) => (
-                  <JobCard
-                    key={job.id}
-                    job={job}
-                    showActions
-                    onPause={() => onPauseJob(job.id)}
-                    onResume={() => onResumeJob(job.id)}
-                    onCancel={() => onCancelJob(job.id)}
-                  />
-                ))}
+          <div className="space-y-6 mt-2 overflow-y-auto flex-1 pr-2">
+            {activeJobs.length > 0 && (
+              <div className="space-y-3">
+                <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  Active
+                </h3>
+                <div className="space-y-2">
+                  {activeJobs.map((job) => (
+                    <JobCard
+                      key={job.id}
+                      job={job}
+                      showActions
+                      onPause={() => onPauseJob(job.id)}
+                      onResume={() => onResumeJob(job.id)}
+                      onCancel={() => setJobToCancel(job)}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {queuedJobs.length > 0 && (
-            <div className="space-y-3">
-              <h3 className="text-xs font-medium text-zinc-500 uppercase tracking-wider">
-                Queued ({queuedJobs.length})
-              </h3>
-              <div className="space-y-2">
-                {queuedJobs.map((job) => (
-                  <JobCard key={job.id} job={job} />
-                ))}
+            {queuedJobs.length > 0 && (
+              <div className="space-y-3">
+                <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  Queued ({queuedJobs.length})
+                </h3>
+                <div className="space-y-2">
+                  {queuedJobs.map((job) => (
+                    <JobCard key={job.id} job={job} />
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {recentJobs.length > 0 && (
-            <div className="space-y-3">
-              <h3 className="text-xs font-medium text-zinc-500 uppercase tracking-wider">
-                Recent
-              </h3>
-              <div className="space-y-2">
-                {recentJobs.map((job) => (
-                  <JobCard key={job.id} job={job} />
-                ))}
+            {recentJobs.length > 0 && (
+              <div className="space-y-3">
+                <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  Recent
+                </h3>
+                <div className="space-y-2">
+                  {recentJobs.map((job) => (
+                    <JobCard key={job.id} job={job} />
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {jobs.length === 0 && (
-            <p className="text-sm text-zinc-500 text-center py-8">
-              No training jobs
-            </p>
-          )}
-        </div>
-      </DialogContent>
-    </Dialog>
+            {jobs.length === 0 && (
+              <p className="text-sm text-muted-foreground text-center py-8">
+                No training jobs
+              </p>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Cancel confirmation dialog */}
+      <Dialog open={!!jobToCancel} onOpenChange={(isOpen) => !isOpen && setJobToCancel(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader className="space-y-3">
+            <DialogTitle>Cancel Training Job?</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to cancel "{jobToCancel?.name}"? This action cannot be undone and all progress will be lost.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-3 mt-4">
+            <button
+              onClick={() => setJobToCancel(null)}
+              className="px-4 py-2 rounded-md bg-zinc-700 text-zinc-200 hover:bg-zinc-600 transition-colors text-sm font-medium"
+            >
+              Keep Training
+            </button>
+            <button
+              onClick={handleCancelConfirm}
+              className="px-4 py-2 rounded-md bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-colors text-sm font-medium"
+            >
+              Cancel Job
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

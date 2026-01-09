@@ -271,26 +271,26 @@ export function Sidebar({ trainingJobs, onPauseJob, onResumeJob, onCancelJob, de
         </div>
       </div>
 
-      {/* Training jobs summary - fixed to bottom */}
-      {activeJobs.length > 0 && jobsLabel && (
-        <div className="border-t border-border bg-card/50 p-3">
+      {/* Training jobs section - fixed to bottom */}
+      <div className="border-t border-border bg-card/50 p-3">
+        <div className="px-1 pb-2">
+          <div className="flex items-center gap-2 text-[10px] font-medium text-muted-foreground uppercase tracking-widest">
+            <TrainingIcon />
+            Jobs
+          </div>
+        </div>
+        {activeJobs.length > 0 && jobsLabel ? (
           <button
             onClick={() => setShowJobsModal(true)}
             className="w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-secondary/50 transition-colors"
           >
-            <div className="flex items-center gap-2">
-              <span className={cn(
-                "h-6 w-6 rounded-md flex items-center justify-center",
-                runningCount > 0 ? "bg-blue-500/15 text-blue-400" : "bg-zinc-500/15 text-zinc-400"
-              )}>
-                <TrainingIcon />
-              </span>
-              <span className="text-sm text-foreground">{jobsLabel}</span>
-            </div>
+            <span className="text-sm text-foreground">{jobsLabel}</span>
             <ChevronRightIcon />
           </button>
-        </div>
-      )}
+        ) : (
+          <p className="px-3 py-2 text-xs text-muted-foreground">No active jobs</p>
+        )}
+      </div>
 
     </aside>
 

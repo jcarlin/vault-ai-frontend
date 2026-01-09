@@ -142,7 +142,7 @@ export function useTrainingJobs(
     setJobs((prev) =>
       prev.map((job) =>
         job.id === jobId && (job.status === 'running' || job.status === 'paused' || job.status === 'queued')
-          ? { ...job, status: 'failed' as const, currentPhase: 'Cancelled', error: 'Job cancelled by user' }
+          ? { ...job, status: 'cancelled' as const, currentPhase: 'Cancelled', completedAt: new Date().toISOString() }
           : job
       )
     );

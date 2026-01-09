@@ -1,4 +1,4 @@
-export type TrainingStatus = 'queued' | 'running' | 'paused' | 'completed' | 'failed';
+export type TrainingStatus = 'queued' | 'running' | 'paused' | 'completed' | 'failed' | 'cancelled';
 
 export interface TrainingMetrics {
   stepsComplete: number;
@@ -186,6 +186,7 @@ export function getStatusColor(status: TrainingStatus): string {
     case 'completed':
       return 'text-emerald-400';
     case 'failed':
+    case 'cancelled':
       return 'text-red-500';
   }
 }
@@ -201,6 +202,7 @@ export function getStatusBgColor(status: TrainingStatus): string {
     case 'completed':
       return 'bg-emerald-500/10 text-emerald-400';
     case 'failed':
+    case 'cancelled':
       return 'bg-red-500/10 text-red-500';
   }
 }
