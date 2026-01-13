@@ -1,30 +1,31 @@
 # Vault AI Systems Prototype
 
-## Context
-Functional prototype for demo purposes. Prioritize speed and clarity over robustness.
+Functional prototype for demo. Prioritize speed and clarity over robustness.
 
-## Tech Stack
-- React 19 + TypeScript + Vite 7
-- Tailwind CSS v4
-- shadcn/ui components
-- Mock data (no backend)
+## Stack
+React 19 + TypeScript + Vite 7 + Tailwind v4 + shadcn/ui. Mock data only (no backend).
 
-## Project Structure
+## Commands
+```bash
+npm run dev    # Dev server
+npm run build  # Production build
+```
+
+## Structure
 ```
 src/
 ├── components/
 │   ├── chat/        # ChatPanel, ChatInput, ChatMessage
 │   ├── cluster/     # ClusterHealth, CubeDetailDialog
-│   ├── insights/    # InsightsPage, charts
+│   ├── insights/    # InsightsPage, UsageChart, ModelUsageChart, PerformanceChart
 │   ├── layout/      # Dashboard, Sidebar
 │   ├── models/      # ModelsPage, AddModelModal
-│   ├── onboarding/  # OnboardingFlow
+│   ├── training/    # JobsPage, JobDetailModal, TrainingJobList
 │   ├── settings/    # SettingsPage, SettingsSidebar
-│   ├── training/    # TrainingJobList, TrainingJobDetail
 │   ├── ui/          # shadcn primitives
 │   └── upload/      # UploadModal
-├── hooks/           # useChat, useTrainingJobs, useOnboarding, etc.
-├── mocks/           # Mock data (cluster, chat, training, models, etc.)
+├── hooks/           # useChat, useTrainingJobs, etc.
+├── mocks/           # Mock data (cluster, chat, training, models, activity, insights)
 └── lib/utils.ts     # cn() helper
 ```
 
@@ -32,21 +33,13 @@ src/
 - Path alias: `@/` → `./src/`
 - Use `cn()` for conditional classnames
 - Status colors: emerald (healthy/running), amber (warning/paused), red (error)
-- Dark theme: zinc-950 bg, zinc-900 cards, zinc-800 borders
+- Primary blue: `#4369cf` (hover: `#5a7fd9`)
+- Card backgrounds: `bg-zinc-800/50 border-zinc-700/50`
+- Dark theme: zinc-950 bg, zinc-900 surfaces
 
-## Commands
-```bash
-npm run dev    # Start dev server
-npm run build  # Production build
-```
-
-## Key Features
-- Chat-first interface with model selector
-- Cluster health monitoring (4 cubes)
-- Training job management with pause/resume
-- Resource allocation between training and chat
-- Settings with sidebar navigation
-- Developer/Advanced mode toggle
-- Onboarding flow (reset via Settings > System)
-
-See `notes.md` for detailed implementation notes.
+## Pages
+- **Chat**: Chat-first interface with model selector
+- **Insights**: Token usage, model usage, response time, metrics
+- **Models**: Model library with training status
+- **Jobs**: Training job list with detail modals
+- **Settings**: Sidebar navigation, developer mode toggle
