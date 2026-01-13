@@ -7,8 +7,23 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { type ModelUsage } from '@/mocks/insights';
+
+function LayersIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      className="h-5 w-5 text-muted-foreground"
+    >
+      <polygon points="12 2 2 7 12 12 22 7 12 2" />
+      <polyline points="2 17 12 22 22 17" />
+      <polyline points="2 12 12 17 22 12" />
+    </svg>
+  );
+}
 
 interface ModelUsageChartProps {
   data: ModelUsage[];
@@ -37,18 +52,25 @@ function CustomTooltip({ active, payload }: CustomTooltipProps) {
 }
 
 export function ModelUsageChart({ data }: ModelUsageChartProps) {
+  const totalQueries = data.reduce((sum, d) => sum + d.queries, 0);
+
   return (
-    <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-base">Model Usage</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="h-[250px]">
+    <div className="rounded-xl border border-zinc-700/50 bg-zinc-800/50 p-4 h-full flex flex-col">
+      <div className="flex items-center gap-2 mb-2">
+        <LayersIcon />
+        <span className="text-sm font-medium text-muted-foreground">Model Usage</span>
+      </div>
+      <div className="mb-3">
+        <p className="text-2xl font-semibold">{totalQueries.toLocaleString()}</p>
+        <p className="text-xs text-muted-foreground">Total queries across models</p>
+      </div>
+      <div className="flex-1 min-h-[320px]">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={data}
               layout="vertical"
               margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
+              barCategoryGap="40%"
             >
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false} />
               <XAxis
@@ -67,12 +89,17 @@ export function ModelUsageChart({ data }: ModelUsageChartProps) {
                 axisLine={false}
                 width={100}
               />
-              <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted))' }} />
-              <Bar dataKey="queries" fill="#3b82f6" radius={[0, 4, 4, 0]} />
+              <Tooltip content={<CustomTooltip />} cursor={false} />
+              <Bar
+                dataKey="queries"
+                fill="#4369cf"
+                radius={[0, 4, 4, 0]}
+                barSize={28}
+                activeBar={{ fill: '#5a7fd9' }}
+              />
             </BarChart>
           </ResponsiveContainer>
         </div>
-      </CardContent>
-    </Card>
+    </div>
   );
 }

@@ -1,151 +1,96 @@
-import { useState } from 'react';
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
-} from 'recharts';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { type UsageDataPoint, type TimeRange } from '@/mocks/insights';
+import { type UsageDataPoint } from '@/mocks/insights';
 
-interface UsageChartProps {
-  data: UsageDataPoint[];
-  timeRange: TimeRange;
-  onTimeRangeChange: (range: TimeRange) => void;
-}
-
-const timeRanges: { value: TimeRange; label: string }[] = [
-  { value: '24h', label: '24h' },
-  { value: '7d', label: '7d' },
-  { value: '30d', label: '30d' },
-  { value: '90d', label: '90d' },
-];
-
-interface CustomTooltipProps {
-  active?: boolean;
-  payload?: Array<{
-    name: string;
-    value: number;
-    color: string;
-  }>;
-  label?: string;
-}
-
-function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
-  if (!active || !payload) return null;
-
+function ChartIcon() {
   return (
-    <div className="bg-popover border rounded-lg shadow-lg p-3 text-sm">
-      <p className="font-medium mb-2">{label}</p>
-      {payload.map((entry, index) => (
-        <div key={index} className="flex items-center gap-2">
-          <span
-            className="w-2 h-2 rounded-full"
-            style={{ backgroundColor: entry.color }}
-          />
-          <span className="text-muted-foreground">{entry.name}:</span>
-          <span className="font-medium">{entry.value.toLocaleString()}</span>
-        </div>
-      ))}
-    </div>
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      className="h-5 w-5 text-muted-foreground"
+    >
+      <line x1="18" y1="20" x2="18" y2="10" />
+      <line x1="12" y1="20" x2="12" y2="4" />
+      <line x1="6" y1="20" x2="6" y2="14" />
+    </svg>
   );
 }
 
-export function UsageChart({ data, timeRange, onTimeRangeChange }: UsageChartProps) {
-  const [activeMetric, setActiveMetric] = useState<'queries' | 'tokens' | 'both'>('both');
+interface UsageChartProps {
+  data: UsageDataPoint[];
+}
+
+function formatTokens(num: number | undefined): string {
+  if (num === undefined || num === null) return '0';
+  if (num >= 1000000) {
+    return (num / 1000000).toFixed(1) + 'M';
+  }
+  if (num >= 1000) {
+    return (num / 1000).toFixed(0) + 'K';
+  }
+  return num.toLocaleString();
+}
+
+function formatDateShort(dateStr: string): string {
+  // Convert "2025-12-15" to "12/15"
+  const parts = dateStr.split('-');
+  if (parts.length === 3) {
+    return `${parts[1]}/${parts[2]}`;
+  }
+  return dateStr;
+}
+
+export function UsageChart({ data }: UsageChartProps) {
+  const maxTokens = Math.max(...data.map(d => d.totalTokens || 0));
+  const totalTokens = data.reduce((sum, d) => sum + (d.totalTokens || 0), 0);
 
   return (
-    <Card>
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between flex-wrap gap-2">
-          <CardTitle className="text-base">Usage Over Time</CardTitle>
-          <div className="flex items-center gap-2">
-            <div className="flex rounded-lg border p-0.5">
-              {timeRanges.map((range) => (
-                <Button
-                  key={range.value}
-                  variant={timeRange === range.value ? 'default' : 'ghost'}
-                  size="sm"
-                  className={`h-7 px-3 text-xs ${timeRange === range.value ? 'bg-blue-500 hover:bg-blue-600 text-white' : ''}`}
-                  onClick={() => onTimeRangeChange(range.value)}
-                >
-                  {range.label}
-                </Button>
-              ))}
+    <div className="rounded-xl border border-zinc-700/50 bg-zinc-800/50 p-4 h-full flex flex-col">
+      <div className="mb-3">
+        <div className="flex items-center gap-2 mb-2">
+          <ChartIcon />
+          <span className="text-sm font-medium text-muted-foreground">Token Usage</span>
+        </div>
+        <p className="text-2xl font-semibold">{formatTokens(totalTokens)}</p>
+        <p className="text-xs text-muted-foreground">Total tokens this period</p>
+      </div>
+      <div className="flex-1 flex flex-col min-h-0">
+        {/* Bar chart visualization */}
+        <div className="flex-1 flex items-end gap-1 min-h-[120px]">
+          {data.map((item, index) => {
+            const tokens = item.totalTokens || 0;
+            const height = maxTokens > 0 ? (tokens / maxTokens) * 100 : 0;
+            return (
+              <div
+                key={index}
+                className="flex-1 group relative h-full flex items-end"
+              >
+                <div
+                  className="w-full rounded-t transition-all"
+                  style={{ height: `${Math.max(height, 2)}%`, backgroundColor: '#4369cf' }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#5a7fd9'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#4369cf'}
+                />
+                {/* Tooltip */}
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-popover border rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                  <p className="font-medium">{item.date}</p>
+                  <p className="text-muted-foreground">{formatTokens(tokens)}</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        {/* X-axis labels */}
+        <div className="flex gap-1 mt-2">
+          {data.map((item, index) => (
+            <div key={index} className="flex-1 text-center">
+              {(index === 0 || index === data.length - 1 || index === Math.floor(data.length / 2)) && (
+                <span className="text-[10px] text-muted-foreground whitespace-nowrap">{formatDateShort(item.date)}</span>
+              )}
             </div>
-          </div>
+          ))}
         </div>
-      </CardHeader>
-      <CardContent>
-        <div className="h-[300px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis
-                dataKey="date"
-                tick={{ fontSize: 12, fill: '#a1a1aa' }}
-                stroke="#52525b"
-                tickLine={false}
-              />
-              <YAxis
-                yAxisId="left"
-                tick={{ fontSize: 12, fill: '#a1a1aa' }}
-                stroke="#52525b"
-                tickLine={false}
-                axisLine={false}
-              />
-              <YAxis
-                yAxisId="right"
-                orientation="right"
-                tick={{ fontSize: 12, fill: '#a1a1aa' }}
-                stroke="#52525b"
-                tickLine={false}
-                axisLine={false}
-              />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend
-                wrapperStyle={{ fontSize: '12px' }}
-                onClick={(e) => {
-                  if (e.dataKey === 'queries') {
-                    setActiveMetric(activeMetric === 'queries' ? 'both' : 'queries');
-                  } else {
-                    setActiveMetric(activeMetric === 'tokens' ? 'both' : 'tokens');
-                  }
-                }}
-              />
-              {(activeMetric === 'queries' || activeMetric === 'both') && (
-                <Line
-                  yAxisId="left"
-                  type="monotone"
-                  dataKey="queries"
-                  name="Queries"
-                  stroke="#3b82f6"
-                  strokeWidth={2}
-                  dot={false}
-                  activeDot={{ r: 4 }}
-                />
-              )}
-              {(activeMetric === 'tokens' || activeMetric === 'both') && (
-                <Line
-                  yAxisId="right"
-                  type="monotone"
-                  dataKey="avgTokensPerSec"
-                  name="Avg Tokens/sec"
-                  stroke="#60a5fa"
-                  strokeWidth={2}
-                  dot={false}
-                  activeDot={{ r: 4 }}
-                />
-              )}
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
