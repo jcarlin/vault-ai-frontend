@@ -9,6 +9,7 @@ export interface UsageDataPoint {
   queries: number;
   avgTokensPerSec: number;
   computeUtilization: number;
+  totalTokens: number;
 }
 
 export interface ResponseTimeDistribution {
@@ -50,11 +51,14 @@ function generateUsageHistory(days: number): UsageDataPoint[] {
     const baseQueries = 400 + Math.random() * 200;
     const weekendFactor = [0, 6].includes(date.getDay()) ? 0.6 : 1;
 
+    const queries = Math.round(baseQueries * weekendFactor * (0.8 + Math.random() * 0.4));
+    const avgTokensPerSec = Math.round(1100 + Math.random() * 400);
     data.push({
       date: date.toISOString().split('T')[0],
-      queries: Math.round(baseQueries * weekendFactor * (0.8 + Math.random() * 0.4)),
-      avgTokensPerSec: Math.round(1100 + Math.random() * 400),
+      queries,
+      avgTokensPerSec,
       computeUtilization: Math.round(25 + Math.random() * 30),
+      totalTokens: Math.round(queries * avgTokensPerSec * 0.8), // estimate tokens used
     });
   }
 
@@ -73,11 +77,14 @@ function generateHourlyHistory(): UsageDataPoint[] {
     const hour = date.getHours();
     const workHourFactor = hour >= 9 && hour <= 17 ? 1.5 : 0.7;
 
+    const queries = Math.round(20 * workHourFactor * (0.7 + Math.random() * 0.6));
+    const avgTokensPerSec = Math.round(1100 + Math.random() * 400);
     data.push({
       date: `${hour}:00`,
-      queries: Math.round(20 * workHourFactor * (0.7 + Math.random() * 0.6)),
-      avgTokensPerSec: Math.round(1100 + Math.random() * 400),
+      queries,
+      avgTokensPerSec,
       computeUtilization: Math.round(20 + Math.random() * 40 * workHourFactor),
+      totalTokens: Math.round(queries * avgTokensPerSec * 0.8),
     });
   }
 

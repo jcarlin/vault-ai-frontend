@@ -32,7 +32,7 @@ function TrendIcon({ direction }: { direction: 'up' | 'down' }) {
 
 export function MetricCard({ title, value, subtitle, change, icon }: MetricCardProps) {
   return (
-    <Card className="py-4">
+    <Card className="py-4 bg-zinc-800/50 border-zinc-700/50">
       <CardContent>
         <div className="flex items-center gap-2 mb-1">
           {icon && (
