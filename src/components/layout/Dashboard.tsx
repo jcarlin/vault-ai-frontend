@@ -5,6 +5,7 @@ import { ClusterHealth } from '@/components/cluster';
 import { ChatPanel } from '@/components/chat';
 import { Sidebar } from './Sidebar';
 import { SettingsSidebar } from '@/components/settings/SettingsSidebar';
+import { JobDetailModal } from '@/components/training';
 import { type ClusterHealth as ClusterHealthType } from '@/mocks/cluster';
 import { type TrainingJob, type ResourceAllocation } from '@/mocks/training';
 import { type Application } from '@/hooks/useDeveloperMode';
@@ -12,7 +13,7 @@ import { type ChatConversation } from '@/mocks/activity';
 import { type SettingsCategory } from '@/mocks/settings';
 import VaultLogo from '@/assets/vault_logo_color.svg';
 
-type Page = 'dashboard' | 'insights' | 'models' | 'settings' | 'application';
+type Page = 'dashboard' | 'insights' | 'models' | 'jobs' | 'settings' | 'application';
 
 interface DashboardProps {
   cluster: ClusterHealthType;
@@ -129,6 +130,15 @@ function CodeIcon() {
   );
 }
 
+function BriefcaseIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
+      <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+      <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+    </svg>
+  );
+}
+
 function Toggle({ checked, onChange }: { checked: boolean; onChange: () => void }) {
   return (
     <button
@@ -180,6 +190,7 @@ export function Dashboard({
   const [showDevModeConfirm, setShowDevModeConfirm] = useState(false);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const [selectedConversation, setSelectedConversation] = useState<ChatConversation | null>(null);
+  const [selectedJob, setSelectedJob] = useState<TrainingJob | null>(null);
 
   const handleSelectConversation = (conversation: ChatConversation) => {
     setSelectedConversation(conversation);
@@ -208,7 +219,7 @@ export function Dashboard({
   };
 
   // Show sidebar on main pages and settings
-  const showSidebar = currentPage === 'dashboard' || currentPage === 'insights' || currentPage === 'models' || currentPage === 'settings';
+  const showSidebar = currentPage === 'dashboard' || currentPage === 'insights' || currentPage === 'models' || currentPage === 'jobs' || currentPage === 'settings';
   const isSettingsPage = currentPage === 'settings';
 
   return (
@@ -240,7 +251,7 @@ export function Dashboard({
             ) : (
               <button
                 onClick={handleNewChat}
-                className="flex items-center gap-2.5 hover:opacity-80 transition-opacity"
+                className="flex items-center gap-2.5 hover:opacity-80 transition-opacity cursor-pointer"
               >
                 <img src={VaultLogo} alt="Vault AI Systems" className="h-6" />
                 {developerMode && (
@@ -274,7 +285,11 @@ export function Dashboard({
               onSelectConversation={handleSelectConversation}
               onNewChat={handleNewChat}
               selectedConversationId={selectedConversation?.id}
-              onNavigateToModel={onNavigateToModel}
+              onViewAllJobs={() => onNavigate('jobs')}
+              onSelectJob={(job) => {
+                setSelectedJob(job);
+                setShowMobileSidebar(false);
+              }}
             />
           )}
         </div>
@@ -335,6 +350,18 @@ export function Dashboard({
                 >
                   <Coins className="h-4 w-4" />
                   <span className="hidden sm:inline">Models</span>
+                </button>
+                <button
+                  onClick={() => onNavigate('jobs')}
+                  className={cn(
+                    "flex items-center gap-1.5 h-7 px-2 sm:px-3 rounded-md text-xs font-medium transition-colors",
+                    currentPage === 'jobs'
+                      ? "bg-secondary text-foreground"
+                      : "text-muted-foreground hover:text-foreground/80"
+                  )}
+                >
+                  <BriefcaseIcon />
+                  <span className="hidden sm:inline">Jobs</span>
                 </button>
               </div>
             )}
@@ -492,6 +519,15 @@ export function Dashboard({
           </div>
         </>
       )}
+
+      {/* Job Detail Modal - from sidebar */}
+      <JobDetailModal
+        job={selectedJob}
+        onClose={() => setSelectedJob(null)}
+        onPauseJob={onPauseJob}
+        onResumeJob={onResumeJob}
+        onCancelJob={onCancelJob}
+      />
     </div>
   );
 }

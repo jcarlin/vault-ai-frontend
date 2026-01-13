@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Dashboard, ApplicationPlaceholder } from '@/components/layout';
 import { InsightsPage } from '@/components/insights';
 import { ModelsPage } from '@/components/models';
+import { JobsPage } from '@/components/training';
 import { SettingsPage } from '@/components/settings';
 import { OnboardingFlow } from '@/components/onboarding';
 import { useClusterHealth } from '@/hooks/useClusterHealth';
@@ -10,7 +11,7 @@ import { useDeveloperMode, type Application } from '@/hooks/useDeveloperMode';
 import { useOnboarding } from '@/hooks/useOnboarding';
 import { type SettingsCategory } from '@/mocks/settings';
 
-type Page = 'dashboard' | 'insights' | 'models' | 'settings' | 'application';
+type Page = 'dashboard' | 'insights' | 'models' | 'jobs' | 'settings' | 'application';
 
 function App() {
   const [currentPage, setCurrentPage] = useState<Page>('dashboard');
@@ -105,6 +106,14 @@ function App() {
         <ModelsPage
           initialModelId={initialModelId}
           onClearInitialModel={handleClearInitialModel}
+        />
+      ) : currentPage === 'jobs' ? (
+        <JobsPage
+          jobs={jobs}
+          onPauseJob={pauseJob}
+          onResumeJob={resumeJob}
+          onCancelJob={cancelJob}
+          onNavigateToModel={handleNavigateToModel}
         />
       ) : currentPage === 'settings' ? (
         <SettingsPage activeCategory={settingsCategory} onRestartSetup={resetOnboarding} />
