@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { ModelList } from './ModelList';
 import { ModelDetailDialog } from './ModelDetailDialog';
 import { StorageIndicator } from './StorageIndicator';
+import { MockBadge } from '@/components/ui/MockBadge';
 import { mockStorage, type Model } from '@/mocks/models';
 import { fetchModels } from '@/lib/api/models';
 import type { ModelInfo } from '@/types/api';
@@ -51,7 +52,10 @@ export function ModelsPage() {
         </div>
 
         {/* Storage Indicator */}
-        <StorageIndicator storage={mockStorage} />
+        <div className="relative">
+          <MockBadge className="absolute top-3 right-3 z-10" />
+          <StorageIndicator storage={mockStorage} />
+        </div>
 
         {/* Model List */}
         {isLoading ? (

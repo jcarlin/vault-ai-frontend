@@ -829,6 +829,10 @@ export interface components {
             session_timeout: number;
             /** Max Upload Size */
             max_upload_size: number;
+            /** Debug Logging */
+            debug_logging: boolean;
+            /** Diagnostics Enabled */
+            diagnostics_enabled: boolean;
         };
         /** SystemSettingsUpdate */
         SystemSettingsUpdate: {
@@ -844,6 +848,10 @@ export interface components {
             session_timeout?: number | null;
             /** Max Upload Size */
             max_upload_size?: number | null;
+            /** Debug Logging */
+            debug_logging?: boolean | null;
+            /** Diagnostics Enabled */
+            diagnostics_enabled?: boolean | null;
         };
         /**
          * TimeRange
@@ -1037,10 +1045,6 @@ export interface components {
             msg: string;
             /** Error Type */
             type: string;
-            /** Input */
-            input?: unknown;
-            /** Context */
-            ctx?: Record<string, never>;
         };
     };
     responses: never;

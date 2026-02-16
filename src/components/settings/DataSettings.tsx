@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { MockBadge } from '@/components/ui/MockBadge';
 import { mockStorage } from '@/mocks/models';
 
 interface DataSettingsProps {
@@ -121,11 +122,14 @@ export function DataSettings({ onSave }: DataSettingsProps) {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-xl font-semibold text-zinc-100">Data Controls</h2>
-        <p className="text-sm text-zinc-500 mt-1">
-          Export, archive, and manage your data
-        </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h2 className="text-xl font-semibold text-zinc-100">Data Controls</h2>
+          <p className="text-sm text-zinc-500 mt-1">
+            Export, archive, and manage your data
+          </p>
+        </div>
+        <MockBadge />
       </div>
 
       {/* Storage usage */}

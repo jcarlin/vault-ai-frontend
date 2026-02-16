@@ -8,6 +8,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
+import { MockBadge } from '@/components/ui/MockBadge';
 import {
   type TrainingJob,
   getStatusBgColor,
@@ -327,11 +328,14 @@ export function JobsPage({
       <div className="max-w-3xl mx-auto space-y-4 sm:space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-foreground">Jobs</h1>
-            <p className="text-muted-foreground text-sm mt-1 hidden sm:block">
-              Manage and monitor your training jobs
-            </p>
+          <div className="flex items-center gap-2">
+            <div>
+              <h1 className="text-xl sm:text-2xl font-bold text-foreground">Jobs</h1>
+              <p className="text-muted-foreground text-sm mt-1 hidden sm:block">
+                Manage and monitor your training jobs
+              </p>
+            </div>
+            <MockBadge className="self-start mt-1" />
           </div>
           <button
             onClick={() => setShowNewJobModal(true)}

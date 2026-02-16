@@ -3,9 +3,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { listApiKeys, createApiKey, deleteApiKey } from '@/lib/api/admin';
-import { getSystemResources } from '@/lib/api/system';
-import { mockAdvancedConfig } from '@/mocks/settings';
-import type { KeyResponse, SystemResources } from '@/types/api';
+import { getSystemResources, getSystemSettings, updateSystemSettings } from '@/lib/api/system';
+import { MockBadge } from '@/components/ui/MockBadge';
+import type { KeyResponse, SystemResources, SystemSettingsResponse } from '@/types/api';
 
 interface AdvancedSettingsProps {
   onSave: () => void;
@@ -14,11 +14,13 @@ interface AdvancedSettingsProps {
 function Toggle({
   checked,
   onChange,
+  disabled,
   label,
   description,
 }: {
   checked: boolean;
   onChange: (checked: boolean) => void;
+  disabled?: boolean;
   label: string;
   description?: string;
 }) {
@@ -32,10 +34,12 @@ function Toggle({
         type="button"
         role="switch"
         aria-checked={checked}
+        disabled={disabled}
         onClick={() => onChange(!checked)}
         className={cn(
           'relative inline-flex h-5 w-9 items-center rounded-full transition-colors flex-shrink-0 ml-4',
-          checked ? 'bg-[var(--green-600)]' : 'bg-zinc-700'
+          checked ? 'bg-[var(--green-600)]' : 'bg-zinc-700',
+          disabled && 'opacity-50 cursor-not-allowed'
         )}
       >
         <span
@@ -110,9 +114,16 @@ function ApiKeyRow({
 
 export function AdvancedSettings({ onSave }: AdvancedSettingsProps) {
   const queryClient = useQueryClient();
-  const [config, setConfig] = useState(mockAdvancedConfig);
   const [copied, setCopied] = useState(false);
   const [newKeyLabel, setNewKeyLabel] = useState('');
+
+  const { data: systemSettings } = useQuery<SystemSettingsResponse>({
+    queryKey: ['systemSettings'],
+    queryFn: ({ signal }) => getSystemSettings(signal),
+  });
+
+  const debugLogging = systemSettings?.debug_logging ?? false;
+  const diagnosticsEnabled = systemSettings?.diagnostics_enabled ?? true;
 
   const { data: apiKeys = [] } = useQuery<KeyResponse[]>({
     queryKey: ['apiKeys'],
@@ -122,8 +133,17 @@ export function AdvancedSettings({ onSave }: AdvancedSettingsProps) {
   const { data: resources } = useQuery<SystemResources>({
     queryKey: ['systemResources'],
     queryFn: ({ signal }) => getSystemResources(signal),
-    enabled: config.diagnosticsEnabled,
+    enabled: diagnosticsEnabled,
     refetchInterval: 10_000,
+  });
+
+  const updateSettingsMutation = useMutation({
+    mutationFn: (data: { debug_logging?: boolean; diagnostics_enabled?: boolean }) =>
+      updateSystemSettings(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['systemSettings'] });
+      onSave();
+    },
   });
 
   const createKeyMutation = useMutation({
@@ -199,21 +219,23 @@ export function AdvancedSettings({ onSave }: AdvancedSettingsProps) {
       <div className="rounded-lg bg-zinc-800/50 p-4">
         <h3 className="text-sm font-medium text-zinc-300 mb-3">Debug</h3>
         <Toggle
-          checked={config.debugLogging}
-          onChange={(v) => setConfig({ ...config, debugLogging: v })}
+          checked={debugLogging}
+          disabled={updateSettingsMutation.isPending}
+          onChange={(v) => updateSettingsMutation.mutate({ debug_logging: v })}
           label="Debug Logging"
           description="Enable verbose logging for troubleshooting"
         />
         <Toggle
-          checked={config.diagnosticsEnabled}
-          onChange={(v) => setConfig({ ...config, diagnosticsEnabled: v })}
+          checked={diagnosticsEnabled}
+          disabled={updateSettingsMutation.isPending}
+          onChange={(v) => updateSettingsMutation.mutate({ diagnostics_enabled: v })}
           label="System Diagnostics"
           description="Collect performance metrics and system health data"
         />
       </div>
 
       {/* System diagnostics — from real API when available */}
-      {config.diagnosticsEnabled && (
+      {diagnosticsEnabled && (
         <div className="rounded-lg bg-zinc-800/50 p-4">
           <h3 className="text-sm font-medium text-zinc-300 mb-3">System Diagnostics</h3>
           {resources ? (
@@ -243,6 +265,10 @@ export function AdvancedSettings({ onSave }: AdvancedSettingsProps) {
             </>
           ) : (
             <>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs text-zinc-500 italic">Fallback data — backend unavailable</span>
+                <MockBadge />
+              </div>
               <DiagnosticItem label="CPU Usage" status="ok" value="23%" />
               <DiagnosticItem label="Memory Usage" status="ok" value="4.2 GB / 64 GB" />
               <DiagnosticItem label="GPU Temperature" status="ok" value="62°C" />
