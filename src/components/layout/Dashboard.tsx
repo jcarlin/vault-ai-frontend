@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Code, ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -10,6 +10,7 @@ import { DevModeConfirmDialog } from './DevModeConfirmDialog';
 import { SettingsSidebar } from '@/components/settings/SettingsSidebar';
 import { useDeveloperMode } from '@/hooks/useDeveloperMode';
 import { useHealthQuery } from '@/hooks/useClusterHealth';
+import { isOnboardingComplete, completeOnboarding } from '@/lib/onboarding';
 import { type SettingsCategory } from '@/mocks/settings';
 import VaultLogo from '@/assets/vault_logo_color.svg';
 import type { Conversation } from '@/types/chat';
@@ -24,6 +25,12 @@ export function Dashboard() {
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const [settingsCategory, setSettingsCategory] = useState<SettingsCategory>('network');
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
+  const [onboardingActive, setOnboardingActive] = useState(() => !isOnboardingComplete());
+
+  const dismissOnboarding = useCallback(() => {
+    completeOnboarding();
+    setOnboardingActive(false);
+  }, []);
 
   const { data: health, isError: healthError } = useHealthQuery();
 
@@ -33,12 +40,15 @@ export function Dashboard() {
   const showSidebar = ['/', '/insights', '/models', '/settings'].includes(location.pathname);
 
   const handleSelectConversation = (conversation: Conversation) => {
+    if (onboardingActive) dismissOnboarding();
     setSelectedConversation(conversation);
     setShowMobileSidebar(false);
     if (location.pathname !== '/') navigate('/');
   };
 
   const handleNewChat = () => {
+    // If onboarding is active and a conversation already exists, dismiss it
+    if (onboardingActive && selectedConversation) dismissOnboarding();
     setSelectedConversation(null);
     setShowMobileSidebar(false);
     if (location.pathname !== '/') navigate('/');
@@ -138,7 +148,12 @@ export function Dashboard() {
         {/* Main content */}
         <main className="flex-1 flex flex-col min-h-0 relative bg-background">
           {isChatPage ? (
-            <ChatPanel className="flex-1" conversationId={selectedConversation?.id} />
+            <ChatPanel
+              className="flex-1"
+              conversationId={selectedConversation?.id}
+              onboardingActive={onboardingActive}
+              onDismissOnboarding={dismissOnboarding}
+            />
           ) : (
             <Outlet context={{ settingsCategory }} />
           )}

@@ -35,6 +35,7 @@ function toConversation(resp: ConversationResponse): Conversation {
 interface UseChatOptions {
   modelId?: string;
   conversationId?: string | null;
+  systemPrompt?: string;
 }
 
 interface UseChatReturn {
@@ -152,13 +153,18 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
       abortRef.current = controller;
 
       try {
+        const apiMessages = [...messages, userMessage].map((m) => ({
+          role: m.role as 'system' | 'user' | 'assistant',
+          content: m.content,
+        }));
+        if (options.systemPrompt) {
+          apiMessages.unshift({ role: 'system', content: options.systemPrompt });
+        }
+
         const stream = streamChatCompletion(
           {
             model: effectiveModelId,
-            messages: [...messages, userMessage].map((m) => ({
-              role: m.role,
-              content: m.content,
-            })),
+            messages: apiMessages,
             stream: true,
           },
           controller.signal,

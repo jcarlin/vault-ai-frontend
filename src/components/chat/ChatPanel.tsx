@@ -6,13 +6,16 @@ import { ThinkingIndicator, StreamingMessage } from './ThinkingIndicator';
 import { SuggestedPrompts } from './SuggestedPrompts';
 import { useChat } from '@/hooks/useChat';
 import { useHealthQuery } from '@/hooks/useClusterHealth';
+import { ONBOARDING_SYSTEM_PROMPT, ONBOARDING_PROMPTS } from '@/lib/onboarding';
 
 interface ChatPanelProps {
   className?: string;
   conversationId?: string | null;
+  onboardingActive?: boolean;
+  onDismissOnboarding?: () => void;
 }
 
-export function ChatPanel({ className, conversationId }: ChatPanelProps) {
+export function ChatPanel({ className, conversationId, onboardingActive, onDismissOnboarding }: ChatPanelProps) {
   const {
     messages,
     state,
@@ -23,7 +26,10 @@ export function ChatPanel({ className, conversationId }: ChatPanelProps) {
     models,
     selectedModelId,
     setSelectedModelId,
-  } = useChat({ conversationId });
+  } = useChat({
+    conversationId,
+    systemPrompt: onboardingActive ? ONBOARDING_SYSTEM_PROMPT : undefined,
+  });
   const healthQuery = useHealthQuery();
   const backendOffline = healthQuery.isError;
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -47,12 +53,28 @@ export function ChatPanel({ className, conversationId }: ChatPanelProps) {
 
   return (
     <div className={cn('flex flex-col h-full', className)}>
+      {/* Onboarding skip banner */}
+      {onboardingActive && (
+        <div className="text-center text-xs text-muted-foreground py-1.5 bg-muted/30 border-b border-border">
+          Getting started with Vault Cube{' '}
+          <button
+            onClick={onDismissOnboarding}
+            className="text-blue-400 hover:text-blue-300 underline underline-offset-2 ml-1"
+          >
+            Skip intro
+          </button>
+        </div>
+      )}
+
       {/* Messages area */}
       <div className="flex-1 overflow-auto relative" style={{ scrollbarGutter: 'stable' }}>
         {/* Empty state with suggestions */}
         {isEmpty && state === 'idle' && (
           <div className="absolute inset-0 flex items-center justify-center px-4">
-            <SuggestedPrompts onSelect={sendMessage} />
+            <SuggestedPrompts
+              onSelect={sendMessage}
+              prompts={onboardingActive ? ONBOARDING_PROMPTS : undefined}
+            />
           </div>
         )}
 

@@ -12,6 +12,7 @@ Production frontend for the Vault Cube enterprise AI appliance.
 | `../vault-ai-backend/vault-api-spec.md` | API endpoint specification: all endpoints (Rev 1–5), request/response formats | Reviewing endpoint details, request/response shapes |
 | `../vault-ai-backend/PRD.md` | Full backend design: DB schema, training architecture, system design | Planning features beyond Rev 2 |
 | `../cube-golden-image/CLAUDE.md` | Infrastructure: Packer/Ansible, build pipeline, deployment | Understanding deployment target |
+| `.claude/ARCHITECTURE.md` | Frontend architecture notes: onboarding agent flow diagram, data flow, design decisions | Understanding onboarding system prompt injection, UX flow |
 
 ## Stack
 React 19 + TypeScript + Vite 7 + Tailwind v4 + shadcn/ui.
@@ -41,6 +42,7 @@ src/
 │   └── upload/      # UploadModal, UploadDropzone (not yet routed)
 ├── hooks/           # useChat, useClusterHealth, useOnboarding, useDeveloperMode
 ├── lib/api/         # API client layer: client.ts, chat.ts, models.ts, conversations.ts, admin.ts, etc.
+├── lib/onboarding.ts # Onboarding agent: system prompt, suggested prompts, localStorage helpers
 ├── types/           # api.ts (re-exports from api.generated.ts), models.ts
 ├── mocks/           # Legacy — mostly types/utilities now; mock data only for storage indicator + suggested prompts
 ├── contexts/        # AuthContext (API key storage in localStorage)
@@ -84,3 +86,19 @@ GET  /vault/health           → System health (vLLM status, GPU metrics)
 - **Insights** (`/insights`): Token usage, model usage, response time, metrics from real API
 - **Models** (`/models`): Model library from `/v1/models`
 - **Settings** (`/settings`): Network, users, system, advanced (API keys, diagnostics)
+
+## Onboarding Agent (Epic 7)
+
+First-time users get a guided introduction via AI system prompt injection. Frontend-only — no backend changes. See [`.claude/ARCHITECTURE.md`](.claude/ARCHITECTURE.md) for full flow diagram, data flow, and design decisions.
+
+**Key files:** `src/lib/onboarding.ts` (prompt + helpers), `useChat` (`systemPrompt` option), `ChatPanel` (banner + prompt passthrough), `Dashboard` (state + dismiss logic)
+
+**How it works:** `useChat` accepts an optional `systemPrompt` string. When provided, it's prepended as `{ role: 'system' }` to the messages array sent to `/v1/chat/completions`. The system message is NOT persisted to the conversation — only injected into API requests.
+
+**localStorage key:** `vault-onboarding-agent-complete` (distinct from setup wizard key `vault-onboarding`)
+
+**Completion triggers:** user clicks "Skip intro", selects an existing conversation, or starts a new chat after the first one.
+
+## Commits
+
+Commit messages should be 2 sentences max summarizing the what and why, with no blank lines between them. Do not include any co-author trailers or attribution lines.
