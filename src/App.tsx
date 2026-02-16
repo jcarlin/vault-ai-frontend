@@ -42,9 +42,8 @@ function App() {
     completeOnboarding,
   } = useOnboarding();
 
-  // Auth gate — skip in mock mode
-  const useMocks = import.meta.env.VITE_USE_MOCKS === 'true';
-  if (!useMocks && !isAuthenticated) {
+  // Auth gate
+  if (!isAuthenticated) {
     return <ApiKeyEntry />;
   }
 

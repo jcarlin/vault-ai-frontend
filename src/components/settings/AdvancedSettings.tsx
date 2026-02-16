@@ -1,30 +1,22 @@
 import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { listApiKeys, createApiKey, deleteApiKey } from '@/lib/api/admin';
+import { getSystemResources } from '@/lib/api/system';
 import { mockAdvancedConfig } from '@/mocks/settings';
+import type { KeyResponse, SystemResources } from '@/types/api';
 
 interface AdvancedSettingsProps {
   onSave: () => void;
 }
 
-function CopyIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
-      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-    </svg>
-  );
-}
-
-function RefreshIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
-      <polyline points="23 4 23 10 17 10" />
-      <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
-    </svg>
-  );
-}
-
-function Toggle({ checked, onChange, label, description }: {
+function Toggle({
+  checked,
+  onChange,
+  label,
+  description,
+}: {
   checked: boolean;
   onChange: (checked: boolean) => void;
   label: string;
@@ -34,9 +26,7 @@ function Toggle({ checked, onChange, label, description }: {
     <label className="flex items-start justify-between py-3 border-b border-zinc-800/50 last:border-0 cursor-pointer">
       <div>
         <span className="text-sm text-zinc-300">{label}</span>
-        {description && (
-          <p className="text-xs text-zinc-500 mt-0.5">{description}</p>
-        )}
+        {description && <p className="text-xs text-zinc-500 mt-0.5">{description}</p>}
       </div>
       <button
         type="button"
@@ -44,13 +34,13 @@ function Toggle({ checked, onChange, label, description }: {
         aria-checked={checked}
         onClick={() => onChange(!checked)}
         className={cn(
-          "relative inline-flex h-5 w-9 items-center rounded-full transition-colors flex-shrink-0 ml-4",
+          'relative inline-flex h-5 w-9 items-center rounded-full transition-colors flex-shrink-0 ml-4',
           checked ? 'bg-[var(--green-600)]' : 'bg-zinc-700'
         )}
       >
         <span
           className={cn(
-            "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
+            'inline-block h-4 w-4 transform rounded-full bg-white transition-transform',
             checked ? 'translate-x-4' : 'translate-x-0.5'
           )}
         />
@@ -59,16 +49,26 @@ function Toggle({ checked, onChange, label, description }: {
   );
 }
 
-function DiagnosticItem({ label, status, value }: { label: string; status: 'ok' | 'warning' | 'error'; value: string }) {
+function DiagnosticItem({
+  label,
+  status,
+  value,
+}: {
+  label: string;
+  status: 'ok' | 'warning' | 'error';
+  value: string;
+}) {
   return (
     <div className="flex items-center justify-between py-2 border-b border-zinc-800/50 last:border-0">
       <div className="flex items-center gap-2">
-        <span className={cn(
-          "h-2 w-2 rounded-full",
-          status === 'ok' && "bg-[var(--green-500)]",
-          status === 'warning' && "bg-amber-500",
-          status === 'error' && "bg-red-500"
-        )} />
+        <span
+          className={cn(
+            'h-2 w-2 rounded-full',
+            status === 'ok' && 'bg-[var(--green-500)]',
+            status === 'warning' && 'bg-amber-500',
+            status === 'error' && 'bg-red-500'
+          )}
+        />
         <span className="text-sm text-zinc-400">{label}</span>
       </div>
       <span className="text-sm text-zinc-100 font-mono">{value}</span>
@@ -76,74 +76,122 @@ function DiagnosticItem({ label, status, value }: { label: string; status: 'ok' 
   );
 }
 
+function pctStatus(pct: number): 'ok' | 'warning' | 'error' {
+  if (pct > 90) return 'error';
+  if (pct > 75) return 'warning';
+  return 'ok';
+}
+
+function ApiKeyRow({
+  apiKey,
+  onDelete,
+}: {
+  apiKey: KeyResponse;
+  onDelete: () => void;
+}) {
+  return (
+    <div className="flex items-center justify-between py-2 border-b border-zinc-800/50 last:border-0">
+      <div>
+        <p className="text-sm text-zinc-100">{apiKey.label}</p>
+        <p className="text-xs text-zinc-500 font-mono">
+          {apiKey.key_prefix}... · {apiKey.scope} · Created{' '}
+          {new Date(apiKey.created_at).toLocaleDateString()}
+        </p>
+      </div>
+      <button
+        onClick={onDelete}
+        className="p-1.5 rounded text-zinc-500 hover:text-red-400 hover:bg-zinc-800 transition-colors"
+      >
+        <Trash2 className="h-4 w-4" />
+      </button>
+    </div>
+  );
+}
+
 export function AdvancedSettings({ onSave }: AdvancedSettingsProps) {
+  const queryClient = useQueryClient();
   const [config, setConfig] = useState(mockAdvancedConfig);
   const [copied, setCopied] = useState(false);
+  const [newKeyLabel, setNewKeyLabel] = useState('');
 
-  const handleCopyApiKey = () => {
-    navigator.clipboard.writeText(config.apiKey);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
+  const { data: apiKeys = [] } = useQuery<KeyResponse[]>({
+    queryKey: ['apiKeys'],
+    queryFn: ({ signal }) => listApiKeys(signal),
+  });
 
-  const handleRegenerateApiKey = () => {
-    const newKey = `vai_${Array.from({ length: 32 }, () =>
-      Math.random().toString(36).charAt(2)
-    ).join('')}`;
-    setConfig({ ...config, apiKey: newKey });
-    onSave();
-  };
+  const { data: resources } = useQuery<SystemResources>({
+    queryKey: ['systemResources'],
+    queryFn: ({ signal }) => getSystemResources(signal),
+    enabled: config.diagnosticsEnabled,
+    refetchInterval: 10_000,
+  });
 
-  const handleSave = () => {
-    onSave();
-  };
+  const createKeyMutation = useMutation({
+    mutationFn: () => createApiKey({ label: newKeyLabel || 'New Key', scope: 'user' }),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ['apiKeys'] });
+      // Show the full key once — it won't be retrievable again
+      navigator.clipboard.writeText(result.key);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 3000);
+      setNewKeyLabel('');
+      onSave();
+    },
+  });
+
+  const deleteKeyMutation = useMutation({
+    mutationFn: (id: number) => deleteApiKey(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['apiKeys'] });
+      onSave();
+    },
+  });
 
   return (
     <div className="space-y-6">
       <div>
         <h2 className="text-xl font-semibold text-zinc-100">Advanced</h2>
-        <p className="text-sm text-zinc-500 mt-1">
-          Developer tools and system diagnostics
-        </p>
+        <p className="text-sm text-zinc-500 mt-1">Developer tools and system diagnostics</p>
       </div>
 
-      {/* API Access */}
+      {/* API Keys */}
       <div className="rounded-lg bg-zinc-800/50 p-4">
-        <h3 className="text-sm font-medium text-zinc-300 mb-3">API Access</h3>
+        <h3 className="text-sm font-medium text-zinc-300 mb-3">API Keys</h3>
 
-        <Toggle
-          checked={config.apiEnabled}
-          onChange={(v) => setConfig({ ...config, apiEnabled: v })}
-          label="Enable API Access"
-          description="Allow external applications to connect via REST API"
-        />
-
-        {config.apiEnabled && (
-          <div className="mt-4 pt-4 border-t border-zinc-800/50">
-            <label className="block text-sm text-zinc-500 mb-1.5">API Key</label>
-            <div className="flex gap-2">
-              <div className="flex-1 px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 font-mono text-sm text-zinc-400 overflow-hidden">
-                {config.apiKey.slice(0, 8)}{'•'.repeat(24)}{config.apiKey.slice(-4)}
-              </div>
-              <button
-                onClick={handleCopyApiKey}
-                className="px-3 py-2 rounded-lg border border-zinc-700 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition-colors"
-                title="Copy API key"
-              >
-                {copied ? '✓' : <CopyIcon />}
-              </button>
-              <button
-                onClick={handleRegenerateApiKey}
-                className="px-3 py-2 rounded-lg border border-zinc-700 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition-colors"
-                title="Regenerate API key"
-              >
-                <RefreshIcon />
-              </button>
-            </div>
-            <p className="text-xs text-zinc-600 mt-2">
-              Keep your API key secret. Regenerating will invalidate the current key.
-            </p>
+        {apiKeys.length > 0 ? (
+          <div className="mb-4">
+            {apiKeys.map((key) => (
+              <ApiKeyRow
+                key={key.id}
+                apiKey={key}
+                onDelete={() => deleteKeyMutation.mutate(key.id)}
+              />
+            ))}
           </div>
+        ) : (
+          <p className="text-sm text-zinc-500 mb-4">No API keys created yet</p>
+        )}
+
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={newKeyLabel}
+            onChange={(e) => setNewKeyLabel(e.target.value)}
+            placeholder="Key label (e.g., My App)"
+            className="flex-1 px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-100 text-sm focus:outline-none focus:border-[var(--green-500)]"
+          />
+          <button
+            onClick={() => createKeyMutation.mutate()}
+            disabled={createKeyMutation.isPending}
+            className="px-3 py-2 rounded-lg bg-[var(--green-600)] text-white text-sm font-medium hover:bg-[var(--green-500)] transition-colors disabled:opacity-50"
+          >
+            {createKeyMutation.isPending ? 'Creating...' : 'Create Key'}
+          </button>
+        </div>
+        {copied && (
+          <p className="text-xs text-[var(--green-400)] mt-2">
+            Key copied to clipboard! Save it now — you won&apos;t see it again.
+          </p>
         )}
       </div>
 
@@ -164,35 +212,54 @@ export function AdvancedSettings({ onSave }: AdvancedSettingsProps) {
         />
       </div>
 
-      {/* System diagnostics */}
+      {/* System diagnostics — from real API when available */}
       {config.diagnosticsEnabled && (
         <div className="rounded-lg bg-zinc-800/50 p-4">
           <h3 className="text-sm font-medium text-zinc-300 mb-3">System Diagnostics</h3>
-          <DiagnosticItem label="CPU Usage" status="ok" value="23%" />
-          <DiagnosticItem label="Memory Usage" status="ok" value="4.2 GB / 64 GB" />
-          <DiagnosticItem label="GPU Temperature" status="ok" value="62°C" />
-          <DiagnosticItem label="Disk I/O" status="ok" value="125 MB/s" />
-          <DiagnosticItem label="Network Latency" status="ok" value="< 1ms" />
-          <DiagnosticItem label="Model Load Time" status="ok" value="2.3s" />
+          {resources ? (
+            <>
+              <DiagnosticItem
+                label="CPU Usage"
+                status={pctStatus(resources.cpu_usage_pct)}
+                value={`${resources.cpu_usage_pct.toFixed(0)}%`}
+              />
+              <DiagnosticItem
+                label="Memory Usage"
+                status={pctStatus(resources.ram_usage_pct)}
+                value={`${(resources.ram_used_mb / 1024).toFixed(1)} GB / ${(resources.ram_total_mb / 1024).toFixed(0)} GB`}
+              />
+              <DiagnosticItem
+                label="Disk Usage"
+                status={pctStatus(resources.disk_usage_pct)}
+                value={`${resources.disk_used_gb.toFixed(0)} GB / ${resources.disk_total_gb.toFixed(0)} GB`}
+              />
+              {resources.temperature_celsius != null && (
+                <DiagnosticItem
+                  label="Temperature"
+                  status={resources.temperature_celsius > 80 ? 'warning' : 'ok'}
+                  value={`${resources.temperature_celsius}°C`}
+                />
+              )}
+            </>
+          ) : (
+            <>
+              <DiagnosticItem label="CPU Usage" status="ok" value="23%" />
+              <DiagnosticItem label="Memory Usage" status="ok" value="4.2 GB / 64 GB" />
+              <DiagnosticItem label="GPU Temperature" status="ok" value="62°C" />
+              <DiagnosticItem label="Disk I/O" status="ok" value="125 MB/s" />
+              <DiagnosticItem label="Network Latency" status="ok" value="< 1ms" />
+              <DiagnosticItem label="Model Load Time" status="ok" value="2.3s" />
+            </>
+          )}
         </div>
       )}
 
       {/* Warning */}
       <div className="rounded-lg bg-amber-500/10 border border-amber-500/20 p-4">
         <p className="text-sm text-amber-400">
-          Advanced settings are intended for developers and system administrators.
-          Incorrect configuration may affect system performance.
+          Advanced settings are intended for developers and system administrators. Incorrect
+          configuration may affect system performance.
         </p>
-      </div>
-
-      {/* Save button */}
-      <div className="flex justify-end">
-        <button
-          onClick={handleSave}
-          className="px-4 py-2 rounded-lg bg-[var(--green-600)] text-white text-sm font-medium hover:bg-[var(--green-500)] transition-colors"
-        >
-          Save Changes
-        </button>
       </div>
     </div>
   );

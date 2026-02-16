@@ -5,10 +5,7 @@ import { ModelDetailDialog } from './ModelDetailDialog';
 import { StorageIndicator } from './StorageIndicator';
 import { mockStorage, type Model } from '@/mocks/models';
 import { fetchModels } from '@/lib/api/models';
-import { mockFetchModels } from '@/lib/api/mock-backend';
 import type { ModelInfo } from '@/types/api';
-
-const useMocks = import.meta.env.VITE_USE_MOCKS === 'true';
 
 // Adapt backend ModelInfo to frontend Model shape for existing components
 function toFrontendModel(info: ModelInfo): Model {
@@ -32,7 +29,7 @@ export function ModelsPage() {
 
   const { data: modelsData, isLoading } = useQuery({
     queryKey: ['models'],
-    queryFn: () => useMocks ? mockFetchModels() : fetchModels(),
+    queryFn: () => fetchModels(),
     staleTime: 60_000,
   });
 

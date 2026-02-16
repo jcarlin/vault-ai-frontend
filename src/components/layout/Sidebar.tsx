@@ -1,8 +1,16 @@
 import { useState, useRef, useEffect } from 'react';
-import { Plus, Clock, Pencil, Trash2 } from 'lucide-react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { Plus, Clock, Pencil, Trash2, Activity } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { listConversations, renameConversation, deleteConversation } from '@/lib/conversations';
+import {
+  listConversations as apiListConversations,
+  updateConversation as apiUpdateConversation,
+  deleteConversation as apiDeleteConversation,
+} from '@/lib/api/conversations';
+import { fetchActivity } from '@/lib/api/activity';
+import { formatActivityTime } from '@/mocks/activity';
 import type { Conversation } from '@/types/chat';
+import type { ActivityItem, ConversationSummary } from '@/types/api';
 import { ApplicationsMenu } from './ApplicationsMenu';
 import { type Application } from '@/hooks/useDeveloperMode';
 import {
@@ -13,6 +21,18 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
+
+/** Map backend ConversationSummary → frontend Conversation (no messages needed for list) */
+function toConversation(summary: ConversationSummary): Conversation {
+  return {
+    id: summary.id,
+    title: summary.title,
+    modelId: summary.model_id,
+    createdAt: summary.created_at,
+    updatedAt: summary.updated_at,
+    messages: [],
+  };
+}
 
 interface SidebarProps {
   developerMode?: boolean;
@@ -123,31 +143,68 @@ function ConversationItem({
   );
 }
 
+function ActivitySection() {
+  const { data: activityFeed } = useQuery({
+    queryKey: ['activity'],
+    queryFn: ({ signal }) => fetchActivity(5, signal),
+    refetchInterval: 30_000,
+  });
+
+  const items: ActivityItem[] = activityFeed?.items ?? [];
+
+  if (items.length === 0) {
+    return <p className="px-3 py-2 text-xs text-muted-foreground">No recent activity</p>;
+  }
+
+  return (
+    <>
+      {items.slice(0, 5).map((item) => (
+        <div
+          key={item.id}
+          className="px-3 py-1.5 rounded-lg text-xs text-foreground/70 hover:bg-secondary/40 transition-colors"
+        >
+          <p className="truncate">{item.title}</p>
+          <p className="text-[10px] text-muted-foreground">
+            {formatActivityTime(new Date(item.timestamp).getTime())}
+          </p>
+        </div>
+      ))}
+    </>
+  );
+}
+
 export function Sidebar({ developerMode, applications, onSelectApplication, onSelectConversation, onNewChat, selectedConversationId }: SidebarProps) {
-  const [conversations, setConversations] = useState<Conversation[]>(() => listConversations());
+  const queryClient = useQueryClient();
   const [itemToDelete, setItemToDelete] = useState<Conversation | null>(null);
 
-  // Refresh conversation list periodically
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setConversations(listConversations());
-    }, 2000);
-    return () => clearInterval(interval);
-  }, []);
+  const { data: conversations = [] } = useQuery({
+    queryKey: ['conversations'],
+    queryFn: ({ signal }) => apiListConversations(50, 0, signal),
+    refetchInterval: 5000,
+    select: (summaries) => summaries.map(toConversation),
+  });
 
   const handleConversationClick = (conv: Conversation) => {
     onSelectConversation?.(conv);
   };
 
-  const handleRename = (id: string, newTitle: string) => {
-    renameConversation(id, newTitle);
-    setConversations(listConversations());
+  const handleRename = async (id: string, newTitle: string) => {
+    try {
+      await apiUpdateConversation(id, { title: newTitle });
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+    } catch (err) {
+      console.error('Failed to rename conversation:', err);
+    }
   };
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     if (itemToDelete) {
-      deleteConversation(itemToDelete.id);
-      setConversations(listConversations());
+      try {
+        await apiDeleteConversation(itemToDelete.id);
+        queryClient.invalidateQueries({ queryKey: ['conversations'] });
+      } catch (err) {
+        console.error('Failed to delete conversation:', err);
+      }
       setItemToDelete(null);
     }
   };
@@ -201,9 +258,17 @@ export function Sidebar({ developerMode, applications, onSelectApplication, onSe
         </div>
       </div>
 
-      {/* Training jobs section — coming in Stage 5 */}
-      <div className="border-t border-border bg-card/50 p-3">
-        <p className="px-3 py-2 text-xs text-muted-foreground">Training — coming soon</p>
+      {/* Recent Activity */}
+      <div className="border-t border-border bg-card/50">
+        <div className="px-4 pt-3 pb-1">
+          <div className="flex items-center gap-2 text-[10px] font-medium text-muted-foreground uppercase tracking-widest">
+            <Activity className="h-3 w-3" />
+            Recent Activity
+          </div>
+        </div>
+        <div className="px-2 pb-3 space-y-0.5">
+          <ActivitySection />
+        </div>
       </div>
     </aside>
 

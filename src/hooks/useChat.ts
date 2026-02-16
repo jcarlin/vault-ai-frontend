@@ -1,19 +1,36 @@
-import { useState, useCallback, useRef } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import type { ChatMessage, ChatState, StreamingMetrics } from '@/types/chat';
-import type { ModelInfo } from '@/types/api';
+import { useState, useCallback, useRef, useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import type { ChatMessage, ChatState, Conversation, StreamingMetrics } from '@/types/chat';
+import type { ModelInfo, ConversationResponse } from '@/types/api';
 import { streamChatCompletion } from '@/lib/api/chat';
-import { mockStreamChatCompletion, mockFetchModels } from '@/lib/api/mock-backend';
 import { fetchModels } from '@/lib/api/models';
 import { ApiClientError } from '@/lib/api/client';
 import {
-  generateMessageId,
-  createConversation,
-  addMessage,
-  getConversation,
-} from '@/lib/conversations';
+  createConversation as apiCreateConversation,
+  getConversation as apiGetConversation,
+  addMessage as apiAddMessage,
+} from '@/lib/api/conversations';
 
-const useMocks = import.meta.env.VITE_USE_MOCKS === 'true';
+function generateMessageId(): string {
+  return `msg-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+}
+
+/** Map backend ConversationResponse → frontend Conversation */
+function toConversation(resp: ConversationResponse): Conversation {
+  return {
+    id: resp.id,
+    title: resp.title,
+    modelId: resp.model_id,
+    createdAt: resp.created_at,
+    updatedAt: resp.updated_at,
+    messages: resp.messages.map((m) => ({
+      id: m.id,
+      role: m.role as 'user' | 'assistant',
+      content: m.content,
+      timestamp: m.timestamp,
+    })),
+  };
+}
 
 interface UseChatOptions {
   modelId?: string;
@@ -55,14 +72,9 @@ function getErrorMessage(error: unknown): string {
 
 export function useChat(options: UseChatOptions = {}): UseChatReturn {
   const { conversationId: initialConversationId } = options;
+  const queryClient = useQueryClient();
 
-  const [messages, setMessages] = useState<ChatMessage[]>(() => {
-    if (initialConversationId) {
-      const conv = getConversation(initialConversationId);
-      return conv?.messages ?? [];
-    }
-    return [];
-  });
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [state, setState] = useState<ChatState>('idle');
   const [currentThinking, setCurrentThinking] = useState<string | null>(null);
   const [streamingContent, setStreamingContent] = useState('');
@@ -71,10 +83,24 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
   const [selectedModelId, setSelectedModelId] = useState<string>(options.modelId || '');
   const abortRef = useRef<AbortController | null>(null);
 
+  // Load existing conversation from backend when initialConversationId provided
+  useEffect(() => {
+    if (!initialConversationId) return;
+    let cancelled = false;
+    apiGetConversation(initialConversationId)
+      .then((resp) => {
+        if (cancelled) return;
+        const conv = toConversation(resp);
+        setMessages(conv.messages);
+      })
+      .catch(console.error);
+    return () => { cancelled = true; };
+  }, [initialConversationId]);
+
   // Fetch available models
   const { data: modelsData } = useQuery({
     queryKey: ['models'],
-    queryFn: () => useMocks ? mockFetchModels() : fetchModels(),
+    queryFn: () => fetchModels(),
     staleTime: 60_000,
   });
   const models = modelsData?.data ?? [];
@@ -98,11 +124,23 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
       // Create or get conversation
       let convId = conversationIdState;
       if (!convId) {
-        const conv = createConversation(effectiveModelId, userMessage);
-        convId = conv.id;
-        setConversationIdState(convId);
-      } else {
-        addMessage(convId, userMessage);
+        try {
+          const created = await apiCreateConversation({
+            title: content.slice(0, 60) + (content.length > 60 ? '...' : ''),
+            model_id: effectiveModelId,
+          });
+          convId = created.id;
+          setConversationIdState(convId);
+          // Invalidate sidebar conversation list
+          queryClient.invalidateQueries({ queryKey: ['conversations'] });
+        } catch (err) {
+          console.error('Failed to create conversation:', err);
+        }
+      }
+
+      // Persist user message (fire-and-forget)
+      if (convId) {
+        apiAddMessage(convId, { role: 'user', content }).catch(console.error);
       }
 
       // Start streaming
@@ -114,8 +152,7 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
       abortRef.current = controller;
 
       try {
-        const streamFn = useMocks ? mockStreamChatCompletion : streamChatCompletion;
-        const stream = streamFn(
+        const stream = streamChatCompletion(
           {
             model: effectiveModelId,
             messages: [...messages, userMessage].map((m) => ({
@@ -179,7 +216,11 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
         };
 
         setMessages((prev) => [...prev, assistantMessage]);
-        if (convId) addMessage(convId, assistantMessage);
+
+        // Persist assistant message (fire-and-forget)
+        if (convId) {
+          apiAddMessage(convId, { role: 'assistant', content: accumulated }).catch(console.error);
+        }
       } catch (error) {
         if (controller.signal.aborted) {
           // User cancelled — not an error
@@ -202,7 +243,7 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
         abortRef.current = null;
       }
     },
-    [state, messages, conversationIdState, effectiveModelId],
+    [state, messages, conversationIdState, effectiveModelId, queryClient],
   );
 
   const clearHistory = useCallback(() => {

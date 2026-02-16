@@ -1,51 +1,38 @@
 import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Plus, Pencil, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { mockUsers, formatLastActive, type User, type UserRole } from '@/mocks/settings';
+import { listUsers, createUser, updateUser, deactivateUser } from '@/lib/api/admin';
+import { formatLastActive } from '@/mocks/settings';
+import type { UserResponse, UserCreate, UserUpdate } from '@/types/api';
+
+type UserRole = 'admin' | 'user' | 'viewer';
 
 interface UsersSettingsProps {
   onSave: () => void;
 }
 
-function PlusIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
-      <line x1="12" y1="5" x2="12" y2="19" />
-      <line x1="5" y1="12" x2="19" y2="12" />
-    </svg>
-  );
-}
-
-function EditIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-4 w-4">
-      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-    </svg>
-  );
-}
-
-function TrashIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-4 w-4">
-      <polyline points="3 6 5 6 21 6" />
-      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-    </svg>
-  );
-}
-
-function getRoleBadgeStyles(role: UserRole) {
+function getRoleBadgeStyles(role: string) {
   switch (role) {
     case 'admin':
       return 'bg-purple-500/20 text-purple-400';
     case 'user':
       return 'bg-[var(--green-500)]/20 text-[var(--green-400)]';
-    case 'viewer':
+    default:
       return 'bg-zinc-500/20 text-zinc-400';
   }
 }
 
-function UserRow({ user, onEdit, onDelete }: { user: User; onEdit: () => void; onDelete: () => void }) {
+function UserRow({
+  user,
+  onEdit,
+  onDelete,
+}: {
+  user: UserResponse;
+  onEdit: () => void;
+  onDelete: () => void;
+}) {
   return (
     <div className="flex items-center justify-between py-3 border-b border-zinc-800/50 last:border-0">
       <div className="flex items-center gap-3">
@@ -58,27 +45,29 @@ function UserRow({ user, onEdit, onDelete }: { user: User; onEdit: () => void; o
         </div>
       </div>
       <div className="flex items-center gap-3">
-        <span className={cn(
-          "px-2 py-0.5 rounded text-xs font-medium capitalize",
-          getRoleBadgeStyles(user.role)
-        )}>
+        <span
+          className={cn(
+            'px-2 py-0.5 rounded text-xs font-medium capitalize',
+            getRoleBadgeStyles(user.role)
+          )}
+        >
           {user.role}
         </span>
         <span className="text-xs text-zinc-600">
-          {formatLastActive(user.lastActive)}
+          {user.last_active ? formatLastActive(user.last_active) : 'Never'}
         </span>
         <div className="flex items-center gap-1">
           <button
             onClick={onEdit}
             className="p-1.5 rounded text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 transition-colors"
           >
-            <EditIcon />
+            <Pencil className="h-4 w-4" />
           </button>
           <button
             onClick={onDelete}
             className="p-1.5 rounded text-zinc-500 hover:text-red-400 hover:bg-zinc-800 transition-colors"
           >
-            <TrashIcon />
+            <Trash2 className="h-4 w-4" />
           </button>
         </div>
       </div>
@@ -176,33 +165,54 @@ function UserFormDialog({
 }
 
 export function UsersSettings({ onSave }: UsersSettingsProps) {
-  const [users, setUsers] = useState<User[]>(mockUsers);
+  const queryClient = useQueryClient();
   const [showAddDialog, setShowAddDialog] = useState(false);
-  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [editingUser, setEditingUser] = useState<UserResponse | null>(null);
+
+  const { data: users = [] } = useQuery<UserResponse[]>({
+    queryKey: ['users'],
+    queryFn: ({ signal }) => listUsers(signal),
+  });
+
+  const createMutation = useMutation({
+    mutationFn: (data: UserCreate) => createUser(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      onSave();
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: UserUpdate }) => updateUser(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      onSave();
+    },
+  });
+
+  const deactivateMutation = useMutation({
+    mutationFn: (id: string) => deactivateUser(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      onSave();
+    },
+  });
 
   const handleAddUser = (data: UserFormData) => {
-    const newUser: User = {
-      id: `user-${Date.now()}`,
-      ...data,
-      createdAt: new Date().toISOString(),
-      lastActive: new Date().toISOString(),
-    };
-    setUsers([...users, newUser]);
-    onSave();
+    createMutation.mutate({ name: data.name, email: data.email, role: data.role });
   };
 
   const handleEditUser = (data: UserFormData) => {
     if (!editingUser) return;
-    setUsers(users.map(u =>
-      u.id === editingUser.id ? { ...u, ...data } : u
-    ));
+    updateMutation.mutate({
+      id: editingUser.id,
+      data: { name: data.name, email: data.email, role: data.role },
+    });
     setEditingUser(null);
-    onSave();
   };
 
   const handleDeleteUser = (userId: string) => {
-    setUsers(users.filter(u => u.id !== userId));
-    onSave();
+    deactivateMutation.mutate(userId);
   };
 
   return (
@@ -218,7 +228,7 @@ export function UsersSettings({ onSave }: UsersSettingsProps) {
           onClick={() => setShowAddDialog(true)}
           className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--green-600)] text-white text-sm font-medium hover:bg-[var(--green-500)] transition-colors"
         >
-          <PlusIcon />
+          <Plus className="h-4 w-4" />
           Add User
         </button>
       </div>
@@ -242,9 +252,18 @@ export function UsersSettings({ onSave }: UsersSettingsProps) {
       <div className="rounded-lg bg-zinc-800/30 p-4">
         <h3 className="text-sm font-medium text-zinc-400 mb-3">Role Permissions</h3>
         <div className="space-y-2 text-xs text-zinc-500">
-          <p><span className="text-purple-400 font-medium">Admin:</span> Full system access, user management, settings</p>
-          <p><span className="text-[var(--green-400)] font-medium">User:</span> Run queries, upload data, train models</p>
-          <p><span className="text-zinc-400 font-medium">Viewer:</span> View-only access, no modifications</p>
+          <p>
+            <span className="text-purple-400 font-medium">Admin:</span> Full system access, user
+            management, settings
+          </p>
+          <p>
+            <span className="text-[var(--green-400)] font-medium">User:</span> Run queries, upload
+            data, train models
+          </p>
+          <p>
+            <span className="text-zinc-400 font-medium">Viewer:</span> View-only access, no
+            modifications
+          </p>
         </div>
       </div>
 
@@ -261,11 +280,15 @@ export function UsersSettings({ onSave }: UsersSettingsProps) {
         open={!!editingUser}
         onClose={() => setEditingUser(null)}
         onSubmit={handleEditUser}
-        initialData={editingUser ? {
-          name: editingUser.name,
-          email: editingUser.email,
-          role: editingUser.role,
-        } : undefined}
+        initialData={
+          editingUser
+            ? {
+                name: editingUser.name,
+                email: editingUser.email,
+                role: editingUser.role as UserRole,
+              }
+            : undefined
+        }
         title="Edit User"
       />
     </div>
