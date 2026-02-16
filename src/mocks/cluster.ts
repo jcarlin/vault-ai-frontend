@@ -18,60 +18,6 @@ export interface ClusterHealth {
   aggregateStatus: CubeStatus;
 }
 
-export const mockCluster: ClusterHealth = {
-  cubes: [
-    {
-      id: 'cube-01',
-      name: 'Cube 1',
-      status: 'healthy',
-      temperature: 42,
-      cpuLoad: 23,
-      gpuLoad: 45,
-      memoryUsed: 12,
-      memoryTotal: 64,
-      uptime: 432000,
-      currentTask: null,
-    },
-    {
-      id: 'cube-02',
-      name: 'Cube 2',
-      status: 'healthy',
-      temperature: 45,
-      cpuLoad: 67,
-      gpuLoad: 82,
-      memoryUsed: 48,
-      memoryTotal: 64,
-      uptime: 432000,
-      currentTask: 'Training: Legal Document Model',
-    },
-    {
-      id: 'cube-03',
-      name: 'Cube 3',
-      status: 'healthy',
-      temperature: 38,
-      cpuLoad: 12,
-      gpuLoad: 15,
-      memoryUsed: 8,
-      memoryTotal: 64,
-      uptime: 345600,
-      currentTask: null,
-    },
-    {
-      id: 'cube-04',
-      name: 'Cube 4',
-      status: 'warning',
-      temperature: 72,
-      cpuLoad: 89,
-      gpuLoad: 95,
-      memoryUsed: 58,
-      memoryTotal: 64,
-      uptime: 259200,
-      currentTask: 'Inference: Document Analysis',
-    },
-  ],
-  aggregateStatus: 'warning',
-};
-
 export function getAggregateStatus(cubes: CubeMetrics[]): CubeStatus {
   if (cubes.some((c) => c.status === 'error' || c.status === 'offline')) {
     return 'error';

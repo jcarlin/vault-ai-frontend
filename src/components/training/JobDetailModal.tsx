@@ -7,7 +7,8 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
-import { type TrainingJob, formatTimeAgo } from '@/mocks/training';
+import { type TrainingJob } from '@/mocks/training';
+import { formatTimeAgo } from '@/lib/formatters';
 
 // Mock data for completed job details
 const jobDetails: Record<string, {

@@ -8,7 +8,7 @@ import {
   deleteConversation as apiDeleteConversation,
 } from '@/lib/api/conversations';
 import { fetchActivity } from '@/lib/api/activity';
-import { formatActivityTime } from '@/mocks/activity';
+import { formatActivityTime } from '@/lib/formatters';
 import type { Conversation } from '@/types/chat';
 import type { ActivityItem, ConversationSummary } from '@/types/api';
 import { ApplicationsMenu } from './ApplicationsMenu';

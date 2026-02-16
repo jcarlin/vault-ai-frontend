@@ -1,6 +1,8 @@
 import { useState, useRef, useCallback, type DragEvent, type ChangeEvent } from 'react';
 import { cn } from '@/lib/utils';
-import { SUPPORTED_FILE_TYPES, formatFileSize, type UploadedFile } from '@/mocks/models';
+import { formatFileSize } from '@/lib/formatters';
+import { SUPPORTED_FILE_TYPES } from '@/lib/constants';
+import { type UploadedFile } from '@/mocks/models';
 
 interface UploadDropzoneProps {
   onFilesSelected: (files: File[]) => void;

@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils';
-import { type StorageInfo } from '@/mocks/models';
+import type { StorageInfo } from '@/mocks/models';
 
 interface StorageIndicatorProps {
   storage: StorageInfo;

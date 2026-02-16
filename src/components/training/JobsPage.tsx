@@ -12,10 +12,8 @@ import { MockBadge } from '@/components/ui/MockBadge';
 import {
   type TrainingJob,
   getStatusBgColor,
-  formatTimeAgo,
-  formatDuration,
 } from '@/mocks/training';
-import { mockModels } from '@/mocks/models';
+import { formatTimeAgo, formatDuration } from '@/lib/formatters';
 
 // Mock data for completed job details
 const jobDetails: Record<string, {
@@ -310,9 +308,9 @@ export function JobsPage({
     }
   };
 
-  const getModelIdForJob = (jobId: string): string | null => {
-    const model = mockModels.find(m => m.trainingJobId === jobId);
-    return model?.id || null;
+  const getModelIdForJob = (_jobId: string): string | null => {
+    // TODO: Stage 5 — resolve model ID from training API
+    return null;
   };
 
   const handleJobClick = (job: TrainingJob) => {

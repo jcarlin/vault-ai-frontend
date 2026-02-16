@@ -1,5 +1,6 @@
 import { cn } from '@/lib/utils';
-import { type Model, formatModelDate } from '@/mocks/models';
+import { type Model } from '@/mocks/models';
+import { formatModelDate } from '@/lib/formatters';
 
 interface ModelCardProps {
   model: Model;

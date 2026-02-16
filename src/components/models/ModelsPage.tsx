@@ -3,9 +3,9 @@ import { useQuery } from '@tanstack/react-query';
 import { ModelList } from './ModelList';
 import { ModelDetailDialog } from './ModelDetailDialog';
 import { StorageIndicator } from './StorageIndicator';
-import { MockBadge } from '@/components/ui/MockBadge';
-import { mockStorage, type Model } from '@/mocks/models';
+import { type Model, type StorageInfo } from '@/mocks/models';
 import { fetchModels } from '@/lib/api/models';
+import { getSystemResources } from '@/lib/api/system';
 import type { ModelInfo } from '@/types/api';
 
 // Adapt backend ModelInfo to frontend Model shape for existing components
@@ -34,11 +34,26 @@ export function ModelsPage() {
     staleTime: 60_000,
   });
 
+  const { data: resources } = useQuery({
+    queryKey: ['system-resources'],
+    queryFn: ({ signal }) => getSystemResources(signal),
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+  });
+
   const models: Model[] = modelsData?.data.map(toFrontendModel) ?? [];
   // Mark first model as default
   if (models.length > 0 && !models.some(m => m.isDefault)) {
     models[0].isDefault = true;
   }
+
+  const storage: StorageInfo | null = resources
+    ? {
+        used: Math.round(resources.disk_used_gb * 10) / 10,
+        total: Math.round(resources.disk_total_gb),
+        unit: 'GB',
+      }
+    : null;
 
   return (
     <div className="flex-1 overflow-auto p-4 sm:p-6">
@@ -52,10 +67,7 @@ export function ModelsPage() {
         </div>
 
         {/* Storage Indicator */}
-        <div className="relative">
-          <MockBadge className="absolute top-3 right-3 z-10" />
-          <StorageIndicator storage={mockStorage} />
-        </div>
+        {storage && <StorageIndicator storage={storage} />}
 
         {/* Model List */}
         {isLoading ? (

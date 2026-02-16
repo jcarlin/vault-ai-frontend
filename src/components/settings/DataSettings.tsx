@@ -1,8 +1,10 @@
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { cn } from '@/lib/utils';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { MockBadge } from '@/components/ui/MockBadge';
-import { mockStorage } from '@/mocks/models';
+import { getSystemResources } from '@/lib/api/system';
+import type { StorageInfo } from '@/mocks/models';
 
 interface DataSettingsProps {
   onSave: () => void;
@@ -90,8 +92,22 @@ export function DataSettings({ onSave }: DataSettingsProps) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState('');
 
-  const storage = mockStorage;
-  const percentage = Math.round((storage.used / storage.total) * 100);
+  const { data: resources } = useQuery({
+    queryKey: ['system-resources'],
+    queryFn: ({ signal }) => getSystemResources(signal),
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+  });
+
+  const storage: StorageInfo | null = resources
+    ? {
+        used: Math.round(resources.disk_used_gb * 10) / 10,
+        total: Math.round(resources.disk_total_gb),
+        unit: 'GB',
+      }
+    : null;
+
+  const percentage = storage ? Math.round((storage.used / storage.total) * 100) : 0;
 
   const handleExport = () => {
     const data = {
@@ -122,42 +138,46 @@ export function DataSettings({ onSave }: DataSettingsProps) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between">
-        <div>
-          <h2 className="text-xl font-semibold text-zinc-100">Data Controls</h2>
-          <p className="text-sm text-zinc-500 mt-1">
-            Export, archive, and manage your data
-          </p>
-        </div>
-        <MockBadge />
-      </div>
-
-      {/* Storage usage */}
-      <div className="rounded-lg bg-zinc-800/50 p-4">
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-sm font-medium text-zinc-300">Storage Usage</span>
-          <span className="text-sm text-zinc-400">
-            {storage.used} {storage.unit} of {storage.total} {storage.unit}
-          </span>
-        </div>
-        <div className="h-2 bg-zinc-700 rounded-full overflow-hidden">
-          <div
-            className={cn(
-              "h-full rounded-full transition-all",
-              percentage >= 90 ? "bg-red-500" :
-              percentage >= 70 ? "bg-amber-500" :
-              "bg-[var(--green-500)]"
-            )}
-            style={{ width: `${percentage}%` }}
-          />
-        </div>
-        <p className="text-xs text-zinc-500 mt-2">
-          {storage.total - storage.used} {storage.unit} available
+      <div>
+        <h2 className="text-xl font-semibold text-zinc-100">Data Controls</h2>
+        <p className="text-sm text-zinc-500 mt-1">
+          Export, archive, and manage your data
         </p>
       </div>
 
+      {/* Storage usage */}
+      {storage ? (
+        <div className="rounded-lg bg-zinc-800/50 p-4">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-sm font-medium text-zinc-300">Storage Usage</span>
+            <span className="text-sm text-zinc-400">
+              {storage.used} {storage.unit} of {storage.total} {storage.unit}
+            </span>
+          </div>
+          <div className="h-2 bg-zinc-700 rounded-full overflow-hidden">
+            <div
+              className={cn(
+                "h-full rounded-full transition-all",
+                percentage >= 90 ? "bg-red-500" :
+                percentage >= 70 ? "bg-amber-500" :
+                "bg-[var(--green-500)]"
+              )}
+              style={{ width: `${percentage}%` }}
+            />
+          </div>
+          <p className="text-xs text-zinc-500 mt-2">
+            {storage.total - storage.used} {storage.unit} available
+          </p>
+        </div>
+      ) : (
+        <div className="rounded-lg bg-zinc-800/50 p-4">
+          <p className="text-sm text-zinc-500">Loading storage info...</p>
+        </div>
+      )}
+
       {/* Data actions */}
-      <div className="space-y-3">
+      <div className="relative space-y-3">
+        <MockBadge className="absolute -top-1 right-0 z-10" />
         <DataActionButton
           icon={<DownloadIcon />}
           label="Export All Data"

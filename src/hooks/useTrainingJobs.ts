@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from 'react';
 import {
   type TrainingJob,
   type ResourceAllocation,
-  mockTrainingJobs,
   getSpeedImpact,
 } from '@/mocks/training';
 
@@ -34,7 +33,7 @@ export function useTrainingJobs(
 ): UseTrainingJobsReturn {
   const { updateIntervalMs = 3000 } = options;
 
-  const [jobs, setJobs] = useState<TrainingJob[]>(mockTrainingJobs);
+  const [jobs, setJobs] = useState<TrainingJob[]>([]);
   const [trainingAllocation, setTrainingAllocation] = useState(75);
   const [notifications, setNotifications] = useState<TrainingNotification[]>([]);
 

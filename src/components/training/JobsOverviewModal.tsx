@@ -11,10 +11,8 @@ import { cn } from '@/lib/utils';
 import {
   type TrainingJob,
   getStatusBgColor,
-  formatTimeAgo,
-  formatDuration,
 } from '@/mocks/training';
-import { mockModels } from '@/mocks/models';
+import { formatTimeAgo, formatDuration } from '@/lib/formatters';
 
 interface JobsOverviewModalProps {
   open: boolean;
@@ -202,9 +200,9 @@ export function JobsOverviewModal({
     }
   };
 
-  const getModelIdForJob = (jobId: string): string | null => {
-    const model = mockModels.find(m => m.trainingJobId === jobId);
-    return model?.id || null;
+  const getModelIdForJob = (_jobId: string): string | null => {
+    // TODO: Stage 5 — resolve model ID from training API
+    return null;
   };
 
   const handleCompletedJobClick = (job: TrainingJob) => {

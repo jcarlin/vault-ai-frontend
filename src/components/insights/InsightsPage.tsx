@@ -8,7 +8,7 @@ import { PerformanceChart } from './PerformanceChart';
 import { ModelUsageChart } from './ModelUsageChart';
 import { fetchInsights } from '@/lib/api/insights';
 import type { InsightsResponse, TimeRange } from '@/types/api';
-import { formatNumber, formatTokensPerSec } from '@/mocks/insights';
+import { formatNumber, formatTokensPerSec } from '@/lib/formatters';
 
 export function InsightsPage() {
   const [timeRange, setTimeRange] = useState<TimeRange>('7d');

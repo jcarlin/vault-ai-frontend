@@ -10,10 +10,9 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import {
   type TrainingJob,
-  formatDuration,
-  formatTimeAgo,
   getStatusBgColor,
 } from '@/mocks/training';
+import { formatDuration, formatTimeAgo } from '@/lib/formatters';
 
 interface TrainingJobDetailProps {
   job: TrainingJob | null;
