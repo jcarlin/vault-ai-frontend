@@ -1,22 +1,22 @@
-// OpenAI-compatible API types matching vault-ai-backend schemas
+// Re-exported from generated OpenAPI types — run `npm run api:sync` to update
+import type { components } from './api.generated';
 
-export interface ChatCompletionRequest {
-  model: string;
-  messages: ChatCompletionMessage[];
-  temperature?: number;
-  max_tokens?: number;
-  stream?: boolean;
-  top_p?: number;
-  frequency_penalty?: number;
-  presence_penalty?: number;
-  stop?: string | string[];
-}
+// stream, temperature, top_p have server-side defaults — keep optional for frontend callers
+export type ChatCompletionRequest =
+  Omit<components['schemas']['ChatCompletionRequest'], 'stream' | 'temperature' | 'top_p'> & {
+    stream?: boolean;
+    temperature?: number;
+    top_p?: number;
+    frequency_penalty?: number;
+    presence_penalty?: number;
+  };
+export type ChatCompletionMessage = components['schemas']['ChatMessage'];
+export type ModelInfo = components['schemas']['ModelInfo'];
+export type ModelListResponse = components['schemas']['ModelListResponse'];
+export type GpuInfo = components['schemas']['GpuInfo'];
+export type HealthResponse = components['schemas']['HealthResponse'];
 
-export interface ChatCompletionMessage {
-  role: 'system' | 'user' | 'assistant';
-  content: string;
-}
-
+// SSE streaming types — not in OpenAPI spec (streamed as raw SSE, not a JSON response)
 export interface ChatCompletionChunk {
   id: string;
   object: 'chat.completion.chunk';
@@ -39,39 +39,7 @@ export interface ChatCompletionChunkChoice {
   finish_reason: 'stop' | 'length' | null;
 }
 
-export interface ModelInfo {
-  id: string;
-  name: string;
-  parameters: string;
-  quantization: string;
-  context_window: number;
-  vram_required_gb: number;
-  description: string;
-}
-
-export interface ModelListResponse {
-  object: 'list';
-  data: ModelInfo[];
-}
-
-export interface GpuInfo {
-  index: number;
-  name: string;
-  memory_used_mb: number;
-  memory_total_mb: number;
-  utilization_percent: number;
-  temperature_celsius: number;
-}
-
-export interface HealthResponse {
-  status: 'healthy' | 'degraded' | 'unhealthy';
-  vllm_connected: boolean;
-  uptime_seconds: number;
-  version: string;
-  gpus: GpuInfo[];
-  models_loaded: string[];
-}
-
+// Frontend-only (not in backend schema)
 export interface ApiError {
   detail: string;
   status_code?: number;

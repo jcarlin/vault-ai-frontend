@@ -39,18 +39,13 @@ function GpuCard({ gpu }: { gpu: GpuInfo }) {
       <div className="space-y-2">
         <div className="flex items-center gap-2 text-xs">
           <span className="text-muted-foreground w-10">Util</span>
-          <MetricBar value={gpu.utilization_percent} color={getMetricColor(gpu.utilization_percent, 85, 98)} />
-          <span className="text-muted-foreground w-8 text-right">{gpu.utilization_percent}%</span>
+          <MetricBar value={gpu.utilization_pct} color={getMetricColor(gpu.utilization_pct, 85, 98)} />
+          <span className="text-muted-foreground w-8 text-right">{gpu.utilization_pct}%</span>
         </div>
         <div className="flex items-center gap-2 text-xs">
           <span className="text-muted-foreground w-10">VRAM</span>
           <MetricBar value={memPercent} color={getMetricColor(memPercent, 80, 95)} />
           <span className="text-muted-foreground w-8 text-right">{memPercent}%</span>
-        </div>
-        <div className="flex items-center gap-2 text-xs">
-          <span className="text-muted-foreground w-10">Temp</span>
-          <MetricBar value={Math.min((gpu.temperature_celsius / 100) * 100, 100)} color={getMetricColor(gpu.temperature_celsius, 70, 85)} />
-          <span className="text-muted-foreground w-8 text-right">{gpu.temperature_celsius}&deg;</span>
         </div>
       </div>
       <p className="text-xs text-muted-foreground mt-2">{memUsedGb}/{memTotalGb} GB</p>
@@ -90,19 +85,19 @@ export function ClusterHealth({ health, isError }: ClusterHealthProps) {
   }
 
   const statusMessages: Record<string, string> = {
-    healthy: 'All Systems Operational',
+    ok: 'All Systems Operational',
     degraded: 'Performance Degraded',
     unhealthy: 'System Error Detected',
   };
 
   const statusColors: Record<string, string> = {
-    healthy: 'bg-[var(--green-500)]',
+    ok: 'bg-[var(--green-500)]',
     degraded: 'bg-amber-500 animate-pulse',
     unhealthy: 'bg-red-500 animate-pulse',
   };
 
   const statusTextColors: Record<string, string> = {
-    healthy: 'text-[var(--green-500)]',
+    ok: 'text-[var(--green-500)]',
     degraded: 'text-amber-500',
     unhealthy: 'text-red-500',
   };
@@ -110,7 +105,7 @@ export function ClusterHealth({ health, isError }: ClusterHealthProps) {
   const totalVram = health.gpus.reduce((sum, g) => sum + g.memory_total_mb, 0);
   const totalVramGb = Math.round(totalVram / 1024);
   const avgUtil = health.gpus.length > 0
-    ? Math.round(health.gpus.reduce((sum, g) => sum + g.utilization_percent, 0) / health.gpus.length)
+    ? Math.round(health.gpus.reduce((sum, g) => sum + g.utilization_pct, 0) / health.gpus.length)
     : 0;
 
   return (
@@ -127,7 +122,7 @@ export function ClusterHealth({ health, isError }: ClusterHealthProps) {
             {statusMessages[health.status]}
           </span>
         </div>
-        {!health.vllm_connected && (
+        {health.vllm_status !== 'connected' && (
           <p className="text-xs text-amber-500 mt-1">vLLM inference engine disconnected</p>
         )}
       </div>
@@ -138,12 +133,6 @@ export function ClusterHealth({ health, isError }: ClusterHealthProps) {
           <GpuCard key={gpu.index} gpu={gpu} />
         ))}
       </div>
-
-      {health.models_loaded.length > 0 && (
-        <div className="text-xs text-muted-foreground">
-          Models: {health.models_loaded.join(', ')}
-        </div>
-      )}
 
       {/* Security footer */}
       <div className="flex items-center gap-1.5 text-xs text-muted-foreground pt-2">

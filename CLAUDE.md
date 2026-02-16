@@ -17,8 +17,10 @@ React 19 + TypeScript + Vite 7 + Tailwind v4 + shadcn/ui.
 
 ## Commands
 ```bash
-npm run dev    # Dev server
-npm run build  # Production build
+npm run dev          # Dev server
+npm run build        # Production build
+npm run api:sync     # Fetch OpenAPI spec from backend + regenerate TS types
+npm run api:generate # Regenerate types from committed spec (no backend needed)
 ```
 
 ## Structure

@@ -99,7 +99,7 @@ export function ChatInput({ onSend, disabled, placeholder, models = [], selected
                     >
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate">{model.name}</p>
-                        <p className="text-xs text-muted-foreground truncate">{model.parameters}</p>
+                        <p className="text-xs text-muted-foreground truncate">{model.parameters ?? ''}</p>
                       </div>
                       {model.id === currentModel?.id && (
                         <span className="text-blue-500">

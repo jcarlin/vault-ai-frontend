@@ -81,16 +81,16 @@ export async function mockFetchModels(): Promise<ModelListResponse> {
 export async function mockFetchHealth(): Promise<HealthResponse> {
   await new Promise((resolve) => setTimeout(resolve, 200));
   return {
-    status: 'healthy',
-    vllm_connected: true,
+    status: 'ok',
+    vllm_status: 'connected',
+    gpu_count: 4,
     uptime_seconds: 432000,
     version: '1.0.0-dev',
     gpus: [
-      { index: 0, name: 'RTX 5090', memory_used_mb: 18432, memory_total_mb: 32768, utilization_percent: 45, temperature_celsius: 42 },
-      { index: 1, name: 'RTX 5090', memory_used_mb: 18432, memory_total_mb: 32768, utilization_percent: 48, temperature_celsius: 44 },
-      { index: 2, name: 'RTX 5090', memory_used_mb: 18432, memory_total_mb: 32768, utilization_percent: 32, temperature_celsius: 40 },
-      { index: 3, name: 'RTX 5090', memory_used_mb: 18432, memory_total_mb: 32768, utilization_percent: 38, temperature_celsius: 41 },
+      { index: 0, name: 'RTX 5090', memory_used_mb: 18432, memory_total_mb: 32768, utilization_pct: 45 },
+      { index: 1, name: 'RTX 5090', memory_used_mb: 18432, memory_total_mb: 32768, utilization_pct: 48 },
+      { index: 2, name: 'RTX 5090', memory_used_mb: 18432, memory_total_mb: 32768, utilization_pct: 32 },
+      { index: 3, name: 'RTX 5090', memory_used_mb: 18432, memory_total_mb: 32768, utilization_pct: 38 },
     ],
-    models_loaded: ['qwen2.5-32b-awq'],
   };
 }

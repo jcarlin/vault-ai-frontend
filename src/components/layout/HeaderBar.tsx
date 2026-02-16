@@ -37,9 +37,9 @@ export function HeaderBar({
   if (healthError) {
     statusColor = 'bg-red-500';
   } else if (health) {
-    if (health.status === 'healthy' && health.vllm_connected) {
+    if (health.status === 'ok' && health.vllm_status === 'connected') {
       statusColor = 'bg-[var(--green-500)]';
-    } else if (health.status === 'degraded' || !health.vllm_connected) {
+    } else if (health.status === 'degraded' || health.vllm_status !== 'connected') {
       statusColor = 'bg-amber-500';
     } else {
       statusColor = 'bg-red-500';
@@ -49,7 +49,7 @@ export function HeaderBar({
   const statusLabel = healthError
     ? 'Backend unreachable'
     : health
-      ? health.vllm_connected
+      ? health.vllm_status === 'connected'
         ? `${health.gpus.length} GPUs`
         : 'vLLM disconnected'
       : 'Connecting...';

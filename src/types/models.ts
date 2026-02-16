@@ -16,7 +16,7 @@ export function toDisplayModel(model: ModelInfo, defaultModelId?: string): Displ
   return {
     ...model,
     displayName: model.name,
-    size: `${model.vram_required_gb}GB VRAM`,
+    size: `${model.vram_required_gb ?? '?'}GB VRAM`,
     isDefault: model.id === defaultModelId,
     status: 'active',
   };
