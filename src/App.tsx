@@ -1,11 +1,11 @@
 import { lazy, Suspense } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import { Dashboard } from '@/components/layout';
 import { useAuth } from '@/contexts/AuthContext';
 import { ApiKeyEntry } from '@/components/auth/ApiKeyEntry';
 import { NotFound } from '@/components/NotFound';
-import { OnboardingFlow } from '@/components/onboarding';
-import { useOnboarding } from '@/hooks/useOnboarding';
+import { SetupWizard } from '@/components/setup';
+import { useSetupWizard } from '@/hooks/useSetupWizard';
 
 const InsightsPage = lazy(() =>
   import('@/components/insights/InsightsPage').then((m) => ({ default: m.InsightsPage })),
@@ -30,36 +30,24 @@ function LoadingFallback() {
 }
 
 function App() {
-  const { isAuthenticated } = useAuth();
-  const {
-    isComplete: onboardingComplete,
-    currentStep: onboardingStep,
-    startOnboarding,
-    setTimezone,
-    setAdmin,
-    setClusterVerified,
-    completeTour,
-    completeOnboarding,
-  } = useOnboarding();
+  const { status: setupStatus } = useSetupWizard();
+  const { isAuthenticated, setApiKey } = useAuth();
+
+  // Setup gate — runs before auth
+  if (setupStatus === 'loading') {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <LoadingFallback />
+      </div>
+    );
+  }
+  if (setupStatus !== 'complete') {
+    return <SetupWizard onApiKeyCreated={setApiKey} />;
+  }
 
   // Auth gate
   if (!isAuthenticated) {
     return <ApiKeyEntry />;
-  }
-
-  // Onboarding gate
-  if (!onboardingComplete) {
-    return (
-      <OnboardingFlow
-        currentStep={onboardingStep}
-        onStart={startOnboarding}
-        onSetTimezone={setTimezone}
-        onSetAdmin={setAdmin}
-        onClusterVerified={setClusterVerified}
-        onCompleteTour={completeTour}
-        onComplete={completeOnboarding}
-      />
-    );
   }
 
   return (
@@ -73,9 +61,6 @@ function App() {
           <Route path="models" element={<ModelsPage />} />
           <Route path="settings" element={<SettingsPage />} />
         </Route>
-
-        {/* Setup redirect */}
-        <Route path="setup" element={<Navigate to="/" replace />} />
 
         {/* 404 */}
         <Route path="*" element={<NotFound />} />

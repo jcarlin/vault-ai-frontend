@@ -8,3 +8,4 @@ export { fetchInsights } from './insights';
 export { listTrainingJobs, createTrainingJob, getTrainingJob, deleteTrainingJob, pauseTrainingJob, resumeTrainingJob, cancelTrainingJob } from './training';
 export { listApiKeys, createApiKey, deleteApiKey, listUsers, createUser, updateUser, deactivateUser } from './admin';
 export { getNetworkConfig, updateNetworkConfig, getSystemSettings, updateSystemSettings, getGpuDetails, getSystemResources } from './system';
+export { getSetupStatus, configureNetwork, createSetupAdmin, configureTls, selectModel, runVerification, completeSetup } from './setup';
