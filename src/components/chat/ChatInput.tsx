@@ -87,7 +87,7 @@ export function ChatInput({ onSend, disabled, disabledMessage, placeholder, mode
                   <p className="text-xs font-medium text-muted-foreground">Select Model</p>
                 </div>
                 <div className="max-h-64 overflow-auto py-1">
-                  {models.map((model) => (
+                  {models.filter(m => m.type !== 'embedding').map((model) => (
                     <button
                       key={model.id}
                       onClick={() => handleModelSelect(model)}
@@ -100,7 +100,15 @@ export function ChatInput({ onSend, disabled, disabledMessage, placeholder, mode
                     >
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate">{model.name}</p>
-                        <p className="text-xs text-muted-foreground truncate">{model.parameters ?? ''}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="text-xs text-muted-foreground truncate">{model.parameters ?? ''}</p>
+                          {model.status === 'running' && (
+                            <span className="flex items-center gap-1 text-[10px] text-emerald-500">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                              Running
+                            </span>
+                          )}
+                        </div>
                       </div>
                       {model.id === currentModel?.id && (
                         <span className="text-blue-500">

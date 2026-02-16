@@ -33,7 +33,7 @@ export interface paths {
         };
         /**
          * List Models
-         * @description List available models from the local manifest file.
+         * @description List available models from the inference backend, enriched with manifest metadata.
          */
         get: operations["list_models_v1_models_get"];
         put?: never;
@@ -431,6 +431,125 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/vault/setup/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Setup Status */
+        get: operations["get_setup_status_vault_setup_status_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/vault/setup/network": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Configure Network */
+        post: operations["configure_network_vault_setup_network_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/vault/setup/admin": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Admin */
+        post: operations["create_admin_vault_setup_admin_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/vault/setup/tls": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Configure Tls */
+        post: operations["configure_tls_vault_setup_tls_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/vault/setup/model": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Select Model */
+        post: operations["select_model_vault_setup_model_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/vault/setup/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Verify Setup */
+        get: operations["verify_setup_vault_setup_verify_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/vault/setup/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Complete Setup */
+        post: operations["complete_setup_vault_setup_complete_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/": {
         parameters: {
             query?: never;
@@ -714,6 +833,16 @@ export interface components {
             id: string;
             /** Name */
             name: string;
+            /**
+             * Type
+             * @default chat
+             */
+            type?: "chat" | "embedding";
+            /**
+             * Status
+             * @default available
+             */
+            status?: "running" | "available";
             /** Parameters */
             parameters?: string | null;
             /** Quantization */
@@ -724,6 +853,10 @@ export interface components {
             vram_required_gb?: number | null;
             /** Description */
             description?: string | null;
+            /** Family */
+            family?: string | null;
+            /** Size Bytes */
+            size_bytes?: number | null;
         };
         /** ModelListResponse */
         ModelListResponse: {
@@ -789,6 +922,83 @@ export interface components {
             range: string;
             /** Count */
             count: number;
+        };
+        /** SetupAdminRequest */
+        SetupAdminRequest: {
+            /** Name */
+            name: string;
+            /** Email */
+            email: string;
+        };
+        /** SetupAdminResponse */
+        SetupAdminResponse: {
+            /** User Id */
+            user_id: string;
+            /** Api Key */
+            api_key: string;
+            /** Key Prefix */
+            key_prefix: string;
+        };
+        /** SetupCompleteResponse */
+        SetupCompleteResponse: {
+            /** Status */
+            status: string;
+            /** Message */
+            message: string;
+        };
+        /** SetupModelRequest */
+        SetupModelRequest: {
+            /** Model Id */
+            model_id: string;
+        };
+        /** SetupNetworkRequest */
+        SetupNetworkRequest: {
+            /** Hostname */
+            hostname: string;
+            /**
+             * Ip Mode
+             * @default dhcp
+             */
+            ip_mode: string;
+            /** Ip Address */
+            ip_address?: string | null;
+            /** Subnet Mask */
+            subnet_mask?: string | null;
+            /** Gateway */
+            gateway?: string | null;
+            /** Dns Servers */
+            dns_servers?: string[] | null;
+        };
+        /** SetupStatusResponse */
+        SetupStatusResponse: {
+            /** Status */
+            status: string;
+            /**
+             * Completed Steps
+             * @default []
+             */
+            completed_steps: string[];
+            /** Current Step */
+            current_step?: string | null;
+        };
+        /** SetupTlsRequest */
+        SetupTlsRequest: {
+            /**
+             * Mode
+             * @default self_signed
+             */
+            mode: string;
+            /** Certificate */
+            certificate?: string | null;
+            /** Private Key */
+            private_key?: string | null;
+        };
+        /** SetupVerifyResponse */
+        SetupVerifyResponse: {
+            /** Status */
+            status: string;
+            /** Checks */
+            checks: components["schemas"]["VerificationCheck"][];
         };
         /** SystemResources */
         SystemResources: {
@@ -1045,6 +1255,17 @@ export interface components {
             msg: string;
             /** Error Type */
             type: string;
+        };
+        /** VerificationCheck */
+        VerificationCheck: {
+            /** Name */
+            name: string;
+            /** Passed */
+            passed: boolean;
+            /** Message */
+            message: string;
+            /** Latency Ms */
+            latency_ms?: number | null;
         };
     };
     responses: never;
@@ -1938,6 +2159,204 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_setup_status_vault_setup_status_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SetupStatusResponse"];
+                };
+            };
+        };
+    };
+    configure_network_vault_setup_network_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetupNetworkRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_admin_vault_setup_admin_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetupAdminRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SetupAdminResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    configure_tls_vault_setup_tls_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetupTlsRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    select_model_vault_setup_model_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetupModelRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    verify_setup_vault_setup_verify_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SetupVerifyResponse"];
+                };
+            };
+        };
+    };
+    complete_setup_vault_setup_complete_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SetupCompleteResponse"];
                 };
             };
         };

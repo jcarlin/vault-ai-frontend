@@ -106,8 +106,12 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
   });
   const models = modelsData?.data ?? [];
 
-  // Set default model if none selected
-  const effectiveModelId = selectedModelId || models[0]?.id || 'default';
+  // Set default model if none selected — prefer a running chat model
+  const effectiveModelId = selectedModelId
+    || models.find(m => m.type === 'chat' && m.status === 'running')?.id
+    || models.find(m => m.type === 'chat')?.id
+    || models[0]?.id
+    || 'default';
 
   const sendMessage = useCallback(
     async (content: string) => {

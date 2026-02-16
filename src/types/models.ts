@@ -5,7 +5,6 @@ export interface DisplayModel extends ModelInfo {
   displayName: string;
   size: string;
   isDefault: boolean;
-  status: 'active' | 'available';
   metrics?: {
     tokensPerSecond: number;
   };
@@ -18,6 +17,5 @@ export function toDisplayModel(model: ModelInfo, defaultModelId?: string): Displ
     displayName: model.name,
     size: `${model.vram_required_gb ?? '?'}GB VRAM`,
     isDefault: model.id === defaultModelId,
-    status: 'active',
   };
 }
