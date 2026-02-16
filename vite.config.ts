@@ -12,6 +12,16 @@ export default defineConfig({
     },
   },
   server: {
-    allowedHosts: true,
+    allowedHosts: ['localhost', 'vault-cube.local'],
+    proxy: {
+      '/v1': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+      },
+      '/vault': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+      },
+    },
   },
 })

@@ -1,0 +1,97 @@
+import type { ApiError } from '@/types/api';
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+
+export class ApiClientError extends Error {
+  status: number;
+  detail?: string;
+
+  constructor(message: string, status: number, detail?: string) {
+    super(message);
+    this.name = 'ApiClientError';
+    this.status = status;
+    this.detail = detail;
+  }
+}
+
+function getApiKey(): string | null {
+  return localStorage.getItem('vault_api_key');
+}
+
+function buildHeaders(extra?: Record<string, string>): Record<string, string> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...extra,
+  };
+  const key = getApiKey();
+  if (key) {
+    headers['Authorization'] = `Bearer ${key}`;
+  }
+  return headers;
+}
+
+async function handleResponse<T>(response: Response): Promise<T> {
+  if (!response.ok) {
+    let detail: string | undefined;
+    try {
+      const body: ApiError = await response.json();
+      detail = body.detail;
+    } catch {
+      // ignore parse errors
+    }
+    throw new ApiClientError(
+      detail || `Request failed with status ${response.status}`,
+      response.status,
+      detail,
+    );
+  }
+  return response.json();
+}
+
+export async function apiGet<T>(path: string, signal?: AbortSignal): Promise<T> {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method: 'GET',
+    headers: buildHeaders(),
+    signal,
+  });
+  return handleResponse<T>(response);
+}
+
+export async function apiPost<T>(path: string, body: unknown, signal?: AbortSignal): Promise<T> {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method: 'POST',
+    headers: buildHeaders(),
+    body: JSON.stringify(body),
+    signal,
+  });
+  return handleResponse<T>(response);
+}
+
+// Raw fetch for streaming — caller handles the response
+export async function apiStream(
+  path: string,
+  body: unknown,
+  signal?: AbortSignal,
+): Promise<Response> {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method: 'POST',
+    headers: buildHeaders(),
+    body: JSON.stringify(body),
+    signal,
+  });
+  if (!response.ok) {
+    let detail: string | undefined;
+    try {
+      const errorBody: ApiError = await response.json();
+      detail = errorBody.detail;
+    } catch {
+      // ignore
+    }
+    throw new ApiClientError(
+      detail || `Request failed with status ${response.status}`,
+      response.status,
+      detail,
+    );
+  }
+  return response;
+}

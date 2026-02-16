@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useOutletContext } from 'react-router-dom';
 import { type SettingsCategory } from '@/mocks/settings';
 import { NetworkSettings } from './NetworkSettings';
 import { UsersSettings } from './UsersSettings';
@@ -7,12 +8,21 @@ import { SystemSettings } from './SystemSettings';
 import { AdvancedSettings } from './AdvancedSettings';
 
 interface SettingsPageProps {
-  activeCategory: SettingsCategory;
+  activeCategory?: SettingsCategory;
   onRestartSetup?: () => void;
 }
 
-export function SettingsPage({ activeCategory, onRestartSetup }: SettingsPageProps) {
+interface DashboardOutletContext {
+  settingsCategory?: SettingsCategory;
+}
+
+export function SettingsPage({ activeCategory: externalCategory, onRestartSetup }: SettingsPageProps) {
+  const context = useOutletContext<DashboardOutletContext | null>();
+  const [internalCategory] = useState<SettingsCategory>('network');
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
+
+  // Priority: explicit prop > outlet context from Dashboard > internal fallback
+  const activeCategory = externalCategory || context?.settingsCategory || internalCategory;
 
   const showSaveMessage = (message: string) => {
     setSaveMessage(message);

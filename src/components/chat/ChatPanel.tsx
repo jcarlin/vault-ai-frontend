@@ -1,60 +1,46 @@
-import { useEffect, useRef, useMemo } from 'react';
+import { useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { ChatMessage } from './ChatMessage';
 import { ChatInput } from './ChatInput';
 import { ThinkingIndicator, StreamingMessage } from './ThinkingIndicator';
 import { SuggestedPrompts } from './SuggestedPrompts';
 import { useChat } from '@/hooks/useChat';
-import { type ResourceAllocation } from '@/mocks/training';
-import { type SpeedMode, type ChatMessage as ChatMessageType } from '@/mocks/chat';
 
 interface ChatPanelProps {
-  allocation: ResourceAllocation;
   className?: string;
-  conversationMessages?: ChatMessageType[] | null;
+  conversationId?: string | null;
 }
 
-// Convert resource allocation speed impact to chat speed mode
-function getSpeedMode(speedImpact: ResourceAllocation['interactive']['speedImpact']): SpeedMode {
-  switch (speedImpact) {
-    case 'normal':
-      return 'fast';
-    case 'moderate':
-      return 'moderate';
-    case 'slow':
-    case 'unavailable':
-      return 'slow';
-    default:
-      return 'fast';
-  }
-}
-
-export function ChatPanel({ allocation, className, conversationMessages }: ChatPanelProps) {
-  const speedMode = useMemo(
-    () => getSpeedMode(allocation.interactive.speedImpact),
-    [allocation.interactive.speedImpact]
-  );
-  const { messages, state, currentThinking, streamingContent, sendMessage, loadConversation, clearHistory } = useChat({ speedMode });
+export function ChatPanel({ className, conversationId }: ChatPanelProps) {
+  const {
+    messages,
+    state,
+    currentThinking,
+    streamingContent,
+    sendMessage,
+    clearHistory,
+    models,
+    selectedModelId,
+    setSelectedModelId,
+  } = useChat({ conversationId });
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const isUnavailable = allocation.interactive.speedImpact === 'unavailable';
-  const isEmpty = messages.length === 0;
-  const lastConversationRef = useRef<ChatMessageType[] | null | undefined>(undefined);
+  const lastConversationRef = useRef<string | null | undefined>(undefined);
 
-  // Load conversation when prop changes
+  // Reset when conversation changes
   useEffect(() => {
-    if (conversationMessages !== lastConversationRef.current) {
-      lastConversationRef.current = conversationMessages;
-      if (conversationMessages && conversationMessages.length > 0) {
-        loadConversation(conversationMessages);
-      } else {
+    if (conversationId !== lastConversationRef.current) {
+      lastConversationRef.current = conversationId;
+      if (!conversationId) {
         clearHistory();
       }
     }
-  }, [conversationMessages, loadConversation, clearHistory]);
+  }, [conversationId, clearHistory]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, streamingContent]);
+
+  const isEmpty = messages.length === 0;
 
   return (
     <div className={cn('flex flex-col h-full', className)}>
@@ -63,7 +49,7 @@ export function ChatPanel({ allocation, className, conversationMessages }: ChatP
         {/* Empty state with suggestions */}
         {isEmpty && state === 'idle' && (
           <div className="absolute inset-0 flex items-center justify-center px-4">
-            <SuggestedPrompts onSelect={sendMessage} disabled={isUnavailable} />
+            <SuggestedPrompts onSelect={sendMessage} />
           </div>
         )}
 
@@ -97,14 +83,15 @@ export function ChatPanel({ allocation, className, conversationMessages }: ChatP
         <div className="max-w-3xl mx-auto px-4">
           <ChatInput
             onSend={sendMessage}
-            disabled={isUnavailable || state !== 'idle'}
+            disabled={state !== 'idle'}
             placeholder={
-              isUnavailable
-                ? 'Chat unavailable during full training allocation...'
-                : state !== 'idle'
+              state !== 'idle'
                 ? 'Waiting for response...'
                 : undefined
             }
+            models={models}
+            selectedModelId={selectedModelId}
+            onModelChange={setSelectedModelId}
           />
         </div>
       </div>

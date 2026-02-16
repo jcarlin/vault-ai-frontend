@@ -1,33 +1,36 @@
-import { useState } from 'react';
-import { Dashboard, ApplicationPlaceholder } from '@/components/layout';
-import { InsightsPage } from '@/components/insights';
-import { ModelsPage } from '@/components/models';
-import { SettingsPage } from '@/components/settings';
+import { lazy, Suspense } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { Dashboard } from '@/components/layout';
+import { useAuth } from '@/contexts/AuthContext';
+import { ApiKeyEntry } from '@/components/auth/ApiKeyEntry';
+import { NotFound } from '@/components/NotFound';
 import { OnboardingFlow } from '@/components/onboarding';
-import { useClusterHealth } from '@/hooks/useClusterHealth';
-import { useTrainingJobs } from '@/hooks/useTrainingJobs';
-import { useDeveloperMode, type Application } from '@/hooks/useDeveloperMode';
 import { useOnboarding } from '@/hooks/useOnboarding';
-import { type SettingsCategory } from '@/mocks/settings';
 
-type Page = 'dashboard' | 'insights' | 'models' | 'settings' | 'application';
+const InsightsPage = lazy(() =>
+  import('@/components/insights/InsightsPage').then((m) => ({ default: m.InsightsPage })),
+);
+const ModelsPage = lazy(() =>
+  import('@/components/models/ModelsPage').then((m) => ({ default: m.ModelsPage })),
+);
+const SettingsPage = lazy(() =>
+  import('@/components/settings/SettingsPage').then((m) => ({ default: m.SettingsPage })),
+);
+
+function LoadingFallback() {
+  return (
+    <div className="flex-1 flex items-center justify-center">
+      <div className="flex gap-1">
+        <span className="w-2 h-2 rounded-full bg-primary animate-bounce [animation-delay:-0.3s]" />
+        <span className="w-2 h-2 rounded-full bg-primary animate-bounce [animation-delay:-0.15s]" />
+        <span className="w-2 h-2 rounded-full bg-primary animate-bounce" />
+      </div>
+    </div>
+  );
+}
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<Page>('dashboard');
-  const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
-  const [settingsCategory, setSettingsCategory] = useState<SettingsCategory>('network');
-  const [initialModelId, setInitialModelId] = useState<string | null>(null);
-  const cluster = useClusterHealth(30000);
-  const {
-    jobs,
-    activeJob,
-    allocation,
-    setAllocation,
-    pauseJob,
-    resumeJob,
-    cancelJob,
-  } = useTrainingJobs({ updateIntervalMs: 3000 });
-  const { enabled: developerMode, toggle: toggleDeveloperMode, applications } = useDeveloperMode();
+  const { isAuthenticated } = useAuth();
   const {
     isComplete: onboardingComplete,
     currentStep: onboardingStep,
@@ -37,33 +40,15 @@ function App() {
     setClusterVerified,
     completeTour,
     completeOnboarding,
-    resetOnboarding,
   } = useOnboarding();
 
-  const handleSelectApplication = (app: Application) => {
-    setSelectedApplication(app);
-    setCurrentPage('application');
-  };
+  // Auth gate — skip in mock mode
+  const useMocks = import.meta.env.VITE_USE_MOCKS === 'true';
+  if (!useMocks && !isAuthenticated) {
+    return <ApiKeyEntry />;
+  }
 
-  const handleCloseApplication = () => {
-    setSelectedApplication(null);
-    setCurrentPage('dashboard');
-  };
-
-  const handleNavigateToModel = (modelId: string) => {
-    setInitialModelId(modelId);
-    setCurrentPage('models');
-  };
-
-  const handleClearInitialModel = () => {
-    setInitialModelId(null);
-  };
-
-  const handleNavigateToDashboard = () => {
-    setCurrentPage('dashboard');
-  };
-
-  // Show onboarding flow if not completed
+  // Onboarding gate
   if (!onboardingComplete) {
     return (
       <OnboardingFlow
@@ -79,39 +64,24 @@ function App() {
   }
 
   return (
-    <Dashboard
-      cluster={cluster}
-      trainingJobs={jobs}
-      activeJob={activeJob}
-      allocation={allocation}
-      onAllocationChange={setAllocation}
-      onPauseJob={pauseJob}
-      onResumeJob={resumeJob}
-      onCancelJob={cancelJob}
-      currentPage={currentPage}
-      onNavigate={setCurrentPage}
-      developerMode={developerMode}
-      onToggleDeveloperMode={toggleDeveloperMode}
-      applications={applications}
-      onSelectApplication={handleSelectApplication}
-      settingsCategory={settingsCategory}
-      onSettingsCategoryChange={setSettingsCategory}
-      onNavigateToModel={handleNavigateToModel}
-      onNavigateToDashboard={handleNavigateToDashboard}
-    >
-      {currentPage === 'insights' ? (
-        <InsightsPage />
-      ) : currentPage === 'models' ? (
-        <ModelsPage
-          initialModelId={initialModelId}
-          onClearInitialModel={handleClearInitialModel}
-        />
-      ) : currentPage === 'settings' ? (
-        <SettingsPage activeCategory={settingsCategory} onRestartSetup={resetOnboarding} />
-      ) : currentPage === 'application' && selectedApplication ? (
-        <ApplicationPlaceholder application={selectedApplication} onClose={handleCloseApplication} />
-      ) : null}
-    </Dashboard>
+    <Suspense fallback={<LoadingFallback />}>
+      <Routes>
+        {/* Dashboard layout wraps all main routes */}
+        <Route element={<Dashboard />}>
+          {/* Chat is the index (default) route — rendered inside Dashboard when no child route matches */}
+          <Route index element={null} />
+          <Route path="insights" element={<InsightsPage />} />
+          <Route path="models" element={<ModelsPage />} />
+          <Route path="settings" element={<SettingsPage />} />
+        </Route>
+
+        {/* Setup redirect */}
+        <Route path="setup" element={<Navigate to="/" replace />} />
+
+        {/* 404 */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </Suspense>
   );
 }
 

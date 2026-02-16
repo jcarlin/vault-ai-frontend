@@ -245,7 +245,7 @@ function JobSection({
   onResumeJob,
   onCancelJob,
   onJobClick,
-  getModelIdForJob,
+  getModelIdForJob: _getModelIdForJob,
 }: {
   title: string;
   jobs: TrainingJob[];
@@ -284,7 +284,7 @@ export function JobsPage({
   onPauseJob,
   onResumeJob,
   onCancelJob,
-  onNavigateToModel,
+  onNavigateToModel: _onNavigateToModel,
 }: JobsPageProps) {
   const [jobToCancel, setJobToCancel] = useState<TrainingJob | null>(null);
   const [showNewJobModal, setShowNewJobModal] = useState(false);

@@ -1,44 +1,9 @@
-import { useState } from 'react';
 import { cn } from '@/lib/utils';
-import { CubeDetailDialog } from './CubeDetailDialog';
-import {
-  type ClusterHealth as ClusterHealthType,
-  type CubeMetrics,
-} from '@/mocks/cluster';
+import type { HealthResponse, GpuInfo } from '@/types/api';
 
 interface ClusterHealthProps {
-  cluster: ClusterHealthType;
-  compact?: boolean;
-}
-
-function AggregateStatus({ status }: { status: ClusterHealthType['aggregateStatus'] }) {
-  const messages = {
-    healthy: 'All Systems Operational',
-    warning: 'Performance Degraded',
-    error: 'System Error Detected',
-    offline: 'Systems Offline',
-  };
-
-  return (
-    <div className="flex items-center gap-2">
-      <span
-        className={cn(
-          'inline-block h-2 w-2 rounded-full',
-          status === 'healthy' && 'bg-[var(--green-500)]',
-          status === 'warning' && 'bg-amber-500 animate-pulse',
-          (status === 'error' || status === 'offline') && 'bg-red-500 animate-pulse'
-        )}
-      />
-      <span className={cn(
-        'text-sm font-medium',
-        status === 'healthy' && 'text-[var(--green-500)]',
-        status === 'warning' && 'text-amber-500',
-        (status === 'error' || status === 'offline') && 'text-red-500'
-      )}>
-        {messages[status]}
-      </span>
-    </div>
-  );
+  health: HealthResponse | null;
+  isError?: boolean;
 }
 
 function getMetricColor(value: number, warningThreshold: number, errorThreshold: number) {
@@ -58,149 +23,135 @@ function MetricBar({ value, color }: { value: number; color: string }) {
   );
 }
 
-function CubeMetricRow({ icon, value, label, color }: { icon: React.ReactNode; value: number; label: string; color: string }) {
+function GpuCard({ gpu }: { gpu: GpuInfo }) {
+  const memPercent = gpu.memory_total_mb > 0
+    ? Math.round((gpu.memory_used_mb / gpu.memory_total_mb) * 100)
+    : 0;
+  const memUsedGb = (gpu.memory_used_mb / 1024).toFixed(1);
+  const memTotalGb = (gpu.memory_total_mb / 1024).toFixed(1);
+
   return (
-    <div className="flex items-center gap-2 text-xs">
-      <span className="text-muted-foreground">{icon}</span>
-      <MetricBar value={value} color={color} />
-      <span className="text-muted-foreground w-8 text-right">{label}</span>
+    <div className="p-3 rounded-lg bg-card border border-border">
+      <div className="flex items-center justify-between mb-2.5">
+        <span className="text-sm font-medium text-foreground">GPU {gpu.index}</span>
+        <span className="text-xs text-muted-foreground">{gpu.name}</span>
+      </div>
+      <div className="space-y-2">
+        <div className="flex items-center gap-2 text-xs">
+          <span className="text-muted-foreground w-10">Util</span>
+          <MetricBar value={gpu.utilization_percent} color={getMetricColor(gpu.utilization_percent, 85, 98)} />
+          <span className="text-muted-foreground w-8 text-right">{gpu.utilization_percent}%</span>
+        </div>
+        <div className="flex items-center gap-2 text-xs">
+          <span className="text-muted-foreground w-10">VRAM</span>
+          <MetricBar value={memPercent} color={getMetricColor(memPercent, 80, 95)} />
+          <span className="text-muted-foreground w-8 text-right">{memPercent}%</span>
+        </div>
+        <div className="flex items-center gap-2 text-xs">
+          <span className="text-muted-foreground w-10">Temp</span>
+          <MetricBar value={Math.min((gpu.temperature_celsius / 100) * 100, 100)} color={getMetricColor(gpu.temperature_celsius, 70, 85)} />
+          <span className="text-muted-foreground w-8 text-right">{gpu.temperature_celsius}&deg;</span>
+        </div>
+      </div>
+      <p className="text-xs text-muted-foreground mt-2">{memUsedGb}/{memTotalGb} GB</p>
     </div>
   );
 }
 
-function MiniCubeCard({ cube, onClick }: { cube: CubeMetrics; onClick: () => void }) {
-  const memoryPercent = Math.round((cube.memoryUsed / cube.memoryTotal) * 100);
+function formatUptime(seconds: number): string {
+  const days = Math.floor(seconds / 86400);
+  const hours = Math.floor((seconds % 86400) / 3600);
+  if (days > 0) return `${days}d ${hours}h`;
+  const minutes = Math.floor((seconds % 3600) / 60);
+  return `${hours}h ${minutes}m`;
+}
 
-  return (
-    <button
-      onClick={onClick}
-      className="p-3 rounded-lg bg-card border border-border hover:border-muted-foreground/30 hover:bg-card/80 transition-colors text-left"
-    >
-      <div className="flex items-center justify-between mb-2.5">
-        <span className="text-sm font-medium text-foreground">{cube.name}</span>
-        <span
-          className={cn(
-            'h-2.5 w-2.5 rounded-full',
-            cube.status === 'healthy' && 'bg-[var(--green-500)]',
-            cube.status === 'warning' && 'bg-amber-500',
-            (cube.status === 'error' || cube.status === 'offline') && 'bg-red-500'
-          )}
-        />
-      </div>
+export function ClusterHealth({ health, isError }: ClusterHealthProps) {
+  if (isError) {
+    return (
       <div className="space-y-2">
-        <CubeMetricRow
-          icon={<TempIcon />}
-          value={Math.min(cube.temperature / 100 * 100, 100)}
-          label={`${cube.temperature}°`}
-          color={getMetricColor(cube.temperature, 70, 85)}
-        />
-        <CubeMetricRow
-          icon={<GpuIcon />}
-          value={cube.gpuLoad}
-          label={`${cube.gpuLoad}%`}
-          color={getMetricColor(cube.gpuLoad, 85, 98)}
-        />
-        <CubeMetricRow
-          icon={<MemIcon />}
-          value={memoryPercent}
-          label={`${memoryPercent}%`}
-          color={getMetricColor(memoryPercent, 80, 95)}
-        />
+        <h3 className="text-sm font-medium text-foreground">System Status</h3>
+        <div className="flex items-center gap-2">
+          <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
+          <span className="text-sm font-medium text-red-500">Backend Unreachable</span>
+        </div>
+        <p className="text-xs text-muted-foreground">Cannot connect to the Vault API.</p>
       </div>
-    </button>
-  );
-}
+    );
+  }
 
-function TempIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3 w-3">
-      <path d="M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z" />
-    </svg>
-  );
-}
+  if (!health) {
+    return (
+      <div className="space-y-2">
+        <h3 className="text-sm font-medium text-foreground">System Status</h3>
+        <p className="text-xs text-muted-foreground">Loading...</p>
+      </div>
+    );
+  }
 
-function GpuIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3 w-3">
-      <rect x="4" y="4" width="16" height="16" rx="2" />
-      <rect x="9" y="9" width="6" height="6" />
-    </svg>
-  );
-}
+  const statusMessages: Record<string, string> = {
+    healthy: 'All Systems Operational',
+    degraded: 'Performance Degraded',
+    unhealthy: 'System Error Detected',
+  };
 
-function MemIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3 w-3">
-      <rect x="2" y="6" width="20" height="12" rx="2" />
-      <path d="M6 6V4" />
-      <path d="M10 6V4" />
-      <path d="M14 6V4" />
-      <path d="M18 6V4" />
-    </svg>
-  );
-}
+  const statusColors: Record<string, string> = {
+    healthy: 'bg-[var(--green-500)]',
+    degraded: 'bg-amber-500 animate-pulse',
+    unhealthy: 'bg-red-500 animate-pulse',
+  };
 
-function ShieldIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-3.5 w-3.5">
-      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-    </svg>
-  );
-}
+  const statusTextColors: Record<string, string> = {
+    healthy: 'text-[var(--green-500)]',
+    degraded: 'text-amber-500',
+    unhealthy: 'text-red-500',
+  };
 
-export function ClusterHealth({ cluster, compact: _compact }: ClusterHealthProps) {
-  void _compact;
-  const [selectedCube, setSelectedCube] = useState<CubeMetrics | null>(null);
-
-  const totalMemory = cluster.cubes.reduce((sum, cube) => sum + cube.memoryTotal, 0);
-  const avgLoad = cluster.cubes.length > 0
-    ? Math.round(cluster.cubes.reduce((sum, cube) => sum + cube.gpuLoad, 0) / cluster.cubes.length)
+  const totalVram = health.gpus.reduce((sum, g) => sum + g.memory_total_mb, 0);
+  const totalVramGb = Math.round(totalVram / 1024);
+  const avgUtil = health.gpus.length > 0
+    ? Math.round(health.gpus.reduce((sum, g) => sum + g.utilization_percent, 0) / health.gpus.length)
     : 0;
 
   return (
-    <>
-      <div className="space-y-4">
-        {/* Header */}
-        <div>
-          <h3 className="text-sm font-medium text-foreground">Cluster Status</h3>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            {cluster.cubes.length} cubes • {totalMemory}GB VRAM • {avgLoad}% avg load
-          </p>
-          <div className="mt-2">
-            <AggregateStatus status={cluster.aggregateStatus} />
-          </div>
+    <div className="space-y-4">
+      {/* Header */}
+      <div>
+        <h3 className="text-sm font-medium text-foreground">System Status</h3>
+        <p className="text-xs text-muted-foreground mt-0.5">
+          {health.gpus.length} GPUs &middot; {totalVramGb}GB VRAM &middot; {avgUtil}% avg &middot; {formatUptime(health.uptime_seconds)}
+        </p>
+        <div className="mt-2 flex items-center gap-2">
+          <span className={cn('inline-block h-2 w-2 rounded-full', statusColors[health.status])} />
+          <span className={cn('text-sm font-medium', statusTextColors[health.status])}>
+            {statusMessages[health.status]}
+          </span>
         </div>
-
-        {/* Cube grid */}
-        <div className="grid grid-cols-2 gap-3">
-          {cluster.cubes.map((cube) => (
-            <MiniCubeCard
-              key={cube.id}
-              cube={cube}
-              onClick={() => setSelectedCube(cube)}
-            />
-          ))}
-        </div>
-
-        {cluster.cubes.length === 0 && (
-          <div className="text-center py-8 text-muted-foreground">
-            <p className="text-sm">No cubes connected</p>
-            <p className="text-xs mt-1">Connect hardware to get started</p>
-          </div>
+        {!health.vllm_connected && (
+          <p className="text-xs text-amber-500 mt-1">vLLM inference engine disconnected</p>
         )}
-
-        {/* Security footer */}
-        <div className="flex items-center gap-1.5 text-xs text-muted-foreground pt-2">
-          <ShieldIcon />
-          <span>Air-gapped • No external network access</span>
-        </div>
       </div>
 
-      <CubeDetailDialog
-        cube={selectedCube}
-        open={!!selectedCube}
-        onClose={() => setSelectedCube(null)}
-      />
-    </>
+      {/* GPU grid */}
+      <div className="grid grid-cols-2 gap-3">
+        {health.gpus.map((gpu) => (
+          <GpuCard key={gpu.index} gpu={gpu} />
+        ))}
+      </div>
+
+      {health.models_loaded.length > 0 && (
+        <div className="text-xs text-muted-foreground">
+          Models: {health.models_loaded.join(', ')}
+        </div>
+      )}
+
+      {/* Security footer */}
+      <div className="flex items-center gap-1.5 text-xs text-muted-foreground pt-2">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-3.5 w-3.5">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+        </svg>
+        <span>Air-gapped &middot; v{health.version}</span>
+      </div>
+    </div>
   );
 }
