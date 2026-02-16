@@ -10,7 +10,9 @@
     "preview": "vite preview",
     "api:fetch-spec": "curl -s http://localhost:8000/openapi.json -o src/types/openapi.json",
     "api:generate": "openapi-typescript src/types/openapi.json -o src/types/api.generated.ts",
-    "api:sync": "npm run api:fetch-spec && npm run api:generate"
+    "api:sync": "npm run api:fetch-spec && npm run api:generate",
+    "test": "vitest",
+    "test:run": "vitest run"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",
@@ -43,6 +45,7 @@
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
     "globals": "^16.5.0",
+    "happy-dom": "^20.6.1",
     "jsdom": "^28.1.0",
     "msw": "^2.12.10",
     "openapi-typescript": "^7.13.0",

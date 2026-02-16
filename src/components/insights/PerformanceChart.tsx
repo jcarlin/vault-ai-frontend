@@ -9,7 +9,7 @@ import {
   Cell,
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { type ResponseTimeDistribution } from '@/mocks/insights';
+import type { ResponseTimeDistribution } from '@/types/api';
 
 interface PerformanceChartProps {
   data: ResponseTimeDistribution[];

@@ -5,6 +5,7 @@ import { ChatInput } from './ChatInput';
 import { ThinkingIndicator, StreamingMessage } from './ThinkingIndicator';
 import { SuggestedPrompts } from './SuggestedPrompts';
 import { useChat } from '@/hooks/useChat';
+import { useHealthQuery } from '@/hooks/useClusterHealth';
 
 interface ChatPanelProps {
   className?: string;
@@ -23,6 +24,8 @@ export function ChatPanel({ className, conversationId }: ChatPanelProps) {
     selectedModelId,
     setSelectedModelId,
   } = useChat({ conversationId });
+  const healthQuery = useHealthQuery();
+  const backendOffline = healthQuery.isError;
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const lastConversationRef = useRef<string | null | undefined>(undefined);
 
@@ -78,12 +81,20 @@ export function ChatPanel({ className, conversationId }: ChatPanelProps) {
         )}
       </div>
 
+      {/* Connection lost banner */}
+      {backendOffline && messages.length > 0 && (
+        <div className="text-center text-xs text-muted-foreground py-1.5 bg-muted/50 border-t border-border">
+          Connection lost — showing cached data
+        </div>
+      )}
+
       {/* Input area */}
       <div className="pb-4 bg-background">
         <div className="max-w-3xl mx-auto px-4">
           <ChatInput
             onSend={sendMessage}
-            disabled={state !== 'idle'}
+            disabled={state !== 'idle' || backendOffline}
+            disabledMessage={backendOffline ? 'Backend unavailable — check connection' : undefined}
             placeholder={
               state !== 'idle'
                 ? 'Waiting for response...'

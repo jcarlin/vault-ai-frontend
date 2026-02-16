@@ -1,4 +1,10 @@
-export { ApiClientError, apiGet, apiPost, apiStream } from './client';
+export { ApiClientError, apiGet, apiPost, apiPut, apiDelete, apiStream } from './client';
 export { streamChatCompletion, type StreamEvent } from './chat';
 export { fetchModels } from './models';
 export { fetchHealth } from './health';
+export { listConversations, getConversation, createConversation, updateConversation, deleteConversation, addMessage } from './conversations';
+export { fetchActivity } from './activity';
+export { fetchInsights } from './insights';
+export { listTrainingJobs, createTrainingJob, getTrainingJob, deleteTrainingJob, pauseTrainingJob, resumeTrainingJob, cancelTrainingJob } from './training';
+export { listApiKeys, createApiKey, deleteApiKey, listUsers, createUser, updateUser, deactivateUser } from './admin';
+export { getNetworkConfig, updateNetworkConfig, getSystemSettings, updateSystemSettings, getGpuDetails, getSystemResources } from './system';

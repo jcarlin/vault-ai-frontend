@@ -67,6 +67,39 @@ export async function apiPost<T>(path: string, body: unknown, signal?: AbortSign
   return handleResponse<T>(response);
 }
 
+export async function apiPut<T>(path: string, body: unknown, signal?: AbortSignal): Promise<T> {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method: 'PUT',
+    headers: buildHeaders(),
+    body: JSON.stringify(body),
+    signal,
+  });
+  return handleResponse<T>(response);
+}
+
+export async function apiDelete(path: string, signal?: AbortSignal): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method: 'DELETE',
+    headers: buildHeaders(),
+    signal,
+  });
+  if (!response.ok) {
+    let detail: string | undefined;
+    try {
+      const body: ApiError = await response.json();
+      detail = body.detail;
+    } catch {
+      // ignore parse errors
+    }
+    throw new ApiClientError(
+      detail || `Request failed with status ${response.status}`,
+      response.status,
+      detail,
+    );
+  }
+  // 204 No Content — don't try to parse body
+}
+
 // Raw fetch for streaming — caller handles the response
 export async function apiStream(
   path: string,

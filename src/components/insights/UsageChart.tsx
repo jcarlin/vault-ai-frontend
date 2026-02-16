@@ -11,7 +11,7 @@ import {
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { type UsageDataPoint, type TimeRange } from '@/mocks/insights';
+import type { UsageDataPoint, TimeRange } from '@/types/api';
 
 interface UsageChartProps {
   data: UsageDataPoint[];
@@ -57,7 +57,7 @@ function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
 }
 
 export function UsageChart({ data, timeRange, onTimeRangeChange }: UsageChartProps) {
-  const [activeMetric, setActiveMetric] = useState<'queries' | 'tokens' | 'both'>('both');
+  const [activeMetric, setActiveMetric] = useState<'requests' | 'tokens' | 'both'>('both');
 
   return (
     <Card>
@@ -111,19 +111,19 @@ export function UsageChart({ data, timeRange, onTimeRangeChange }: UsageChartPro
               <Legend
                 wrapperStyle={{ fontSize: '12px' }}
                 onClick={(e) => {
-                  if (e.dataKey === 'queries') {
-                    setActiveMetric(activeMetric === 'queries' ? 'both' : 'queries');
+                  if (e.dataKey === 'requests') {
+                    setActiveMetric(activeMetric === 'requests' ? 'both' : 'requests');
                   } else {
                     setActiveMetric(activeMetric === 'tokens' ? 'both' : 'tokens');
                   }
                 }}
               />
-              {(activeMetric === 'queries' || activeMetric === 'both') && (
+              {(activeMetric === 'requests' || activeMetric === 'both') && (
                 <Line
                   yAxisId="left"
                   type="monotone"
-                  dataKey="queries"
-                  name="Queries"
+                  dataKey="requests"
+                  name="Requests"
                   stroke="#3b82f6"
                   strokeWidth={2}
                   dot={false}
@@ -134,8 +134,8 @@ export function UsageChart({ data, timeRange, onTimeRangeChange }: UsageChartPro
                 <Line
                   yAxisId="right"
                   type="monotone"
-                  dataKey="avgTokensPerSec"
-                  name="Avg Tokens/sec"
+                  dataKey="tokens"
+                  name="Tokens"
                   stroke="#60a5fa"
                   strokeWidth={2}
                   dot={false}

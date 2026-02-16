@@ -6,13 +6,14 @@ import type { ModelInfo } from '@/types/api';
 interface ChatInputProps {
   onSend: (message: string) => void;
   disabled?: boolean;
+  disabledMessage?: string;
   placeholder?: string;
   models?: ModelInfo[];
   selectedModelId?: string;
   onModelChange?: (modelId: string) => void;
 }
 
-export function ChatInput({ onSend, disabled, placeholder, models = [], selectedModelId, onModelChange }: ChatInputProps) {
+export function ChatInput({ onSend, disabled, disabledMessage, placeholder, models = [], selectedModelId, onModelChange }: ChatInputProps) {
   const [value, setValue] = useState('');
   const [showModelPicker, setShowModelPicker] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -120,7 +121,7 @@ export function ChatInput({ onSend, disabled, placeholder, models = [], selected
         value={value}
         onChange={(e) => setValue(e.target.value)}
         onKeyDown={handleKeyDown}
-        placeholder={placeholder || 'Message Vault AI Systems...'}
+        placeholder={disabledMessage && disabled ? disabledMessage : (placeholder || 'Message Vault AI Systems...')}
         disabled={disabled}
         rows={1}
         className={cn(

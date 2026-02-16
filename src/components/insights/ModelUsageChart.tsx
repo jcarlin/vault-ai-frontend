@@ -8,16 +8,16 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { type ModelUsage } from '@/mocks/insights';
+import type { ModelUsageStats } from '@/types/api';
 
 interface ModelUsageChartProps {
-  data: ModelUsage[];
+  data: ModelUsageStats[];
 }
 
 interface CustomTooltipProps {
   active?: boolean;
   payload?: Array<{
-    payload: ModelUsage;
+    payload: ModelUsageStats;
   }>;
 }
 
@@ -28,9 +28,9 @@ function CustomTooltip({ active, payload }: CustomTooltipProps) {
 
   return (
     <div className="bg-popover border rounded-lg shadow-lg p-3 text-sm">
-      <p className="font-medium">{data.name}</p>
+      <p className="font-medium">{data.model}</p>
       <p className="text-muted-foreground">
-        {data.queries.toLocaleString()} queries ({data.percentage}%)
+        {data.requests.toLocaleString()} requests ({data.percentage}%)
       </p>
     </div>
   );
@@ -60,7 +60,7 @@ export function ModelUsageChart({ data }: ModelUsageChartProps) {
               />
               <YAxis
                 type="category"
-                dataKey="name"
+                dataKey="model"
                 tick={{ fontSize: 11, fill: '#a1a1aa' }}
                 stroke="#52525b"
                 tickLine={false}
@@ -68,7 +68,7 @@ export function ModelUsageChart({ data }: ModelUsageChartProps) {
                 width={100}
               />
               <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted))' }} />
-              <Bar dataKey="queries" fill="#3b82f6" radius={[0, 4, 4, 0]} />
+              <Bar dataKey="requests" fill="#3b82f6" radius={[0, 4, 4, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
