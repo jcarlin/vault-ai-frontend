@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useRef, useCallback, type DragEvent, type ChangeEvent } from 'react';
 import { cn } from '@/lib/utils';
 import { formatFileSize } from '@/lib/formatters';

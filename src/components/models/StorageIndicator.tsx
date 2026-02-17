@@ -1,3 +1,5 @@
+"use client";
+
 import { cn } from '@/lib/utils';
 import type { StorageInfo } from '@/mocks/models';
 

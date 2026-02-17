@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Download, Activity, Zap, Cpu, CheckCircle } from 'lucide-react';

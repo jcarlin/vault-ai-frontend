@@ -1,5 +1,7 @@
+'use client';
+
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { Settings, HelpCircle, LogOut, Code } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -42,7 +44,7 @@ function UserAvatar() {
 
 export function UserMenu({ developerMode, onToggleDeveloperMode }: UserMenuProps) {
   const [open, setOpen] = useState(false);
-  const navigate = useNavigate();
+  const router = useRouter();
   const { clearApiKey } = useAuth();
 
   return (
@@ -75,7 +77,7 @@ export function UserMenu({ developerMode, onToggleDeveloperMode }: UserMenuProps
             <div className="border-t border-border my-1" />
             <button
               onClick={() => {
-                navigate('/settings');
+                router.push('/settings');
                 setOpen(false);
               }}
               className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/80 hover:bg-card hover:text-foreground transition-colors"

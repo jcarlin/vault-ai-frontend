@@ -1,3 +1,5 @@
+"use client";
+
 import { type Application } from '@/hooks/useDeveloperMode';
 
 interface ApplicationPlaceholderProps {

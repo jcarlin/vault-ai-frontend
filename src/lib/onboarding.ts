@@ -3,10 +3,12 @@
 const STORAGE_KEY = 'vault-onboarding-agent-complete';
 
 export function isOnboardingComplete(): boolean {
+  if (typeof window === 'undefined') return false;
   return localStorage.getItem(STORAGE_KEY) === 'true';
 }
 
 export function completeOnboarding(): void {
+  if (typeof window === 'undefined') return;
   localStorage.setItem(STORAGE_KEY, 'true');
 }
 

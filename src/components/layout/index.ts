@@ -1,4 +1,3 @@
-export { Dashboard } from './Dashboard';
 export { Sidebar } from './Sidebar';
 export { HeaderBar } from './HeaderBar';
 export { UserMenu } from './UserMenu';

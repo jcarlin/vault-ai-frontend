@@ -1,3 +1,5 @@
+"use client";
+
 import { cn } from '@/lib/utils';
 import type { HealthResponse, GpuInfo } from '@/types/api';
 

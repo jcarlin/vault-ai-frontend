@@ -1,10 +1,9 @@
 /**
  * Dev-only badge that marks sections still using mock data.
- * Only renders in Vite dev mode (import.meta.env.DEV) or when VITE_DEV_BADGES=true.
  * Invisible in production builds automatically.
  */
 export function MockBadge({ className }: { className?: string }) {
-  const show = import.meta.env.DEV || import.meta.env.VITE_DEV_BADGES === 'true';
+  const show = process.env.NODE_ENV === 'development' || process.env.NEXT_PUBLIC_DEV_BADGES === 'true';
   if (!show) return null;
 
   return (

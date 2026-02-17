@@ -1,3 +1,5 @@
+"use client";
+
 import { cn } from '@/lib/utils';
 import { type Model } from '@/mocks/models';
 import { formatModelDate } from '@/lib/formatters';

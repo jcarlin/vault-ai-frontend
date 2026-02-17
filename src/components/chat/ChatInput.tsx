@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useRef, useEffect, type KeyboardEvent } from 'react';
 import { Coins, ChevronDown, Check, Paperclip, Send } from 'lucide-react';
 import { cn } from '@/lib/utils';
