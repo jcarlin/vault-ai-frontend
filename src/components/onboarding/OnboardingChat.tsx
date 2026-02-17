@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { type OnboardingStep } from '@/hooks/useOnboarding';
@@ -342,7 +344,7 @@ export function OnboardingChat({
       {/* Header */}
       <header className="h-14 border-b border-border/50 flex items-center px-4 sm:px-6 bg-card">
         <div className="flex items-center gap-2 sm:gap-3">
-          <img src={VaultLogo} alt="Vault AI Systems" className="h-6 sm:h-7" />
+          <img src={VaultLogo.src} alt="Vault AI Systems" className="h-6 sm:h-7" />
         </div>
         <div className="ml-auto flex items-center gap-2">
           <span className="text-xs text-muted-foreground hidden sm:inline">Step {

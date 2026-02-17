@@ -1,8 +1,11 @@
-import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
+'use client';
+
+import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
 
 interface AuthContextValue {
   apiKey: string | null;
   isAuthenticated: boolean;
+  isLoading: boolean;
   setApiKey: (key: string) => void;
   clearApiKey: () => void;
 }
@@ -12,9 +15,14 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 const STORAGE_KEY = 'vault_api_key';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [apiKey, setApiKeyState] = useState<string | null>(
-    () => localStorage.getItem(STORAGE_KEY),
-  );
+  const [apiKey, setApiKeyState] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Read from localStorage after mount to avoid hydration mismatch
+  useEffect(() => {
+    setApiKeyState(localStorage.getItem(STORAGE_KEY));
+    setIsLoading(false);
+  }, []);
 
   const setApiKey = useCallback((key: string) => {
     localStorage.setItem(STORAGE_KEY, key);
@@ -31,6 +39,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       value={{
         apiKey,
         isAuthenticated: !!apiKey,
+        isLoading,
         setApiKey,
         clearApiKey,
       }}

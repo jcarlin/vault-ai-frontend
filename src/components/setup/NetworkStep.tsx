@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, type FormEvent } from 'react';
 import type { SetupNetworkRequest } from '@/lib/api/setup';
 

@@ -1,3 +1,5 @@
+'use client';
+
 import { type Model } from '@/mocks/models';
 import { ModelCard } from './ModelCard';
 

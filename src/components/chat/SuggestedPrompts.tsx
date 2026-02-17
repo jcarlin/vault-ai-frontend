@@ -1,3 +1,5 @@
+"use client";
+
 import { type ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 import type { OnboardingPrompt } from '@/lib/onboarding';

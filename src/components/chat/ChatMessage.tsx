@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, memo, type ComponentProps } from 'react';
 import { Copy, Check, ChevronRight } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';

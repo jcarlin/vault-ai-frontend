@@ -1,3 +1,5 @@
+'use client';
+
 import VaultLogoBox from '@/assets/vault_logo_box_color.svg';
 
 interface OnboardingWelcomeProps {
@@ -35,7 +37,7 @@ export function OnboardingWelcome({ onStart }: OnboardingWelcomeProps) {
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 sm:p-8">
       <div className="max-w-md w-full text-center space-y-6 sm:space-y-8">
         <div className="flex justify-center">
-          <img src={VaultLogoBox} alt="Vault AI Systems" className="h-16 sm:h-20" />
+          <img src={VaultLogoBox.src} alt="Vault AI Systems" className="h-16 sm:h-20" />
         </div>
 
         <div className="space-y-3">

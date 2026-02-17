@@ -1,5 +1,6 @@
+'use client';
+
 import { useState } from 'react';
-import { useOutletContext } from 'react-router-dom';
 import { type SettingsCategory } from '@/mocks/settings';
 import { NetworkSettings } from './NetworkSettings';
 import { UsersSettings } from './UsersSettings';
@@ -12,17 +13,11 @@ interface SettingsPageProps {
   onRestartSetup?: () => void;
 }
 
-interface DashboardOutletContext {
-  settingsCategory?: SettingsCategory;
-}
-
 export function SettingsPage({ activeCategory: externalCategory, onRestartSetup }: SettingsPageProps) {
-  const context = useOutletContext<DashboardOutletContext | null>();
   const [internalCategory] = useState<SettingsCategory>('network');
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
 
-  // Priority: explicit prop > outlet context from Dashboard > internal fallback
-  const activeCategory = externalCategory || context?.settingsCategory || internalCategory;
+  const activeCategory = externalCategory || internalCategory;
 
   const showSaveMessage = (message: string) => {
     setSaveMessage(message);

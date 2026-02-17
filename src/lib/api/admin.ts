@@ -50,8 +50,8 @@ export async function deactivateUser(
   id: string,
   signal?: AbortSignal,
 ): Promise<UserResponse> {
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
-  const key = localStorage.getItem('vault_api_key');
+  const API_BASE_URL = '/api/proxy';
+  const key = typeof window !== 'undefined' ? localStorage.getItem('vault_api_key') : null;
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   if (key) headers['Authorization'] = `Bearer ${key}`;
 

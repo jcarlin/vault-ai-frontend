@@ -1,3 +1,5 @@
+'use client';
+
 import { OnboardingWelcome } from './OnboardingWelcome';
 import { OnboardingChat } from './OnboardingChat';
 import { type OnboardingStep } from '@/hooks/useOnboarding';

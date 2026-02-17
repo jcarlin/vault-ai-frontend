@@ -1,3 +1,5 @@
+'use client';
+
 import VaultLogo from '@/assets/vault_logo_color.svg';
 import { useSetupWizard } from '@/hooks/useSetupWizard';
 import { SetupProgress } from './SetupProgress';
@@ -48,7 +50,7 @@ export function SetupWizard({ onApiKeyCreated }: SetupWizardProps) {
       {/* Header */}
       <header className="h-14 border-b border-border/50 flex items-center px-4 sm:px-6 bg-card">
         <div className="flex items-center gap-2 sm:gap-3">
-          <img src={VaultLogo} alt="Vault AI Systems" className="h-6 sm:h-7" />
+          <img src={VaultLogo.src} alt="Vault AI Systems" className="h-6 sm:h-7" />
         </div>
         <div className="ml-auto">
           <SetupProgress currentStep={currentStep} completedSteps={completedSteps} />

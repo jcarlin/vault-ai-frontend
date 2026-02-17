@@ -1,3 +1,5 @@
+'use client';
+
 import VaultLogoBox from '@/assets/vault_logo_box_color.svg';
 
 interface WelcomeStepProps {
@@ -34,7 +36,7 @@ export function WelcomeStep({ onBegin }: WelcomeStepProps) {
   return (
     <div className="max-w-md w-full text-center space-y-6 sm:space-y-8">
       <div className="flex justify-center">
-        <img src={VaultLogoBox} alt="Vault AI Systems" className="h-16 sm:h-20" />
+        <img src={VaultLogoBox.src} alt="Vault AI Systems" className="h-16 sm:h-20" />
       </div>
 
       <div className="space-y-3">

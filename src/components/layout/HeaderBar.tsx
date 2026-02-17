@@ -1,4 +1,6 @@
-import { useLocation, useNavigate } from 'react-router-dom';
+'use client';
+
+import { usePathname, useRouter } from 'next/navigation';
 import { MessageSquare, BarChart3, Coins, ChevronDown, Menu, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { HealthResponse } from '@/types/api';
@@ -27,10 +29,10 @@ export function HeaderBar({
   developerMode,
   onToggleDeveloperMode,
 }: HeaderBarProps) {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const isSettingsPage = location.pathname === '/settings';
-  const currentPath = location.pathname;
+  const pathname = usePathname();
+  const router = useRouter();
+  const isSettingsPage = pathname === '/settings';
+  const currentPath = pathname;
 
   // Determine cluster status dot color
   let statusColor = 'bg-zinc-500'; // unknown/loading
@@ -74,7 +76,7 @@ export function HeaderBar({
         ) : (
           <div className="flex rounded-lg border border-border p-0.5">
             <button
-              onClick={() => navigate('/')}
+              onClick={() => router.push('/')}
               className={cn(
                 "flex items-center gap-1.5 h-7 px-2 sm:px-3 rounded-md text-xs font-medium transition-colors",
                 currentPath === '/'
@@ -86,7 +88,7 @@ export function HeaderBar({
               <span className="hidden sm:inline">Chat</span>
             </button>
             <button
-              onClick={() => navigate('/insights')}
+              onClick={() => router.push('/insights')}
               className={cn(
                 "flex items-center gap-1.5 h-7 px-2 sm:px-3 rounded-md text-xs font-medium transition-colors",
                 currentPath === '/insights'
@@ -98,7 +100,7 @@ export function HeaderBar({
               <span className="hidden sm:inline">Insights</span>
             </button>
             <button
-              onClick={() => navigate('/models')}
+              onClick={() => router.push('/models')}
               className={cn(
                 "flex items-center gap-1.5 h-7 px-2 sm:px-3 rounded-md text-xs font-medium transition-colors",
                 currentPath === '/models'

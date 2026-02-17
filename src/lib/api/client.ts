@@ -1,6 +1,4 @@
-import type { ApiError } from '@/types/api';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+const API_BASE_URL = '/api/proxy';
 
 export class ApiClientError extends Error {
   status: number;
@@ -15,6 +13,7 @@ export class ApiClientError extends Error {
 }
 
 function getApiKey(): string | null {
+  if (typeof window === 'undefined') return null;
   return localStorage.getItem('vault_api_key');
 }
 
@@ -30,12 +29,20 @@ function buildHeaders(extra?: Record<string, string>): Record<string, string> {
   return headers;
 }
 
+function extractErrorDetail(body: Record<string, unknown>): string | undefined {
+  // Backend uses { error: { message: "..." } }, FastAPI validation uses { detail: "..." }
+  const nested = body?.error as Record<string, unknown> | undefined;
+  if (nested?.message && typeof nested.message === 'string') return nested.message;
+  if (body?.detail && typeof body.detail === 'string') return body.detail;
+  return undefined;
+}
+
 async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
     let detail: string | undefined;
     try {
-      const body: ApiError = await response.json();
-      detail = body.detail;
+      const body = await response.json();
+      detail = extractErrorDetail(body);
     } catch {
       // ignore parse errors
     }
@@ -86,8 +93,8 @@ export async function apiDelete(path: string, signal?: AbortSignal): Promise<voi
   if (!response.ok) {
     let detail: string | undefined;
     try {
-      const body: ApiError = await response.json();
-      detail = body.detail;
+      const body = await response.json();
+      detail = extractErrorDetail(body);
     } catch {
       // ignore parse errors
     }
@@ -115,8 +122,8 @@ export async function apiStream(
   if (!response.ok) {
     let detail: string | undefined;
     try {
-      const errorBody: ApiError = await response.json();
-      detail = errorBody.detail;
+      const errorBody = await response.json();
+      detail = extractErrorDetail(errorBody);
     } catch {
       // ignore
     }

@@ -836,13 +836,15 @@ export interface components {
             /**
              * Type
              * @default chat
+             * @enum {string}
              */
-            type?: "chat" | "embedding";
+            type: "chat" | "embedding";
             /**
              * Status
              * @default available
+             * @enum {string}
              */
-            status?: "running" | "available";
+            status: "running" | "available";
             /** Parameters */
             parameters?: string | null;
             /** Quantization */
