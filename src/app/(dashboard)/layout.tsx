@@ -44,7 +44,7 @@ export default function DashboardLayout({
 
   const isSettingsPage = pathname === '/settings';
   const isChatPage = pathname === '/chat';
-  const showSidebar = ['/chat', '/insights', '/models', '/settings', '/audit'].includes(pathname);
+  const showSidebar = ['/chat', '/insights', '/models', '/settings', '/audit', '/quarantine'].includes(pathname);
 
   const handleSelectConversation = (conversation: Conversation) => {
     if (onboardingActive) dismissOnboarding();

@@ -19,7 +19,7 @@ export const languages = [
   { value: 'zh', label: 'Chinese' },
 ];
 
-export type SettingsCategory = 'network' | 'users' | 'data' | 'system' | 'security' | 'advanced';
+export type SettingsCategory = 'network' | 'users' | 'data' | 'system' | 'models' | 'security' | 'quarantine' | 'advanced';
 
 export interface SettingsCategoryInfo {
   id: SettingsCategory;
@@ -55,10 +55,22 @@ export const settingsCategories: SettingsCategoryInfo[] = [
     icon: 'settings',
   },
   {
+    id: 'models',
+    label: 'Model Defaults',
+    description: 'Default model and inference settings',
+    icon: 'cpu',
+  },
+  {
     id: 'security',
     label: 'Security',
     description: 'TLS certificates and encryption',
     icon: 'shield',
+  },
+  {
+    id: 'quarantine',
+    label: 'Quarantine',
+    description: 'File scanning pipeline settings',
+    icon: 'scan',
   },
   {
     id: 'advanced',

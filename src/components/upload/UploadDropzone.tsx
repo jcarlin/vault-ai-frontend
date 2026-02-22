@@ -50,23 +50,26 @@ function ShieldIcon() {
 
 function UploadingFileItem({ file }: { file: UploadedFile }) {
   const isComplete = file.status === 'ready';
+  const isHeld = file.status === 'held';
   const isError = file.status === 'error';
+  const isDone = isComplete || isHeld || isError;
 
   return (
     <div className="flex items-center gap-3 p-3 rounded-lg bg-zinc-800/50">
       <div className={cn(
         "p-2 rounded-lg",
         isComplete ? "bg-[var(--green-500)]/20 text-[var(--green-500)]" :
+        isHeld ? "bg-amber-500/20 text-amber-500" :
         isError ? "bg-red-500/20 text-red-500" :
         "bg-zinc-700 text-zinc-400"
       )}>
-        {isComplete ? <CheckIcon /> : <FileIcon />}
+        {isComplete ? <CheckIcon /> : isHeld ? <ShieldIcon /> : <FileIcon />}
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-zinc-100 truncate">{file.name}</p>
         <p className="text-xs text-zinc-500">{formatFileSize(file.size)}</p>
       </div>
-      {!isComplete && !isError && (
+      {!isDone && (
         <div className="w-20">
           <div className="h-1.5 bg-zinc-700 rounded-full overflow-hidden">
             <div
@@ -79,6 +82,9 @@ function UploadingFileItem({ file }: { file: UploadedFile }) {
       )}
       {isComplete && (
         <span className="text-xs text-[var(--green-500)]">Complete</span>
+      )}
+      {isHeld && (
+        <span className="text-xs text-amber-500">Held for review</span>
       )}
       {isError && (
         <span className="text-xs text-red-500">Failed</span>

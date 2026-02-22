@@ -51,6 +51,26 @@ export type UserResponse = components['schemas']['UserResponse'];
 export type UserCreate = components['schemas']['UserCreate'];
 export type UserUpdate = components['schemas']['UserUpdate'];
 
+// Manual types — backend has these but not yet in generated spec
+export interface KeyUpdate {
+  label?: string;
+  is_active?: boolean;
+}
+
+export interface ModelConfigResponse {
+  default_model_id: string;
+  default_temperature: number;
+  default_max_tokens: number;
+  default_system_prompt: string;
+}
+
+export interface ModelConfigUpdate {
+  default_model_id?: string;
+  default_temperature?: number;
+  default_max_tokens?: number;
+  default_system_prompt?: string;
+}
+
 // --- Admin: Config & System ---
 export type NetworkConfigResponse = components['schemas']['NetworkConfigResponse'];
 export type NetworkConfigUpdate = components['schemas']['NetworkConfigUpdate'];
@@ -80,6 +100,109 @@ export type TlsInfoResponse = components['schemas']['TlsInfoResponse'];
 export type TlsUploadRequest = components['schemas']['TlsUploadRequest'];
 export type LogEntry = components['schemas']['LogEntry'];
 export type LogResponse = components['schemas']['LogResponse'];
+
+// --- Epic 9: Quarantine Pipeline ---
+export interface FileFinding {
+  stage: string;
+  severity: string;
+  code: string;
+  message: string;
+  details: Record<string, unknown>;
+}
+
+export interface FileStatus {
+  id: string;
+  job_id: string;
+  original_filename: string;
+  file_size: number;
+  mime_type: string | null;
+  sha256_hash: string | null;
+  status: string;
+  current_stage: string | null;
+  risk_severity: string;
+  findings: FileFinding[];
+  quarantine_path: string | null;
+  sanitized_path: string | null;
+  destination_path: string | null;
+  review_reason: string | null;
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+export interface ScanSubmitResponse {
+  job_id: string;
+  status: string;
+  total_files: number;
+  message: string;
+}
+
+export interface ScanJobStatus {
+  id: string;
+  status: string;
+  total_files: number;
+  files_completed: number;
+  files_flagged: number;
+  files_clean: number;
+  source_type: string;
+  submitted_by: string | null;
+  created_at: string | null;
+  completed_at: string | null;
+  files: FileStatus[];
+}
+
+export interface HeldFilesResponse {
+  files: FileStatus[];
+  total: number;
+  offset: number;
+  limit: number;
+}
+
+export interface SignatureSource {
+  available: boolean;
+  last_updated: string | null;
+  age_hours: number | null;
+  freshness: string | null;
+  file_count: number | null;
+  rule_count: number | null;
+  hash_count: number | null;
+}
+
+export interface SignaturesResponse {
+  clamav: SignatureSource;
+  yara: SignatureSource;
+  blacklist: SignatureSource;
+}
+
+export interface QuarantineStatsResponse {
+  total_jobs: number;
+  jobs_completed: number;
+  total_files_scanned: number;
+  files_clean: number;
+  files_held: number;
+  files_approved: number;
+  files_rejected: number;
+  severity_distribution: Record<string, number>;
+}
+
+export interface QuarantineConfig {
+  max_file_size: number;
+  max_batch_files: number;
+  max_compression_ratio: number;
+  max_archive_depth: number;
+  auto_approve_clean: boolean;
+  strictness_level: string;
+}
+
+export interface QuarantineConfigUpdate {
+  max_file_size?: number;
+  max_batch_files?: number;
+  max_compression_ratio?: number;
+  max_archive_depth?: number;
+  auto_approve_clean?: boolean;
+  strictness_level?: string;
+}
 
 // SSE streaming types — not in OpenAPI spec (streamed as raw SSE, not a JSON response)
 export interface ChatCompletionChunk {

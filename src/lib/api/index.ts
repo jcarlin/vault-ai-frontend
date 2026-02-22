@@ -6,8 +6,9 @@ export { listConversations, getConversation, createConversation, updateConversat
 export { fetchActivity } from './activity';
 export { fetchInsights } from './insights';
 export { listTrainingJobs, createTrainingJob, getTrainingJob, deleteTrainingJob, pauseTrainingJob, resumeTrainingJob, cancelTrainingJob } from './training';
-export { listApiKeys, createApiKey, deleteApiKey, listUsers, createUser, updateUser, deactivateUser, getTlsInfo, uploadTlsCert } from './admin';
+export { listApiKeys, createApiKey, deleteApiKey, updateApiKey, getModelConfig, updateModelConfig, listUsers, createUser, updateUser, deactivateUser, getTlsInfo, uploadTlsCert } from './admin';
 export { getNetworkConfig, updateNetworkConfig, getSystemSettings, updateSystemSettings, getGpuDetails, getSystemResources, getInferenceStats, listServices, restartService } from './system';
 export { getSetupStatus, configureNetwork, createSetupAdmin, configureTls, selectModel, runVerification, completeSetup } from './setup';
 export { queryAuditLog, getAuditStats, exportAuditLog } from './audit';
 export { getSystemLogs } from './logs';
+export { submitScan, getScanStatus, listHeldFiles, getHeldFile, approveHeldFile, rejectHeldFile, getSignatures, getQuarantineStats, getQuarantineConfig, updateQuarantineConfig } from './quarantine';

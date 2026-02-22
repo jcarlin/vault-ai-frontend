@@ -6,8 +6,10 @@ import { NetworkSettings } from './NetworkSettings';
 import { UsersSettings } from './UsersSettings';
 import { DataSettings } from './DataSettings';
 import { SystemSettings } from './SystemSettings';
+import { ModelSettings } from './ModelSettings';
 import { AdvancedSettings } from './AdvancedSettings';
 import { SecuritySettings } from './SecuritySettings';
+import { QuarantineSettings } from './QuarantineSettings';
 
 interface SettingsPageProps {
   activeCategory?: SettingsCategory;
@@ -35,8 +37,12 @@ export function SettingsPage({ activeCategory: externalCategory, onRestartSetup 
         return <DataSettings onSave={() => showSaveMessage('Data settings saved')} />;
       case 'system':
         return <SystemSettings onSave={() => showSaveMessage('System settings saved')} onRestartSetup={onRestartSetup} />;
+      case 'models':
+        return <ModelSettings onSave={() => showSaveMessage('Model settings saved')} />;
       case 'security':
         return <SecuritySettings onSave={() => showSaveMessage('Security settings saved')} />;
+      case 'quarantine':
+        return <QuarantineSettings onSave={() => showSaveMessage('Quarantine settings saved')} />;
       case 'advanced':
         return <AdvancedSettings onSave={() => showSaveMessage('Advanced settings saved')} />;
       default:

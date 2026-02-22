@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
-import { MessageSquare, BarChart3, Coins, FileText, ChevronDown, Menu, X } from 'lucide-react';
+import { MessageSquare, BarChart3, Coins, FileText, Shield, ChevronDown, Menu, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { HealthResponse } from '@/types/api';
 import { UserMenu } from './UserMenu';
@@ -122,6 +122,18 @@ export function HeaderBar({
             >
               <FileText className="h-4 w-4" />
               <span className="hidden sm:inline">Audit</span>
+            </button>
+            <button
+              onClick={() => router.push('/quarantine')}
+              className={cn(
+                "flex items-center gap-1.5 h-7 px-2 sm:px-3 rounded-md text-xs font-medium transition-colors",
+                currentPath === '/quarantine'
+                  ? "bg-secondary text-foreground"
+                  : "text-muted-foreground hover:text-foreground/80"
+              )}
+            >
+              <Shield className="h-4 w-4" />
+              <span className="hidden sm:inline">Quarantine</span>
             </button>
           </div>
         )}

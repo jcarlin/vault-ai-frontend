@@ -33,7 +33,7 @@ export interface UploadedFile {
   size: number;
   type: string;
   uploadedAt: string;
-  status: 'uploading' | 'processing' | 'ready' | 'error';
+  status: 'uploading' | 'processing' | 'ready' | 'held' | 'error';
   progress: number;
   associatedModel?: string;
 }

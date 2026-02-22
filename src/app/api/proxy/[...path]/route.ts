@@ -48,14 +48,16 @@ async function proxyRequest(request: NextRequest) {
   const isStreamingRequest =
     request.method === 'POST' && backendPath.includes('/chat/completions');
 
-  let body: string | null = null;
+  let body: string | ArrayBuffer | null = null;
+  const isMultipart = ct?.includes('multipart/form-data');
   if (request.method !== 'GET' && request.method !== 'HEAD') {
-    body = await request.text();
+    // Multipart uploads must be passed as raw bytes to preserve the boundary
+    body = isMultipart ? await request.arrayBuffer() : await request.text();
   }
 
   // For streaming: check if the request body has stream: true
   let wantsStreaming = false;
-  if (isStreamingRequest && body) {
+  if (isStreamingRequest && body && typeof body === 'string') {
     try {
       const parsed = JSON.parse(body);
       wantsStreaming = parsed.stream === true;
