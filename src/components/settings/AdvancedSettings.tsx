@@ -2,12 +2,13 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Pencil } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { listApiKeys, createApiKey, deleteApiKey } from '@/lib/api/admin';
+import { listApiKeys, createApiKey, deleteApiKey, updateApiKey } from '@/lib/api/admin';
 import { getSystemResources, getSystemSettings, updateSystemSettings } from '@/lib/api/system';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { MockBadge } from '@/components/ui/MockBadge';
-import type { KeyResponse, SystemResources, SystemSettingsResponse } from '@/types/api';
+import type { KeyResponse, KeyUpdate, SystemResources, SystemSettingsResponse } from '@/types/api';
 
 interface AdvancedSettingsProps {
   onSave: () => void;
@@ -88,28 +89,96 @@ function pctStatus(pct: number): 'ok' | 'warning' | 'error' {
   return 'ok';
 }
 
+function SmallToggle({
+  checked,
+  onChange,
+  disabled,
+}: {
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+  disabled?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      disabled={disabled}
+      onClick={() => onChange(!checked)}
+      className={cn(
+        'relative inline-flex h-4 w-7 items-center rounded-full transition-colors flex-shrink-0',
+        checked ? 'bg-[var(--green-600)]' : 'bg-zinc-600',
+        disabled && 'opacity-50 cursor-not-allowed'
+      )}
+    >
+      <span
+        className={cn(
+          'inline-block h-3 w-3 transform rounded-full bg-white transition-transform',
+          checked ? 'translate-x-3.5' : 'translate-x-0.5'
+        )}
+      />
+    </button>
+  );
+}
+
 function ApiKeyRow({
   apiKey,
   onDelete,
+  onEdit,
+  onToggleActive,
+  isLastAdmin,
+  isToggling,
 }: {
   apiKey: KeyResponse;
   onDelete: () => void;
+  onEdit: () => void;
+  onToggleActive: () => void;
+  isLastAdmin: boolean;
+  isToggling: boolean;
 }) {
+  const isActive = apiKey.is_active;
   return (
-    <div className="flex items-center justify-between py-2 border-b border-zinc-800/50 last:border-0">
-      <div>
-        <p className="text-sm text-zinc-100">{apiKey.label}</p>
-        <p className="text-xs text-zinc-500 font-mono">
-          {apiKey.key_prefix}... · {apiKey.scope} · Created{' '}
-          {new Date(apiKey.created_at).toLocaleDateString()}
-        </p>
+    <div className={cn(
+      "flex items-center justify-between py-2 border-b border-zinc-800/50 last:border-0",
+      !isActive && "opacity-50"
+    )}>
+      <div className="flex items-center gap-3 min-w-0">
+        <SmallToggle
+          checked={isActive}
+          onChange={onToggleActive}
+          disabled={isToggling || (isActive && isLastAdmin && apiKey.scope === 'admin')}
+        />
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <p className="text-sm text-zinc-100 truncate">{apiKey.label}</p>
+            {!isActive && (
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-700 text-zinc-400 uppercase tracking-wider">
+                Disabled
+              </span>
+            )}
+          </div>
+          <p className="text-xs text-zinc-500 font-mono">
+            {apiKey.key_prefix}... · {apiKey.scope} · Created{' '}
+            {new Date(apiKey.created_at).toLocaleDateString()}
+          </p>
+        </div>
       </div>
-      <button
-        onClick={onDelete}
-        className="p-1.5 rounded text-zinc-500 hover:text-red-400 hover:bg-zinc-800 transition-colors"
-      >
-        <Trash2 className="h-4 w-4" />
-      </button>
+      <div className="flex items-center gap-1 flex-shrink-0">
+        <button
+          onClick={onEdit}
+          className="p-1.5 rounded text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800 transition-colors"
+          title="Edit label"
+        >
+          <Pencil className="h-4 w-4" />
+        </button>
+        <button
+          onClick={onDelete}
+          className="p-1.5 rounded text-zinc-500 hover:text-red-400 hover:bg-zinc-800 transition-colors"
+          title="Delete key"
+        >
+          <Trash2 className="h-4 w-4" />
+        </button>
+      </div>
     </div>
   );
 }
@@ -118,6 +187,8 @@ export function AdvancedSettings({ onSave }: AdvancedSettingsProps) {
   const queryClient = useQueryClient();
   const [copied, setCopied] = useState(false);
   const [newKeyLabel, setNewKeyLabel] = useState('');
+  const [editingKey, setEditingKey] = useState<KeyResponse | null>(null);
+  const [editLabel, setEditLabel] = useState('');
 
   const { data: systemSettings } = useQuery<SystemSettingsResponse>({
     queryKey: ['systemSettings'],
@@ -169,6 +240,19 @@ export function AdvancedSettings({ onSave }: AdvancedSettingsProps) {
     },
   });
 
+  const updateKeyMutation = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: KeyUpdate }) =>
+      updateApiKey(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['apiKeys'] });
+      setEditingKey(null);
+      onSave();
+    },
+  });
+
+  const activeAdminKeys = apiKeys.filter(k => k.is_active && k.scope === 'admin');
+  const isLastAdmin = activeAdminKeys.length <= 1;
+
   return (
     <div className="space-y-6">
       <div>
@@ -187,6 +271,15 @@ export function AdvancedSettings({ onSave }: AdvancedSettingsProps) {
                 key={key.id}
                 apiKey={key}
                 onDelete={() => deleteKeyMutation.mutate(key.id)}
+                onEdit={() => {
+                  setEditingKey(key);
+                  setEditLabel(key.label);
+                }}
+                onToggleActive={() =>
+                  updateKeyMutation.mutate({ id: key.id, data: { is_active: !key.is_active } })
+                }
+                isLastAdmin={isLastAdmin}
+                isToggling={updateKeyMutation.isPending}
               />
             ))}
           </div>
@@ -289,6 +382,55 @@ export function AdvancedSettings({ onSave }: AdvancedSettingsProps) {
           configuration may affect system performance.
         </p>
       </div>
+
+      {/* Edit Key Dialog */}
+      <Dialog open={editingKey !== null} onOpenChange={() => setEditingKey(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit API Key</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <p className="text-xs text-zinc-500 font-mono">
+              {editingKey?.key_prefix}... · {editingKey?.scope}
+            </p>
+            <div>
+              <label className="block text-sm text-zinc-400 mb-1">Label</label>
+              <input
+                type="text"
+                value={editLabel}
+                onChange={(e) => setEditLabel(e.target.value)}
+                className="w-full px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-100 text-sm focus:outline-none focus:border-[var(--green-500)]"
+                placeholder="Key label"
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && editLabel.trim() && editingKey) {
+                    updateKeyMutation.mutate({ id: editingKey.id, data: { label: editLabel.trim() } });
+                  }
+                }}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <button
+              onClick={() => setEditingKey(null)}
+              className="px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-zinc-200 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => {
+                if (editingKey && editLabel.trim()) {
+                  updateKeyMutation.mutate({ id: editingKey.id, data: { label: editLabel.trim() } });
+                }
+              }}
+              disabled={updateKeyMutation.isPending || !editLabel.trim()}
+              className="px-3 py-2 rounded-lg bg-[var(--green-600)] text-white text-sm font-medium hover:bg-[var(--green-500)] transition-colors disabled:opacity-50"
+            >
+              {updateKeyMutation.isPending ? 'Saving...' : 'Save'}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

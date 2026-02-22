@@ -30,6 +30,7 @@ export function ChatPanel({ className, conversationId, onboardingActive, onDismi
     models,
     selectedModelId,
     setSelectedModelId,
+    modelLocked,
   } = useChat({
     conversationId,
     systemPrompt: onboardingActive ? ONBOARDING_SYSTEM_PROMPT : undefined,
@@ -138,6 +139,7 @@ export function ChatPanel({ className, conversationId, onboardingActive, onDismi
                 models={models}
                 selectedModelId={selectedModelId}
                 onModelChange={setSelectedModelId}
+                modelLocked={modelLocked}
               />
             </div>
             {conversationId && messages.length > 0 && (

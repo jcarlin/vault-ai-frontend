@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Download, Activity, Zap, Cpu, CheckCircle, Timer, Gauge } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { MetricCard } from './MetricCard';
+import { GpuDetailsPanel } from './GpuDetailsPanel';
 import { UsageChart } from './UsageChart';
 import { PerformanceChart } from './PerformanceChart';
 import { ModelUsageChart } from './ModelUsageChart';
@@ -131,6 +132,9 @@ export function InsightsPage() {
             </div>
           </div>
         )}
+
+        {/* GPU Details */}
+        <GpuDetailsPanel />
 
         {/* Usage Chart - Full Width */}
         <UsageChart

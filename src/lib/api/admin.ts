@@ -2,6 +2,9 @@ import type {
   KeyResponse,
   KeyCreate,
   KeyCreateResponse,
+  KeyUpdate,
+  ModelConfigResponse,
+  ModelConfigUpdate,
   UserResponse,
   UserCreate,
   UserUpdate,
@@ -25,6 +28,14 @@ export async function createApiKey(
 
 export async function deleteApiKey(id: number, signal?: AbortSignal): Promise<void> {
   return apiDelete(`/vault/admin/keys/${id}`, signal);
+}
+
+export async function updateApiKey(
+  id: number,
+  data: KeyUpdate,
+  signal?: AbortSignal,
+): Promise<KeyResponse> {
+  return apiPut<KeyResponse>(`/vault/admin/keys/${id}`, data, signal);
 }
 
 // --- Users ---
@@ -69,6 +80,19 @@ export async function deactivateUser(
     throw new ApiClientError(detail || `Request failed with status ${response.status}`, response.status, detail);
   }
   return response.json();
+}
+
+// --- Model Config ---
+
+export async function getModelConfig(signal?: AbortSignal): Promise<ModelConfigResponse> {
+  return apiGet<ModelConfigResponse>('/vault/admin/config/models', signal);
+}
+
+export async function updateModelConfig(
+  data: ModelConfigUpdate,
+  signal?: AbortSignal,
+): Promise<ModelConfigResponse> {
+  return apiPut<ModelConfigResponse>('/vault/admin/config/models', data, signal);
 }
 
 // --- TLS ---

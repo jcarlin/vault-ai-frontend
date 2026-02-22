@@ -1,9 +1,10 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ChatMessage, ChatState, Conversation, StreamingMetrics } from '@/types/chat';
-import type { ModelInfo, ConversationResponse } from '@/types/api';
+import type { ModelInfo, ModelConfigResponse, ConversationResponse } from '@/types/api';
 import { streamChatCompletion } from '@/lib/api/chat';
 import { fetchModels } from '@/lib/api/models';
+import { getModelConfig } from '@/lib/api/admin';
 import { ApiClientError } from '@/lib/api/client';
 import {
   createConversation as apiCreateConversation,
@@ -50,6 +51,7 @@ interface UseChatReturn {
   models: ModelInfo[];
   selectedModelId: string;
   setSelectedModelId: (id: string) => void;
+  modelLocked: boolean;
 }
 
 function getErrorMessage(error: unknown): string {
@@ -106,8 +108,22 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
   });
   const models = modelsData?.data ?? [];
 
-  // Set default model if none selected — prefer a running chat model
+  // Fetch admin-configured model defaults
+  const { data: modelConfig } = useQuery<ModelConfigResponse>({
+    queryKey: ['modelConfig'],
+    queryFn: ({ signal }) => getModelConfig(signal),
+    staleTime: 60_000,
+  });
+
+  // Set default model if none selected:
+  // 1. User's explicit selection
+  // 2. Admin-configured default (if it exists in available models)
+  // 3. First running chat model
+  // 4. First chat model
+  // 5. First model
+  const adminDefault = modelConfig?.default_model_id;
   const effectiveModelId = selectedModelId
+    || (adminDefault && models.some(m => m.id === adminDefault) ? adminDefault : '')
     || models.find(m => m.type === 'chat' && m.status === 'running')?.id
     || models.find(m => m.type === 'chat')?.id
     || models[0]?.id
@@ -161,8 +177,9 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
           role: m.role as 'system' | 'user' | 'assistant',
           content: m.content,
         }));
-        if (options.systemPrompt) {
-          apiMessages.unshift({ role: 'system', content: options.systemPrompt });
+        const systemPrompt = options.systemPrompt || modelConfig?.default_system_prompt;
+        if (systemPrompt) {
+          apiMessages.unshift({ role: 'system', content: systemPrompt });
         }
 
         const stream = streamChatCompletion(
@@ -253,7 +270,7 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
         abortRef.current = null;
       }
     },
-    [state, messages, conversationIdState, effectiveModelId, queryClient],
+    [state, messages, conversationIdState, effectiveModelId, queryClient, modelConfig],
   );
 
   const clearHistory = useCallback(() => {
@@ -265,6 +282,9 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
     setStreamingMetrics(null);
     setConversationIdState(null);
   }, []);
+
+  // Lock model selection once conversation has messages
+  const modelLocked = messages.length > 0;
 
   return {
     messages,
@@ -278,5 +298,6 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
     models,
     selectedModelId: effectiveModelId,
     setSelectedModelId,
+    modelLocked,
   };
 }

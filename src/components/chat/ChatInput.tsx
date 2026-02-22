@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, type KeyboardEvent } from 'react';
-import { Coins, ChevronDown, Check, Paperclip, Send } from 'lucide-react';
+import { Coins, ChevronDown, Check, Paperclip, Send, Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { ModelInfo } from '@/types/api';
 
@@ -13,9 +13,10 @@ interface ChatInputProps {
   models?: ModelInfo[];
   selectedModelId?: string;
   onModelChange?: (modelId: string) => void;
+  modelLocked?: boolean;
 }
 
-export function ChatInput({ onSend, disabled, disabledMessage, placeholder, models = [], selectedModelId, onModelChange }: ChatInputProps) {
+export function ChatInput({ onSend, disabled, disabledMessage, placeholder, models = [], selectedModelId, onModelChange, modelLocked }: ChatInputProps) {
   const [value, setValue] = useState('');
   const [showModelPicker, setShowModelPicker] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -61,21 +62,28 @@ export function ChatInput({ onSend, disabled, disabledMessage, placeholder, mode
         <div className="relative">
           <button
             type="button"
-            onClick={() => setShowModelPicker(!showModelPicker)}
-            disabled={disabled}
+            onClick={() => !modelLocked && setShowModelPicker(!showModelPicker)}
+            disabled={disabled || modelLocked}
             className={cn(
               'flex items-center gap-1.5 h-8 px-2.5 rounded-lg transition-colors',
               'bg-secondary/50 border border-border',
-              'text-muted-foreground hover:text-foreground hover:bg-secondary',
-              'disabled:opacity-50 disabled:cursor-not-allowed'
+              modelLocked
+                ? 'text-muted-foreground/60 cursor-default'
+                : 'text-muted-foreground hover:text-foreground hover:bg-secondary',
+              'disabled:cursor-not-allowed'
             )}
-            aria-label="Select model"
+            aria-label={modelLocked ? 'Model locked for this conversation' : 'Select model'}
+            title={modelLocked ? 'Model is locked for this conversation' : undefined}
           >
             <Coins className="h-4 w-4" />
             <span className="text-xs font-medium max-w-[80px] truncate hidden sm:block">
               {currentModel?.name || 'Select'}
             </span>
-            <ChevronDown className="h-3.5 w-3.5" />
+            {modelLocked ? (
+              <Lock className="h-3 w-3" />
+            ) : (
+              <ChevronDown className="h-3.5 w-3.5" />
+            )}
           </button>
 
           {showModelPicker && (
@@ -145,10 +153,11 @@ export function ChatInput({ onSend, disabled, disabledMessage, placeholder, mode
       <div className="flex items-center gap-2">
         <button
           type="button"
-          disabled={disabled}
+          disabled
+          title="File upload coming soon"
           className={cn(
             'p-1.5 rounded-md transition-colors',
-            'text-muted-foreground hover:text-foreground/80',
+            'text-muted-foreground',
             'disabled:opacity-50 disabled:cursor-not-allowed'
           )}
           aria-label="Attach file"

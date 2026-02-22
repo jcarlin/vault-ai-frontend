@@ -33,12 +33,12 @@ src/
 │   ├── chat/        # ChatPanel, ChatInput, ChatMessage, SuggestedPrompts, ThinkingIndicator
 │   ├── audit/       # AuditLogPage, AuditTable, AuditStats, AuditFilters, SystemLogsTab
 │   ├── cluster/     # ClusterHealth, CubeCard, CubeDetailDialog
-│   ├── insights/    # InsightsPage, MetricCard, UsageChart, ModelUsageChart, PerformanceChart
+│   ├── insights/    # InsightsPage, MetricCard, UsageChart, ModelUsageChart, PerformanceChart, GpuDetailsPanel
 │   ├── layout/      # Dashboard, Sidebar, HeaderBar, UserMenu
 │   ├── models/      # ModelsPage, ModelCard, ModelList, ModelDetailDialog, AddModelModal
 │   ├── onboarding/  # OnboardingFlow, OnboardingWelcome, OnboardingChat
 │   ├── quarantine/  # QuarantinePage, QuarantineStats, SignatureHealth, HeldFilesTable, HeldFileDetailDialog
-│   ├── settings/    # SettingsPage, NetworkSettings, UsersSettings, SystemSettings, AdvancedSettings, SecuritySettings, QuarantineSettings
+│   ├── settings/    # SettingsPage, NetworkSettings, UsersSettings, SystemSettings, ModelSettings, AdvancedSettings, SecuritySettings, QuarantineSettings
 │   ├── training/    # JobsPage, JobDetailModal, etc. (orphaned — no route, deferred to Stage 5)
 │   ├── ui/          # shadcn primitives (badge, button, card, dialog, progress, tooltip)
 │   └── upload/      # UploadModal (wired to quarantine scan API), UploadDropzone
@@ -77,12 +77,13 @@ GET  /vault/health           → System health (vLLM status, GPU metrics)
 - Insights analytics, activity feed (`/vault/insights`, `/vault/activity`)
 - Training jobs CRUD + lifecycle (`/vault/training/*`)
 
-**Epic 8 (24 endpoints) — wired to frontend:**
+**Epic 8 (24 endpoints + 2 model config) — wired to frontend:**
 - Model management: list/detail/load/unload/active/import/delete (`/vault/models/*`)
 - Audit log: query, export CSV/JSON, stats (`/vault/admin/audit/*`)
 - Conversation export (`/vault/conversations/{id}/export`)
 - System monitoring: inference stats, services list/restart, system logs (`/vault/system/*`)
 - TLS management: view cert info, upload cert+key (`/vault/admin/config/tls`)
+- Model defaults: get/update default model, temperature, max tokens, system prompt (`/vault/admin/config/models`)
 
 **Epic 9 (9 endpoints) — wired to frontend:**
 - Scan submission: multipart file upload (`POST /vault/quarantine/scan`)
@@ -105,7 +106,7 @@ GET  /vault/health           → System health (vLLM status, GPU metrics)
 - **Audit** (`/audit`): API request audit log with filters, stats, export, and system logs tab
 - **Models** (`/models`): Model management — load/unload GPU, import from filesystem, delete
 - **Quarantine** (`/quarantine`): File scanning pipeline — stats, signature health, held files table with approve/reject, detail dialog
-- **Settings** (`/settings`): Network, users, system, security (TLS certificates), quarantine (scan config), advanced (API keys, diagnostics)
+- **Settings** (`/settings`): Network, users, system, model defaults (temperature, max tokens, system prompt), security (TLS certificates), quarantine (scan config), advanced (API keys with edit/disable, diagnostics)
 
 ## Onboarding Agent (Epic 7)
 
