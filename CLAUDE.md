@@ -15,7 +15,7 @@ Production frontend for the Vault Cube enterprise AI appliance.
 | `.claude/ARCHITECTURE.md` | Frontend architecture notes: onboarding agent flow diagram, data flow, design decisions | Understanding onboarding system prompt injection, UX flow |
 
 ## Stack
-React 19 + TypeScript + Vite 7 + Tailwind v4 + shadcn/ui.
+Next.js 16 + React 19 + TypeScript + Tailwind v4 + shadcn/ui.
 
 ## Commands
 ```bash
