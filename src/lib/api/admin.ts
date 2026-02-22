@@ -5,6 +5,8 @@ import type {
   UserResponse,
   UserCreate,
   UserUpdate,
+  TlsInfoResponse,
+  TlsUploadRequest,
 } from '@/types/api';
 import { apiGet, apiPost, apiPut, apiDelete } from './client';
 
@@ -67,4 +69,17 @@ export async function deactivateUser(
     throw new ApiClientError(detail || `Request failed with status ${response.status}`, response.status, detail);
   }
   return response.json();
+}
+
+// --- TLS ---
+
+export async function getTlsInfo(signal?: AbortSignal): Promise<TlsInfoResponse> {
+  return apiGet<TlsInfoResponse>('/vault/admin/config/tls', signal);
+}
+
+export async function uploadTlsCert(
+  data: TlsUploadRequest,
+  signal?: AbortSignal,
+): Promise<{ status: string; message: string }> {
+  return apiPost<{ status: string; message: string }>('/vault/admin/config/tls', data, signal);
 }

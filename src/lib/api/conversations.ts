@@ -56,3 +56,23 @@ export async function addMessage(
 ): Promise<MessageResponse> {
   return apiPost<MessageResponse>(`/vault/conversations/${conversationId}/messages`, data, signal);
 }
+
+export async function exportConversation(
+  conversationId: string,
+  format: 'json' | 'markdown',
+): Promise<void> {
+  const key = typeof window !== 'undefined' ? localStorage.getItem('vault_api_key') : null;
+  const headers: Record<string, string> = {};
+  if (key) headers['Authorization'] = `Bearer ${key}`;
+
+  const response = await fetch(`/api/proxy/vault/conversations/${conversationId}/export?format=${format}`, { headers });
+  if (!response.ok) throw new Error('Export failed');
+
+  const blob = await response.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `conversation-${conversationId}.${format === 'markdown' ? 'md' : 'json'}`;
+  a.click();
+  URL.revokeObjectURL(url);
+}

@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getSystemSettings, updateSystemSettings } from '@/lib/api/system';
+import { getSystemSettings, updateSystemSettings, listServices, restartService } from '@/lib/api/system';
 import { timezones, languages } from '@/mocks/settings';
-import type { SystemSettingsResponse, SystemSettingsUpdate } from '@/types/api';
+import type { SystemSettingsResponse, SystemSettingsUpdate, ServiceListResponse } from '@/types/api';
 
 interface SystemSettingsProps {
   onSave: () => void;
@@ -64,6 +64,20 @@ export function SystemSettings({ onSave, onRestartSetup }: SystemSettingsProps) 
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['systemSettings'] });
       onSave();
+    },
+  });
+
+  const { data: servicesData } = useQuery<ServiceListResponse>({
+    queryKey: ['services'],
+    queryFn: ({ signal }) => listServices(signal),
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+  });
+
+  const restartMutation = useMutation({
+    mutationFn: (serviceName: string) => restartService(serviceName),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['services'] });
     },
   });
 
@@ -151,6 +165,46 @@ export function SystemSettings({ onSave, onRestartSetup }: SystemSettingsProps) 
           onChange={(v) => update({ telemetry: v })}
           label="Usage telemetry"
         />
+      </div>
+
+      {/* Services */}
+      <div className="rounded-lg bg-zinc-800/50 p-4">
+        <h3 className="text-sm font-medium text-zinc-300 mb-3">Services</h3>
+        {servicesData?.services && servicesData.services.length > 0 ? (
+          <div className="space-y-2">
+            {servicesData.services.map((svc) => (
+              <div key={svc.name} className="flex items-center justify-between py-2 border-b border-zinc-800/50 last:border-0">
+                <div className="flex items-center gap-2">
+                  <span className={`h-2 w-2 rounded-full ${
+                    svc.status === 'running' ? 'bg-emerald-400' :
+                    svc.status === 'stopped' ? 'bg-red-400' : 'bg-zinc-500'
+                  }`} />
+                  <span className="text-sm text-zinc-200">{svc.name}</span>
+                  {svc.uptime_seconds != null && svc.status === 'running' && (
+                    <span className="text-xs text-zinc-500">
+                      {svc.uptime_seconds >= 3600
+                        ? `${Math.floor(svc.uptime_seconds / 3600)}h ${Math.floor((svc.uptime_seconds % 3600) / 60)}m`
+                        : `${Math.floor(svc.uptime_seconds / 60)}m`}
+                    </span>
+                  )}
+                </div>
+                <button
+                  onClick={() => {
+                    if (confirm(`Restart ${svc.name}?`)) {
+                      restartMutation.mutate(svc.name);
+                    }
+                  }}
+                  disabled={restartMutation.isPending}
+                  className="text-xs text-zinc-400 hover:text-zinc-200 px-2 py-1 rounded hover:bg-zinc-700/50 transition-colors disabled:opacity-50"
+                >
+                  Restart
+                </button>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-zinc-500">No services detected</p>
+        )}
       </div>
 
       {/* Setup section */}

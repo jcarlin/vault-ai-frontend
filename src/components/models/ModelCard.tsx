@@ -37,6 +37,8 @@ function StarIcon() {
 
 export function ModelCard({ model, onClick }: ModelCardProps) {
   const isCustom = model.type === 'custom';
+  const vaultStatus = model.vaultStatus;
+  const isLoaded = vaultStatus === 'loaded';
 
   return (
     <button
@@ -46,7 +48,8 @@ export function ModelCard({ model, onClick }: ModelCardProps) {
       <div className="flex items-start gap-3">
         <div className={cn(
           "p-2 rounded-lg",
-          isCustom ? "bg-blue-500/20 text-blue-400" : "bg-red-500/20 text-red-400"
+          isLoaded ? "bg-emerald-500/20 text-emerald-400" :
+          isCustom ? "bg-blue-500/20 text-blue-400" : "bg-zinc-700/50 text-zinc-400"
         )}>
           <CubeIcon />
         </div>
@@ -55,6 +58,12 @@ export function ModelCard({ model, onClick }: ModelCardProps) {
             <h3 className="text-sm font-medium text-zinc-100 truncate">
               {model.displayName}
             </h3>
+            {isLoaded && (
+              <span className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-500/20 text-emerald-400">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                Loaded
+              </span>
+            )}
             {model.isDefault && (
               <span className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-500/20 text-amber-500">
                 <StarIcon />
@@ -64,6 +73,7 @@ export function ModelCard({ model, onClick }: ModelCardProps) {
           </div>
           <p className="text-xs text-zinc-500 mt-0.5">
             {isCustom ? 'Custom trained' : 'Base model'} • {model.parameters}
+            {model.size && ` • ${model.size}`}
           </p>
           {isCustom && model.updatedAt && (
             <p className="text-xs text-zinc-600 mt-0.5">

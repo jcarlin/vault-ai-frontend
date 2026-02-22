@@ -1269,6 +1269,223 @@ export interface components {
             /** Latency Ms */
             latency_ms?: number | null;
         };
+        // --- Epic 8 schemas ---
+        /** AuditLogEntry */
+        AuditLogEntry: {
+            /** Id */
+            id: number;
+            /** Timestamp */
+            timestamp: string;
+            /** Action */
+            action: string;
+            /** Method */
+            method?: string | null;
+            /** Path */
+            path?: string | null;
+            /** User Key Prefix */
+            user_key_prefix?: string | null;
+            /** Model */
+            model?: string | null;
+            /** Status Code */
+            status_code?: number | null;
+            /** Latency Ms */
+            latency_ms?: number | null;
+            /** Tokens Input */
+            tokens_input?: number | null;
+            /** Tokens Output */
+            tokens_output?: number | null;
+            /** Details */
+            details?: string | null;
+        };
+        /** AuditLogResponse */
+        AuditLogResponse: {
+            /** Items */
+            items: components["schemas"]["AuditLogEntry"][];
+            /** Total */
+            total: number;
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
+        };
+        /** AuditStatsResponse */
+        AuditStatsResponse: {
+            /** Total Requests */
+            total_requests: number;
+            /** Total Tokens */
+            total_tokens: number;
+            /** Avg Latency Ms */
+            avg_latency_ms: number;
+            /** Requests By User */
+            requests_by_user: Record<string, unknown>[];
+            /** Requests By Model */
+            requests_by_model: Record<string, unknown>[];
+            /** Requests By Endpoint */
+            requests_by_endpoint: Record<string, unknown>[];
+        };
+        /** VaultModelInfo */
+        VaultModelInfo: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /**
+             * Status
+             * @default available
+             */
+            status: string;
+            /** Parameters */
+            parameters?: string | null;
+            /** Quantization */
+            quantization?: string | null;
+            /** Context Window */
+            context_window?: number | null;
+            /** Vram Required Gb */
+            vram_required_gb?: number | null;
+            /** Description */
+            description?: string | null;
+            /** Size Bytes */
+            size_bytes?: number | null;
+        };
+        /** VaultModelDetail */
+        VaultModelDetail: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Status */
+            status: string;
+            /** Parameters */
+            parameters?: string | null;
+            /** Quantization */
+            quantization?: string | null;
+            /** Context Window */
+            context_window?: number | null;
+            /** Vram Required Gb */
+            vram_required_gb?: number | null;
+            /** Description */
+            description?: string | null;
+            /** Size Bytes */
+            size_bytes?: number | null;
+            /** Path */
+            path?: string | null;
+            /** Format */
+            format?: string | null;
+            /** Family */
+            family?: string | null;
+            /** Gpu Index */
+            gpu_index?: number | null;
+        };
+        /** ModelLoadResponse */
+        ModelLoadResponse: {
+            /**
+             * Status
+             * @default loading
+             */
+            status: string;
+            /** Message */
+            message: string;
+            /** Model Id */
+            model_id: string;
+        };
+        /** ModelImportRequest */
+        ModelImportRequest: {
+            /** Source Path */
+            source_path: string;
+            /** Model Id */
+            model_id?: string | null;
+        };
+        /** ModelImportResponse */
+        ModelImportResponse: {
+            /**
+             * Status
+             * @default importing
+             */
+            status: string;
+            /** Message */
+            message: string;
+            /** Model Id */
+            model_id: string;
+        };
+        /** ActiveModelsResponse */
+        ActiveModelsResponse: {
+            /** Models */
+            models: components["schemas"]["VaultModelDetail"][];
+            /** Gpu Allocation */
+            gpu_allocation: Record<string, unknown>[];
+        };
+        /** ServiceStatus */
+        ServiceStatus: {
+            /** Name */
+            name: string;
+            /** Status */
+            status: string;
+            /** Uptime Seconds */
+            uptime_seconds?: number | null;
+        };
+        /** ServiceListResponse */
+        ServiceListResponse: {
+            /** Services */
+            services: components["schemas"]["ServiceStatus"][];
+        };
+        /** InferenceStatsResponse */
+        InferenceStatsResponse: {
+            /** Requests Per Minute */
+            requests_per_minute: number;
+            /** Avg Latency Ms */
+            avg_latency_ms: number;
+            /** Tokens Per Second */
+            tokens_per_second: number;
+            /** Active Requests */
+            active_requests: number;
+            /**
+             * Window Seconds
+             * @default 300
+             */
+            window_seconds: number;
+        };
+        /** TlsInfoResponse */
+        TlsInfoResponse: {
+            /** Enabled */
+            enabled: boolean;
+            /** Self Signed */
+            self_signed: boolean;
+            /** Issuer */
+            issuer?: string | null;
+            /** Expires */
+            expires?: string | null;
+            /** Serial */
+            serial?: string | null;
+        };
+        /** TlsUploadRequest */
+        TlsUploadRequest: {
+            /** Certificate */
+            certificate: string;
+            /** Private Key */
+            private_key: string;
+        };
+        /** LogEntry */
+        LogEntry: {
+            /** Timestamp */
+            timestamp: string;
+            /** Service */
+            service: string;
+            /** Severity */
+            severity: string;
+            /** Message */
+            message: string;
+        };
+        /** LogResponse */
+        LogResponse: {
+            /** Entries */
+            entries: components["schemas"]["LogEntry"][];
+            /** Total */
+            total: number;
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
+        };
     };
     responses: never;
     parameters: never;

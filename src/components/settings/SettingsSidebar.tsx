@@ -58,12 +58,21 @@ function CodeIcon() {
   );
 }
 
+function ShieldIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-4 w-4">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+    </svg>
+  );
+}
+
 function getCategoryIcon(iconName: string) {
   switch (iconName) {
     case 'network': return <NetworkIcon />;
     case 'users': return <UsersIcon />;
     case 'database': return <DatabaseIcon />;
     case 'settings': return <SettingsIcon />;
+    case 'shield': return <ShieldIcon />;
     case 'code': return <CodeIcon />;
     default: return <SettingsIcon />;
   }

@@ -7,6 +7,7 @@ import { UsersSettings } from './UsersSettings';
 import { DataSettings } from './DataSettings';
 import { SystemSettings } from './SystemSettings';
 import { AdvancedSettings } from './AdvancedSettings';
+import { SecuritySettings } from './SecuritySettings';
 
 interface SettingsPageProps {
   activeCategory?: SettingsCategory;
@@ -34,6 +35,8 @@ export function SettingsPage({ activeCategory: externalCategory, onRestartSetup 
         return <DataSettings onSave={() => showSaveMessage('Data settings saved')} />;
       case 'system':
         return <SystemSettings onSave={() => showSaveMessage('System settings saved')} onRestartSetup={onRestartSetup} />;
+      case 'security':
+        return <SecuritySettings onSave={() => showSaveMessage('Security settings saved')} />;
       case 'advanced':
         return <AdvancedSettings onSave={() => showSaveMessage('Advanced settings saved')} />;
       default:

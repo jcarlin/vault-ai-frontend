@@ -23,6 +23,8 @@ export interface Model {
     accuracy?: number;
   };
   trainingJobId?: string;
+  /** Vault backend model status: "loaded" | "available" */
+  vaultStatus?: string;
 }
 
 export interface UploadedFile {

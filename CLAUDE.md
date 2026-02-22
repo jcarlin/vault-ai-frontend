@@ -8,7 +8,7 @@ Production frontend for the Vault Cube enterprise AI appliance.
 |------|---------|-----------|
 | `../CLAUDE.md` | Root project guide: architecture, all repos, tech stack, sprint status, key decisions | Understanding the full system, what ships when, hardware specs |
 | `../ROADMAP.md` | Master product roadmap: 6 stages, 20 epics, all endpoints, effort estimates | Understanding what ships in which release |
-| `../vault-ai-backend/CLAUDE.md` | Backend conventions, all 31 endpoints (Rev 1+2), auth scheme, how to run/test | Writing API integration code, understanding backend contract |
+| `../vault-ai-backend/CLAUDE.md` | Backend conventions, all 64 endpoints (Rev 1 + Rev 2 + Epic 8), auth scheme, how to run/test | Writing API integration code, understanding backend contract |
 | `../vault-ai-backend/vault-api-spec.md` | API endpoint specification: all endpoints (Rev 1–5), request/response formats | Reviewing endpoint details, request/response shapes |
 | `../vault-ai-backend/PRD.md` | Full backend design: DB schema, training architecture, system design | Planning features beyond Rev 2 |
 | `../cube-golden-image/CLAUDE.md` | Infrastructure: Packer/Ansible, build pipeline, deployment | Understanding deployment target |
@@ -31,17 +31,18 @@ src/
 ├── components/
 │   ├── auth/        # ApiKeyEntry
 │   ├── chat/        # ChatPanel, ChatInput, ChatMessage, SuggestedPrompts, ThinkingIndicator
+│   ├── audit/       # AuditLogPage, AuditTable, AuditStats, AuditFilters, SystemLogsTab
 │   ├── cluster/     # ClusterHealth, CubeCard, CubeDetailDialog
 │   ├── insights/    # InsightsPage, MetricCard, UsageChart, ModelUsageChart, PerformanceChart
 │   ├── layout/      # Dashboard, Sidebar, HeaderBar, UserMenu
 │   ├── models/      # ModelsPage, ModelCard, ModelList, ModelDetailDialog, AddModelModal
 │   ├── onboarding/  # OnboardingFlow, OnboardingWelcome, OnboardingChat
-│   ├── settings/    # SettingsPage, NetworkSettings, UsersSettings, SystemSettings, AdvancedSettings
+│   ├── settings/    # SettingsPage, NetworkSettings, UsersSettings, SystemSettings, AdvancedSettings, SecuritySettings
 │   ├── training/    # JobsPage, JobDetailModal, etc. (orphaned — no route, deferred to Stage 5)
 │   ├── ui/          # shadcn primitives (badge, button, card, dialog, progress, tooltip)
 │   └── upload/      # UploadModal, UploadDropzone (not yet routed)
 ├── hooks/           # useChat, useClusterHealth, useOnboarding, useDeveloperMode
-├── lib/api/         # API client layer: client.ts, chat.ts, models.ts, conversations.ts, admin.ts, etc.
+├── lib/api/         # API client layer: client.ts, chat.ts, models.ts, conversations.ts, admin.ts, audit.ts, logs.ts, system.ts, etc.
 ├── lib/onboarding.ts # Onboarding agent: system prompt, suggested prompts, localStorage helpers
 ├── types/           # api.ts (re-exports from api.generated.ts), models.ts
 ├── mocks/           # Legacy — mostly types/utilities now; mock data only for storage indicator + suggested prompts
@@ -59,7 +60,7 @@ src/
 
 ## Backend API Integration
 
-The frontend is fully wired to `vault-ai-backend` (FastAPI) — 31 endpoints across Rev 1 + Rev 2. Types are auto-generated from the backend's OpenAPI spec (`npm run api:sync`).
+The frontend is fully wired to `vault-ai-backend` (FastAPI) — all 64 endpoints across Rev 1 + Rev 2 + Epic 8. Types are auto-generated from the backend's OpenAPI spec (`npm run api:sync`).
 
 **Rev 1 (3 core endpoints):**
 ```
@@ -75,18 +76,26 @@ GET  /vault/health           → System health (vLLM status, GPU metrics)
 - Insights analytics, activity feed (`/vault/insights`, `/vault/activity`)
 - Training jobs CRUD + lifecycle (`/vault/training/*`)
 
+**Epic 8 (24 endpoints) — wired to frontend:**
+- Model management: list/detail/load/unload/active/import/delete (`/vault/models/*`)
+- Audit log: query, export CSV/JSON, stats (`/vault/admin/audit/*`)
+- Conversation export (`/vault/conversations/{id}/export`)
+- System monitoring: inference stats, services list/restart, system logs (`/vault/system/*`)
+- TLS management: view cert info, upload cert+key (`/vault/admin/config/tls`)
+
 **Key patterns:**
 - **Auth:** API keys with `vault_sk_` prefix, sent as `Authorization: Bearer <key>`
 - **Streaming:** Server-Sent Events, chunks are `ChatCompletionChunk` objects, terminated by `data: [DONE]`
-- **API client:** `src/lib/api/client.ts` — native fetch, typed errors, Vite dev proxy to `:8000`
+- **API client:** `src/lib/api/client.ts` — native fetch, typed errors, Next.js API proxy to `:8000`
 - **Training:** Job records exist in API but no real execution (Stage 5). Training UI components exist but are not routed.
 
 ## Pages (Active Routes)
 - **Landing Page** (`/`): Product hero, feature highlights, and CTA routing to chat and settings
 - **Chat** (`/chat`): Chat-first interface with model selector, SSE streaming, conversation persistence
 - **Insights** (`/insights`): Token usage, model usage, response time, metrics from real API
-- **Models** (`/models`): Model library from `/v1/models`
-- **Settings** (`/settings`): Network, users, system, advanced (API keys, diagnostics)
+- **Audit** (`/audit`): API request audit log with filters, stats, export, and system logs tab
+- **Models** (`/models`): Model management — load/unload GPU, import from filesystem, delete
+- **Settings** (`/settings`): Network, users, system, security (TLS certificates), advanced (API keys, diagnostics)
 
 ## Onboarding Agent (Epic 7)
 

@@ -59,6 +59,28 @@ export type SystemSettingsUpdate = components['schemas']['SystemSettingsUpdate']
 export type SystemResources = components['schemas']['SystemResources'];
 export type GpuDetail = components['schemas']['GpuDetail'];
 
+// --- Epic 8: Audit ---
+export type AuditLogEntry = components['schemas']['AuditLogEntry'];
+export type AuditLogResponse = components['schemas']['AuditLogResponse'];
+export type AuditStatsResponse = components['schemas']['AuditStatsResponse'];
+
+// --- Epic 8: Model Management ---
+export type VaultModelInfo = components['schemas']['VaultModelInfo'];
+export type VaultModelDetail = components['schemas']['VaultModelDetail'];
+export type ModelLoadResponse = components['schemas']['ModelLoadResponse'];
+export type ModelImportRequest = components['schemas']['ModelImportRequest'];
+export type ModelImportResponse = components['schemas']['ModelImportResponse'];
+export type ActiveModelsResponse = components['schemas']['ActiveModelsResponse'];
+
+// --- Epic 8: Services & Monitoring ---
+export type ServiceStatus = components['schemas']['ServiceStatus'];
+export type ServiceListResponse = components['schemas']['ServiceListResponse'];
+export type InferenceStatsResponse = components['schemas']['InferenceStatsResponse'];
+export type TlsInfoResponse = components['schemas']['TlsInfoResponse'];
+export type TlsUploadRequest = components['schemas']['TlsUploadRequest'];
+export type LogEntry = components['schemas']['LogEntry'];
+export type LogResponse = components['schemas']['LogResponse'];
+
 // SSE streaming types — not in OpenAPI spec (streamed as raw SSE, not a JSON response)
 export interface ChatCompletionChunk {
   id: string;

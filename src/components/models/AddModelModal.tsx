@@ -1,90 +1,20 @@
 'use client';
 
 import { useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
-import { type Model } from '@/mocks/models';
+import { importModel } from '@/lib/api/models';
 
 interface AddModelModalProps {
   open: boolean;
   onClose: () => void;
-  onAddModel: (model: Model) => void;
 }
 
-interface AvailableModel {
-  id: string;
-  name: string;
-  displayName: string;
-  size: string;
-  parameters: string;
-  description: string;
-  tokensPerSecond: number;
-}
-
-const availableModels: AvailableModel[] = [
-  {
-    id: 'mistral-7b',
-    name: 'mistral-7b',
-    displayName: 'Mistral 7B',
-    size: '14GB',
-    parameters: '7B',
-    description: 'Efficient model with excellent performance for its size',
-    tokensPerSecond: 150,
-  },
-  {
-    id: 'mixtral-8x7b',
-    name: 'mixtral-8x7b',
-    displayName: 'Mixtral 8x7B',
-    size: '93GB',
-    parameters: '47B MoE',
-    description: 'Mixture of experts model with strong capabilities',
-    tokensPerSecond: 65,
-  },
-  {
-    id: 'qwen-72b',
-    name: 'qwen-72b',
-    displayName: 'Qwen 2.5 72B',
-    size: '145GB',
-    parameters: '72B',
-    description: 'Multilingual model with strong reasoning abilities',
-    tokensPerSecond: 40,
-  },
-  {
-    id: 'deepseek-33b',
-    name: 'deepseek-33b',
-    displayName: 'DeepSeek 33B',
-    size: '66GB',
-    parameters: '33B',
-    description: 'Code-focused model with strong technical capabilities',
-    tokensPerSecond: 75,
-  },
-  {
-    id: 'phi-3-medium',
-    name: 'phi-3-medium',
-    displayName: 'Phi-3 Medium',
-    size: '28GB',
-    parameters: '14B',
-    description: 'Compact yet powerful model from Microsoft',
-    tokensPerSecond: 95,
-  },
-];
-
-function DownloadIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
-      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-      <polyline points="7 10 12 15 17 10" />
-      <line x1="12" y1="15" x2="12" y2="3" />
-    </svg>
-  );
-}
-
-function UploadIcon() {
+function FolderIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
-      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-      <polyline points="17 8 12 3 7 8" />
-      <line x1="12" y1="3" x2="12" y2="15" />
+      <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
     </svg>
   );
 }
@@ -105,177 +35,135 @@ function SpinnerIcon() {
   );
 }
 
-export function AddModelModal({ open, onClose, onAddModel }: AddModelModalProps) {
-  const [downloadingId, setDownloadingId] = useState<string | null>(null);
-  const [downloadedIds, setDownloadedIds] = useState<Set<string>>(new Set());
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadedFile, setUploadedFile] = useState<string | null>(null);
+export function AddModelModal({ open, onClose }: AddModelModalProps) {
+  const queryClient = useQueryClient();
+  const [sourcePath, setSourcePath] = useState('');
+  const [modelId, setModelId] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setIsUploading(true);
-
-    // Simulate upload processing
-    setTimeout(() => {
-      const fileName = file.name.replace(/\.[^/.]+$/, '');
-      const newModel: Model = {
-        id: `custom-${Date.now()}`,
-        name: fileName.toLowerCase().replace(/\s+/g, '-'),
-        displayName: fileName,
-        type: 'base',
-        status: 'ready',
-        size: `${(file.size / (1024 * 1024 * 1024)).toFixed(1)}GB`,
-        parameters: 'Custom',
-        description: 'Manually uploaded model',
-        isDefault: false,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        metrics: {
-          tokensPerSecond: 50,
-        },
-      };
-
-      setIsUploading(false);
-      setUploadedFile(file.name);
-      onAddModel(newModel);
-    }, 2000);
-  };
-
-  const handleDownload = (availableModel: AvailableModel) => {
-    setDownloadingId(availableModel.id);
-
-    // Simulate download
-    setTimeout(() => {
-      const newModel: Model = {
-        id: availableModel.id,
-        name: availableModel.name,
-        displayName: availableModel.displayName,
-        type: 'base',
-        status: 'ready',
-        size: availableModel.size,
-        parameters: availableModel.parameters,
-        description: availableModel.description,
-        isDefault: false,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        metrics: {
-          tokensPerSecond: availableModel.tokensPerSecond,
-        },
-      };
-
-      setDownloadingId(null);
-      setDownloadedIds(prev => new Set([...prev, availableModel.id]));
-      onAddModel(newModel);
-    }, 1500);
-  };
+  const importMutation = useMutation({
+    mutationFn: () => importModel(sourcePath, modelId || undefined),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['vault-models'] });
+      queryClient.invalidateQueries({ queryKey: ['models'] });
+      handleClose();
+    },
+    onError: (err: Error) => {
+      setError(err.message || 'Import failed');
+    },
+  });
 
   const handleClose = () => {
-    setDownloadingId(null);
-    setIsUploading(false);
-    setUploadedFile(null);
+    setSourcePath('');
+    setModelId('');
+    setError(null);
     onClose();
+  };
+
+  const handleImport = () => {
+    if (!sourcePath.trim()) {
+      setError('Source path is required');
+      return;
+    }
+    setError(null);
+    importMutation.mutate();
   };
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle className="text-zinc-100">Add Model</DialogTitle>
+          <DialogTitle className="text-zinc-100">Import Model</DialogTitle>
         </DialogHeader>
 
-        {/* Upload from disk */}
-        <div className="p-4 rounded-lg border-2 border-dashed border-zinc-700 hover:border-zinc-600 transition-colors">
-          <label className="flex flex-col items-center gap-2 cursor-pointer">
-            <input
-              type="file"
-              accept=".gguf,.bin,.safetensors,.pt,.pth"
-              onChange={handleFileUpload}
-              disabled={isUploading}
-              className="hidden"
-            />
-            {isUploading ? (
-              <>
-                <SpinnerIcon />
-                <span className="text-sm text-zinc-400">Processing model...</span>
-              </>
-            ) : uploadedFile ? (
-              <>
-                <span className="text-[var(--green-500)]"><CheckIcon /></span>
-                <span className="text-sm text-zinc-400">Uploaded: {uploadedFile}</span>
-              </>
-            ) : (
-              <>
-                <span className="text-zinc-500"><UploadIcon /></span>
-                <span className="text-sm text-zinc-300">Upload from disk</span>
-                <span className="text-xs text-zinc-500">.gguf, .safetensors, .bin, .pt</span>
-              </>
-            )}
-          </label>
-        </div>
+        <p className="text-sm text-zinc-400">
+          Import a model from a local filesystem path (USB drive, NFS mount, or local directory).
+          The model must be in safetensors format.
+        </p>
 
-        <div className="flex items-center gap-3 text-xs text-zinc-500">
-          <div className="flex-1 h-px bg-zinc-700" />
-          <span>or download</span>
-          <div className="flex-1 h-px bg-zinc-700" />
-        </div>
-
-        <div className="space-y-2 max-h-[280px] overflow-auto -mx-2 px-2">
-          {availableModels.map((model) => {
-            const isDownloading = downloadingId === model.id;
-            const isDownloaded = downloadedIds.has(model.id);
-
-            return (
-              <div
-                key={model.id}
-                className="p-3 rounded-lg bg-zinc-900 border border-zinc-700/50"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-sm font-medium text-zinc-100">{model.displayName}</h3>
-                      <span className="text-xs text-zinc-500">{model.parameters}</span>
-                    </div>
-                    <p className="text-xs text-zinc-500 mt-0.5">{model.description}</p>
-                    <div className="flex items-center gap-3 mt-1.5 text-xs text-zinc-500">
-                      <span>{model.size}</span>
-                      <span>{model.tokensPerSecond} tok/s</span>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => handleDownload(model)}
-                    disabled={isDownloading || isDownloaded}
-                    className={cn(
-                      "flex items-center gap-1.5 h-8 px-3 rounded-lg text-xs font-medium transition-colors",
-                      isDownloaded
-                        ? "bg-[var(--green-500)]/20 text-[var(--green-500)] cursor-default"
-                        : isDownloading
-                        ? "bg-zinc-700 text-zinc-400 cursor-wait"
-                        : "bg-zinc-700 text-zinc-100 hover:bg-zinc-600"
-                    )}
-                  >
-                    {isDownloaded ? (
-                      <>
-                        <CheckIcon />
-                        Added
-                      </>
-                    ) : isDownloading ? (
-                      <>
-                        <SpinnerIcon />
-                        Adding...
-                      </>
-                    ) : (
-                      <>
-                        <DownloadIcon />
-                        Add
-                      </>
-                    )}
-                  </button>
-                </div>
+        <div className="space-y-4">
+          {/* Source path input */}
+          <div>
+            <label className="block text-sm text-zinc-400 mb-1.5">
+              Source Path <span className="text-red-400">*</span>
+            </label>
+            <div className="flex gap-2">
+              <div className="flex-1 relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500">
+                  <FolderIcon />
+                </span>
+                <input
+                  type="text"
+                  value={sourcePath}
+                  onChange={(e) => setSourcePath(e.target.value)}
+                  placeholder="/mnt/usb/models/qwen2.5-32b-awq"
+                  disabled={importMutation.isPending}
+                  className="w-full pl-10 pr-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-100 text-sm placeholder:text-zinc-600 focus:outline-none focus:border-[var(--green-500)] disabled:opacity-50"
+                />
               </div>
-            );
-          })}
+            </div>
+            <p className="text-xs text-zinc-600 mt-1">
+              Path to model directory on the Vault Cube filesystem
+            </p>
+          </div>
+
+          {/* Optional model ID */}
+          <div>
+            <label className="block text-sm text-zinc-400 mb-1.5">
+              Model ID <span className="text-zinc-600">(optional)</span>
+            </label>
+            <input
+              type="text"
+              value={modelId}
+              onChange={(e) => setModelId(e.target.value)}
+              placeholder="Auto-detected from directory name"
+              disabled={importMutation.isPending}
+              className="w-full px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-100 text-sm placeholder:text-zinc-600 focus:outline-none focus:border-[var(--green-500)] disabled:opacity-50"
+            />
+          </div>
+
+          {/* Error message */}
+          {error && (
+            <div className="px-3 py-2 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+              {error}
+            </div>
+          )}
+
+          {/* Success state */}
+          {importMutation.isSuccess && (
+            <div className="px-3 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm flex items-center gap-2">
+              <CheckIcon />
+              Model import started successfully
+            </div>
+          )}
+
+          {/* Actions */}
+          <div className="flex justify-end gap-2 pt-2">
+            <button
+              onClick={handleClose}
+              disabled={importMutation.isPending}
+              className="h-9 px-4 rounded-lg border border-zinc-700/50 text-zinc-300 text-sm hover:bg-zinc-800/50 transition-colors disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleImport}
+              disabled={importMutation.isPending || !sourcePath.trim()}
+              className={cn(
+                "flex items-center gap-2 h-9 px-4 rounded-lg text-sm font-medium transition-colors disabled:opacity-50",
+                "bg-[var(--green-600)] text-white hover:bg-[var(--green-500)]"
+              )}
+            >
+              {importMutation.isPending ? (
+                <>
+                  <SpinnerIcon />
+                  Importing...
+                </>
+              ) : (
+                'Import Model'
+              )}
+            </button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

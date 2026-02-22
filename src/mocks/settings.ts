@@ -19,7 +19,7 @@ export const languages = [
   { value: 'zh', label: 'Chinese' },
 ];
 
-export type SettingsCategory = 'network' | 'users' | 'data' | 'system' | 'advanced';
+export type SettingsCategory = 'network' | 'users' | 'data' | 'system' | 'security' | 'advanced';
 
 export interface SettingsCategoryInfo {
   id: SettingsCategory;
@@ -53,6 +53,12 @@ export const settingsCategories: SettingsCategoryInfo[] = [
     label: 'System',
     description: 'General system preferences',
     icon: 'settings',
+  },
+  {
+    id: 'security',
+    label: 'Security',
+    description: 'TLS certificates and encryption',
+    icon: 'shield',
   },
   {
     id: 'advanced',

@@ -10,7 +10,12 @@ interface ModelDetailDialogProps {
   open: boolean;
   onClose: () => void;
   onSetDefault?: (model: Model) => void;
+  onLoad?: (model: Model) => void;
+  onUnload?: (model: Model) => void;
   onDelete?: (model: Model) => void;
+  isLoadPending?: boolean;
+  isUnloadPending?: boolean;
+  isDeletePending?: boolean;
 }
 
 function StarIcon({ filled }: { filled?: boolean }) {
@@ -30,6 +35,30 @@ function TrashIcon() {
   );
 }
 
+function PlayIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-4 w-4">
+      <polygon points="5 3 19 12 5 21 5 3" />
+    </svg>
+  );
+}
+
+function SquareIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-4 w-4">
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+    </svg>
+  );
+}
+
+function SpinnerIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4 animate-spin">
+      <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+    </svg>
+  );
+}
+
 function MetricRow({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="flex justify-between py-2 border-b border-zinc-800/50 last:border-0">
@@ -39,10 +68,24 @@ function MetricRow({ label, value }: { label: string; value: string | number }) 
   );
 }
 
-export function ModelDetailDialog({ model, open, onClose, onSetDefault, onDelete }: ModelDetailDialogProps) {
+export function ModelDetailDialog({
+  model,
+  open,
+  onClose,
+  onSetDefault,
+  onLoad,
+  onUnload,
+  onDelete,
+  isLoadPending,
+  isUnloadPending,
+  isDeletePending,
+}: ModelDetailDialogProps) {
   if (!model) return null;
 
   const isCustom = model.type === 'custom';
+  const vaultStatus = model.vaultStatus;
+  const isLoaded = vaultStatus === 'loaded';
+  const anyPending = isLoadPending || isUnloadPending || isDeletePending;
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -50,6 +93,12 @@ export function ModelDetailDialog({ model, open, onClose, onSetDefault, onDelete
         <DialogHeader>
           <div className="flex items-center gap-2">
             <DialogTitle className="text-zinc-100">{model.displayName}</DialogTitle>
+            {isLoaded && (
+              <span className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-500/20 text-emerald-400">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                Loaded
+              </span>
+            )}
             {model.isDefault && (
               <span className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-500/20 text-amber-500">
                 Default
@@ -63,9 +112,9 @@ export function ModelDetailDialog({ model, open, onClose, onSetDefault, onDelete
 
           <div className="rounded-lg bg-zinc-900 p-3">
             <MetricRow label="Type" value={isCustom ? 'Custom trained' : 'Base model'} />
-            <MetricRow label="Parameters" value={model.parameters} />
+            <MetricRow label="Parameters" value={model.parameters || 'Unknown'} />
             <MetricRow label="Size" value={model.size} />
-            <MetricRow label="Status" value={model.status.charAt(0).toUpperCase() + model.status.slice(1)} />
+            <MetricRow label="Status" value={isLoaded ? 'Loaded (GPU)' : 'Available'} />
             {model.metrics?.tokensPerSecond && (
               <MetricRow label="Performance" value={`${model.metrics.tokensPerSecond} tok/s`} />
             )}
@@ -84,26 +133,55 @@ export function ModelDetailDialog({ model, open, onClose, onSetDefault, onDelete
             </div>
           )}
 
+          {/* Action buttons */}
           <div className="flex gap-2 pt-2">
+            {/* Load/Unload toggle */}
+            {isLoaded ? (
+              onUnload && (
+                <button
+                  onClick={() => onUnload(model)}
+                  disabled={anyPending}
+                  className="flex-1 flex items-center justify-center gap-2 h-9 rounded-lg border border-zinc-700/50 text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100 transition-colors text-sm disabled:opacity-50"
+                >
+                  {isUnloadPending ? <SpinnerIcon /> : <SquareIcon />}
+                  {isUnloadPending ? 'Unloading...' : 'Unload'}
+                </button>
+              )
+            ) : (
+              onLoad && (
+                <button
+                  onClick={() => onLoad(model)}
+                  disabled={anyPending}
+                  className="flex-1 flex items-center justify-center gap-2 h-9 rounded-lg bg-[var(--green-600)] text-white hover:bg-[var(--green-500)] transition-colors text-sm disabled:opacity-50"
+                >
+                  {isLoadPending ? <SpinnerIcon /> : <PlayIcon />}
+                  {isLoadPending ? 'Loading...' : 'Load to GPU'}
+                </button>
+              )
+            )}
+
             {!model.isDefault && onSetDefault && (
               <button
                 onClick={() => onSetDefault(model)}
-                className="flex-1 flex items-center justify-center gap-2 h-9 rounded-lg border border-zinc-700/50 text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100 transition-colors text-sm"
+                disabled={anyPending}
+                className="flex items-center justify-center gap-2 h-9 px-4 rounded-lg border border-zinc-700/50 text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100 transition-colors text-sm disabled:opacity-50"
               >
                 <StarIcon />
-                Set as Default
+                Default
               </button>
             )}
-            {isCustom && onDelete && (
+
+            {/* Delete — only available if model is NOT loaded */}
+            {!isLoaded && onDelete && (
               <button
                 onClick={() => onDelete(model)}
+                disabled={anyPending}
                 className={cn(
-                  "flex items-center justify-center gap-2 h-9 px-4 rounded-lg border border-zinc-700/50 text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors text-sm",
-                  !model.isDefault && onSetDefault ? "" : "flex-1"
+                  "flex items-center justify-center gap-2 h-9 px-4 rounded-lg border border-zinc-700/50 text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors text-sm disabled:opacity-50"
                 )}
               >
-                <TrashIcon />
-                Delete
+                {isDeletePending ? <SpinnerIcon /> : <TrashIcon />}
+                {isDeletePending ? 'Deleting...' : 'Delete'}
               </button>
             )}
           </div>

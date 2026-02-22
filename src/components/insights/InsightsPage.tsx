@@ -2,14 +2,15 @@
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Download, Activity, Zap, Cpu, CheckCircle } from 'lucide-react';
+import { Download, Activity, Zap, Cpu, CheckCircle, Timer, Gauge } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { MetricCard } from './MetricCard';
 import { UsageChart } from './UsageChart';
 import { PerformanceChart } from './PerformanceChart';
 import { ModelUsageChart } from './ModelUsageChart';
 import { fetchInsights } from '@/lib/api/insights';
-import type { InsightsResponse, TimeRange } from '@/types/api';
+import { getInferenceStats } from '@/lib/api/system';
+import type { InsightsResponse, TimeRange, InferenceStatsResponse } from '@/types/api';
 import { formatNumber, formatTokensPerSec } from '@/lib/formatters';
 
 export function InsightsPage() {
@@ -19,6 +20,12 @@ export function InsightsPage() {
     queryKey: ['insights', timeRange],
     queryFn: ({ signal }) => fetchInsights(timeRange, signal),
     refetchInterval: 60_000,
+  });
+
+  const { data: inferenceStats } = useQuery<InferenceStatsResponse>({
+    queryKey: ['inference-stats'],
+    queryFn: ({ signal }) => getInferenceStats(signal),
+    refetchInterval: 10_000,
   });
 
   const handleExport = () => {
@@ -91,6 +98,39 @@ export function InsightsPage() {
             icon={<CheckCircle className="h-5 w-5 text-muted-foreground" />}
           />
         </div>
+
+        {/* Live Inference */}
+        {inferenceStats && (
+          <div>
+            <h2 className="text-sm font-medium text-muted-foreground mb-3">Live Inference</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <MetricCard
+                title="Requests/min"
+                value={inferenceStats.requests_per_minute.toFixed(1)}
+                subtitle={`${inferenceStats.window_seconds}s window`}
+                icon={<Gauge className="h-5 w-5 text-muted-foreground" />}
+              />
+              <MetricCard
+                title="Avg Latency"
+                value={`${Math.round(inferenceStats.avg_latency_ms)}ms`}
+                subtitle="Per request"
+                icon={<Timer className="h-5 w-5 text-muted-foreground" />}
+              />
+              <MetricCard
+                title="Tokens/sec"
+                value={inferenceStats.tokens_per_second.toFixed(1)}
+                subtitle="Generation throughput"
+                icon={<Zap className="h-5 w-5 text-muted-foreground" />}
+              />
+              <MetricCard
+                title="Active Requests"
+                value={String(inferenceStats.active_requests)}
+                subtitle="Currently processing"
+                icon={<Activity className="h-5 w-5 text-muted-foreground" />}
+              />
+            </div>
+          </div>
+        )}
 
         {/* Usage Chart - Full Width */}
         <UsageChart
