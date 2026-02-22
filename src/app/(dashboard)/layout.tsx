@@ -43,21 +43,21 @@ export default function DashboardLayout({
   const { data: health, isError: healthError } = useHealthQuery();
 
   const isSettingsPage = pathname === '/settings';
-  const isChatPage = pathname === '/';
-  const showSidebar = ['/', '/insights', '/models', '/settings'].includes(pathname);
+  const isChatPage = pathname === '/chat';
+  const showSidebar = ['/chat', '/insights', '/models', '/settings'].includes(pathname);
 
   const handleSelectConversation = (conversation: Conversation) => {
     if (onboardingActive) dismissOnboarding();
     setSelectedConversation(conversation);
     setShowMobileSidebar(false);
-    if (pathname !== '/') router.push('/');
+    if (pathname !== '/chat') router.push('/chat');
   };
 
   const handleNewChat = () => {
     if (onboardingActive && selectedConversation) dismissOnboarding();
     setSelectedConversation(null);
     setShowMobileSidebar(false);
-    if (pathname !== '/') router.push('/');
+    if (pathname !== '/chat') router.push('/chat');
   };
 
   const handleToggleDeveloperMode = () => {
@@ -101,7 +101,7 @@ export default function DashboardLayout({
           <div className="h-14 flex items-center gap-2.5 px-4 border-b border-border flex-shrink-0">
             {isSettingsPage ? (
               <button
-                onClick={() => router.push('/')}
+                onClick={() => router.push('/chat')}
                 className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
                 <ArrowLeft className="h-4 w-4" />

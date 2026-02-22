@@ -34,7 +34,7 @@ export default function AuthPage() {
         return;
       }
 
-      router.push('/');
+      router.push('/chat');
       router.refresh();
     } catch {
       setError('Failed to authenticate. Please try again.');

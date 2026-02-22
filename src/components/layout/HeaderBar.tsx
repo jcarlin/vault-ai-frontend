@@ -76,10 +76,10 @@ export function HeaderBar({
         ) : (
           <div className="flex rounded-lg border border-border p-0.5">
             <button
-              onClick={() => router.push('/')}
+              onClick={() => router.push('/chat')}
               className={cn(
                 "flex items-center gap-1.5 h-7 px-2 sm:px-3 rounded-md text-xs font-medium transition-colors",
-                currentPath === '/'
+                currentPath === '/chat'
                   ? "bg-secondary text-foreground"
                   : "text-muted-foreground hover:text-foreground/80"
               )}

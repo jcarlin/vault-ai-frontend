@@ -82,7 +82,8 @@ GET  /vault/health           → System health (vLLM status, GPU metrics)
 - **Training:** Job records exist in API but no real execution (Stage 5). Training UI components exist but are not routed.
 
 ## Pages (Active Routes)
-- **Chat** (`/`): Chat-first interface with model selector, SSE streaming, conversation persistence
+- **Landing Page** (`/`): Product hero, feature highlights, and CTA routing to chat and settings
+- **Chat** (`/chat`): Chat-first interface with model selector, SSE streaming, conversation persistence
 - **Insights** (`/insights`): Token usage, model usage, response time, metrics from real API
 - **Models** (`/models`): Model library from `/v1/models`
 - **Settings** (`/settings`): Network, users, system, advanced (API keys, diagnostics)
