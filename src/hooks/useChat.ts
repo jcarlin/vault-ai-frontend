@@ -281,6 +281,12 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
     setStreamingContent('');
     setStreamingMetrics(null);
     setConversationIdState(null);
+    setSelectedModelId('');
+  }, []);
+
+  // Abort in-flight stream on unmount
+  useEffect(() => {
+    return () => { abortRef.current?.abort(); };
   }, []);
 
   // Lock model selection once conversation has messages

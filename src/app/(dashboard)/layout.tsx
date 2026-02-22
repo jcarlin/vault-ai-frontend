@@ -34,6 +34,7 @@ export default function DashboardLayout({
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const [settingsCategory, setSettingsCategory] = useState<SettingsCategory>('network');
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
+  const [chatResetKey, setChatResetKey] = useState(0);
   const [onboardingActive, setOnboardingActive] = useState(() => !isOnboardingComplete());
 
   const dismissOnboarding = useCallback(() => {
@@ -57,6 +58,7 @@ export default function DashboardLayout({
   const handleNewChat = () => {
     if (onboardingActive && selectedConversation) dismissOnboarding();
     setSelectedConversation(null);
+    setChatResetKey(k => k + 1);
     setShowMobileSidebar(false);
     if (pathname !== '/chat') router.push('/chat');
   };
@@ -164,6 +166,7 @@ export default function DashboardLayout({
         <main className="flex-1 flex flex-col min-h-0 relative bg-background">
           {isChatPage ? (
             <ChatPanel
+              key={selectedConversation?.id ?? `new-${chatResetKey}`}
               className="flex-1"
               conversationId={selectedConversation?.id}
               onboardingActive={onboardingActive}
