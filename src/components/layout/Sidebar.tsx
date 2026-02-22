@@ -167,7 +167,7 @@ function ActivitySection() {
         >
           <p className="truncate">{item.title}</p>
           <p className="text-[10px] text-muted-foreground">
-            {formatActivityTime(new Date(item.timestamp).getTime())}
+            {formatActivityTime(item.timestamp)}
           </p>
         </div>
       ))}

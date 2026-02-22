@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import { formatFileSize } from '@/lib/formatters';
+import { formatFileSize, parseUTC } from '@/lib/formatters';
 import type { FileStatus } from '@/types/api';
 
 const SEVERITY_COLORS: Record<string, string> = {
@@ -76,7 +76,7 @@ export function HeldFilesTable({ files, isLoading, onSelect }: HeldFilesTablePro
                 {file.findings.length}
               </td>
               <td className="py-3 px-4 text-zinc-500 text-xs hidden lg:table-cell">
-                {file.created_at ? new Date(file.created_at).toLocaleString() : '—'}
+                {file.created_at ? parseUTC(file.created_at).toLocaleString() : '—'}
               </td>
             </tr>
           ))}

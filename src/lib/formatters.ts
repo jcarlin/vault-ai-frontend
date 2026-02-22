@@ -1,21 +1,20 @@
-// Consolidated formatting utilities (extracted from mock files)
+// Consolidated formatting utilities
+import { formatDistanceToNowStrict, parseISO } from 'date-fns';
+
+// --- Backend timestamp parsing ---
+
+/** Parse a backend ISO timestamp as UTC (backend omits the Z suffix). */
+export function parseUTC(iso: string): Date {
+  if (!iso) return new Date(NaN);
+  return parseISO(iso.endsWith('Z') ? iso : iso + 'Z');
+}
 
 // --- Activity / relative time ---
 
-function getRelativeTime(timestamp: number): string {
-  const now = Date.now();
-  const diff = now - timestamp;
-  const minutes = Math.floor(diff / 60000);
-  const hours = Math.floor(diff / 3600000);
-  const days = Math.floor(diff / 86400000);
-
-  if (minutes < 60) return `${minutes}m ago`;
-  if (hours < 24) return `${hours}h ago`;
-  return `${days}d ago`;
-}
-
-export function formatActivityTime(timestamp: number): string {
-  return getRelativeTime(timestamp);
+export function formatActivityTime(isoString: string): string {
+  const date = parseUTC(isoString);
+  if (isNaN(date.getTime())) return '';
+  return formatDistanceToNowStrict(date, { addSuffix: true });
 }
 
 // --- Numbers ---
@@ -46,16 +45,9 @@ export function formatFileSize(bytes: number): string {
 // --- Model dates ---
 
 export function formatModelDate(dateString: string): string {
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-  if (diffDays === 0) return 'Today';
-  if (diffDays === 1) return 'Yesterday';
-  if (diffDays < 7) return `${diffDays}d ago`;
-  if (diffDays < 30) return `${Math.floor(diffDays / 7)}w ago`;
-  return `${Math.floor(diffDays / 30)}mo ago`;
+  const date = parseUTC(dateString);
+  if (isNaN(date.getTime())) return '';
+  return formatDistanceToNowStrict(date, { addSuffix: true });
 }
 
 // --- Training durations ---
@@ -76,6 +68,7 @@ export function formatDuration(ms: number): string {
 }
 
 export function formatTimeAgo(isoString: string): string {
-  const ms = Date.now() - new Date(isoString).getTime();
-  return formatDuration(ms) + ' ago';
+  const date = parseUTC(isoString);
+  if (isNaN(date.getTime())) return '';
+  return formatDistanceToNowStrict(date, { addSuffix: true });
 }

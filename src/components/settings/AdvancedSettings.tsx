@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Trash2, Pencil } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { parseUTC } from '@/lib/formatters';
 import { listApiKeys, createApiKey, deleteApiKey, updateApiKey } from '@/lib/api/admin';
 import { getSystemResources, getSystemSettings, updateSystemSettings } from '@/lib/api/system';
 import { generateSupportBundle, createBackup, factoryReset } from '@/lib/api/diagnostics';
@@ -161,7 +162,7 @@ function ApiKeyRow({
           </div>
           <p className="text-xs text-zinc-500 font-mono">
             {apiKey.key_prefix}... · {apiKey.scope} · Created{' '}
-            {new Date(apiKey.created_at).toLocaleDateString()}
+            {parseUTC(apiKey.created_at).toLocaleDateString()}
           </p>
         </div>
       </div>

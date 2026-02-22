@@ -45,8 +45,8 @@ export function ModelUsageChart({ data }: ModelUsageChartProps) {
         <CardTitle className="text-base">Model Usage</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-[250px]">
-          <ResponsiveContainer width="100%" height="100%">
+        <div className="h-[250px] w-full">
+          <ResponsiveContainer width="100%" height="100%" minWidth={0}>
             <BarChart
               data={data}
               layout="vertical"

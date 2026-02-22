@@ -16,11 +16,8 @@ interface SettingsPageProps {
   onRestartSetup?: () => void;
 }
 
-export function SettingsPage({ activeCategory: externalCategory, onRestartSetup }: SettingsPageProps) {
-  const [internalCategory] = useState<SettingsCategory>('network');
+export function SettingsPage({ activeCategory = 'network', onRestartSetup }: SettingsPageProps) {
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
-
-  const activeCategory = externalCategory || internalCategory;
 
   const showSaveMessage = (message: string) => {
     setSaveMessage(message);

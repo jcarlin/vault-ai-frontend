@@ -10,6 +10,7 @@ import { Sidebar } from '@/components/layout/Sidebar';
 import { HeaderBar } from '@/components/layout/HeaderBar';
 import { DevModeConfirmDialog } from '@/components/layout/DevModeConfirmDialog';
 import { SettingsSidebar } from '@/components/settings/SettingsSidebar';
+import { SettingsPage } from '@/components/settings/SettingsPage';
 import { useDeveloperMode } from '@/hooks/useDeveloperMode';
 import { useHealthQuery } from '@/hooks/useClusterHealth';
 import { isOnboardingComplete, completeOnboarding } from '@/lib/onboarding';
@@ -168,6 +169,8 @@ export default function DashboardLayout({
               onboardingActive={onboardingActive}
               onDismissOnboarding={dismissOnboarding}
             />
+          ) : isSettingsPage ? (
+            <SettingsPage activeCategory={settingsCategory} />
           ) : (
             children
           )}
