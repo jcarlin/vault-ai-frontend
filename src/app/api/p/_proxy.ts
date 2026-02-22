@@ -5,10 +5,10 @@ const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8000';
 // Only forward requests to known backend API prefixes
 const ALLOWED_PATH_PREFIXES = ['/v1/', '/vault/'];
 
-async function proxyRequest(request: NextRequest) {
+export async function proxyRequest(request: NextRequest) {
   const url = new URL(request.url);
-  // Strip /api/proxy prefix to get the real backend path
-  const backendPath = url.pathname.replace(/^\/api\/proxy/, '');
+  // Strip /api/p prefix to get the real backend path
+  const backendPath = url.pathname.replace(/^\/api\/p/, '');
 
   // Path allowlist — prevent SSRF to arbitrary backend paths
   if (!ALLOWED_PATH_PREFIXES.some((p) => backendPath.startsWith(p))) {
@@ -130,24 +130,4 @@ async function proxyRequest(request: NextRequest) {
   } finally {
     clearTimeout(timeout);
   }
-}
-
-export async function GET(request: NextRequest) {
-  return proxyRequest(request);
-}
-
-export async function POST(request: NextRequest) {
-  return proxyRequest(request);
-}
-
-export async function PUT(request: NextRequest) {
-  return proxyRequest(request);
-}
-
-export async function DELETE(request: NextRequest) {
-  return proxyRequest(request);
-}
-
-export async function PATCH(request: NextRequest) {
-  return proxyRequest(request);
 }

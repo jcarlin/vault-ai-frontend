@@ -63,7 +63,7 @@ export async function deactivateUser(
   id: string,
   signal?: AbortSignal,
 ): Promise<UserResponse> {
-  const API_BASE_URL = '/api/proxy';
+  const API_BASE_URL = '/api/p';
   const key = typeof window !== 'undefined' ? localStorage.getItem('vault_api_key') : null;
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   if (key) headers['Authorization'] = `Bearer ${key}`;

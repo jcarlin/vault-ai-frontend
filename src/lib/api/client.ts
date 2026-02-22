@@ -1,4 +1,4 @@
-const API_BASE_URL = '/api/proxy';
+const API_BASE_URL = '/api/p';
 
 export class ApiClientError extends Error {
   status: number;

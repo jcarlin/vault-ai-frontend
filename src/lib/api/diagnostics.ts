@@ -77,7 +77,7 @@ export async function exportAllData(): Promise<void> {
   const headers: Record<string, string> = {};
   if (key) headers['Authorization'] = `Bearer ${key}`;
 
-  const response = await fetch('/api/proxy/vault/admin/data/export', { headers });
+  const response = await fetch('/api/p/vault/admin/data/export', { headers });
   if (!response.ok) throw new Error('Export failed');
 
   const blob = await response.blob();
@@ -106,7 +106,7 @@ export async function generateSupportBundle(): Promise<void> {
   const headers: Record<string, string> = {};
   if (key) headers['Authorization'] = `Bearer ${key}`;
 
-  const response = await fetch('/api/proxy/vault/admin/diagnostics/bundle', {
+  const response = await fetch('/api/p/vault/admin/diagnostics/bundle', {
     method: 'POST',
     headers,
   });

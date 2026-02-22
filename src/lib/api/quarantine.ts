@@ -10,7 +10,7 @@ import type {
 } from '@/types/api';
 import { apiGet, apiPost, apiPut, ApiClientError } from './client';
 
-const API_BASE_URL = '/api/proxy';
+const API_BASE_URL = '/api/p';
 
 function getApiKey(): string | null {
   if (typeof window === 'undefined') return null;

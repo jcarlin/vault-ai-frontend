@@ -9,6 +9,7 @@ import { getSystemResources, getSystemSettings, updateSystemSettings } from '@/l
 import { generateSupportBundle, createBackup, factoryReset } from '@/lib/api/diagnostics';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { MockBadge } from '@/components/ui/MockBadge';
+import { UpdatePanel } from './UpdatePanel';
 import type { KeyResponse, KeyUpdate, SystemResources, SystemSettingsResponse } from '@/types/api';
 
 interface AdvancedSettingsProps {
@@ -460,6 +461,12 @@ export function AdvancedSettings({ onSave }: AdvancedSettingsProps) {
             </span>
           </button>
         </div>
+      </div>
+
+      {/* System Updates */}
+      <div>
+        <h3 className="text-sm font-medium text-zinc-300 mb-3">System Updates</h3>
+        <UpdatePanel onSave={onSave} />
       </div>
 
       {/* Warning */}

@@ -65,7 +65,7 @@ export async function exportConversation(
   const headers: Record<string, string> = {};
   if (key) headers['Authorization'] = `Bearer ${key}`;
 
-  const response = await fetch(`/api/proxy/vault/conversations/${conversationId}/export?format=${format}`, { headers });
+  const response = await fetch(`/api/p/vault/conversations/${conversationId}/export?format=${format}`, { headers });
   if (!response.ok) throw new Error('Export failed');
 
   const blob = await response.blob();

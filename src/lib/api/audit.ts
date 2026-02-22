@@ -60,7 +60,7 @@ export async function exportAuditLog(
   const headers: Record<string, string> = {};
   if (key) headers['Authorization'] = `Bearer ${key}`;
 
-  const response = await fetch(`/api/proxy/vault/admin/audit/export?${params.toString()}`, { headers });
+  const response = await fetch(`/api/p/vault/admin/audit/export?${params.toString()}`, { headers });
   if (!response.ok) throw new Error('Export failed');
 
   const blob = await response.blob();
