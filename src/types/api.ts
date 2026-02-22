@@ -227,6 +227,26 @@ export interface ChatCompletionChunkChoice {
   finish_reason: 'stop' | 'length' | null;
 }
 
+// --- WebSocket message types ---
+export interface WsSystemMetrics {
+  timestamp: string;
+  resources: SystemResources;
+  gpus: GpuDetail[];
+}
+
+export interface WsLogEntry {
+  timestamp: string;
+  service: string;
+  severity: string;
+  message: string;
+}
+
+export interface WsLogMessage {
+  type: 'log' | 'info';
+  entry?: WsLogEntry;
+  message?: string;
+}
+
 // Frontend-only (not in backend schema)
 export interface ApiError {
   detail: string;

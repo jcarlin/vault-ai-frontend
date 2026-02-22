@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Download, Activity, Zap, Cpu, CheckCircle, Timer, Gauge } from 'lucide-react';
+import { Download, Activity, Zap, Cpu, CheckCircle, Timer, Gauge, HardDrive, MemoryStick } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { MetricCard } from './MetricCard';
 import { GpuDetailsPanel } from './GpuDetailsPanel';
@@ -11,8 +11,34 @@ import { PerformanceChart } from './PerformanceChart';
 import { ModelUsageChart } from './ModelUsageChart';
 import { fetchInsights } from '@/lib/api/insights';
 import { getInferenceStats } from '@/lib/api/system';
+import { useSystemMetricsWs } from '@/hooks/useSystemMetricsWs';
 import type { InsightsResponse, TimeRange, InferenceStatsResponse } from '@/types/api';
 import { formatNumber, formatTokensPerSec } from '@/lib/formatters';
+
+function ConnectionDot({ state }: { state: string }) {
+  const color =
+    state === 'connected'
+      ? 'bg-emerald-500'
+      : state === 'reconnecting' || state === 'connecting'
+        ? 'bg-amber-500 animate-pulse'
+        : 'bg-zinc-600';
+
+  const label =
+    state === 'connected'
+      ? 'Live'
+      : state === 'reconnecting'
+        ? 'Reconnecting'
+        : state === 'connecting'
+          ? 'Connecting'
+          : 'Offline';
+
+  return (
+    <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+      <span className={`inline-block w-1.5 h-1.5 rounded-full ${color}`} />
+      {label}
+    </span>
+  );
+}
 
 export function InsightsPage() {
   const [timeRange, setTimeRange] = useState<TimeRange>('7d');
@@ -28,6 +54,9 @@ export function InsightsPage() {
     queryFn: ({ signal }) => getInferenceStats(signal),
     refetchInterval: 10_000,
   });
+
+  // Live system metrics via WebSocket
+  const { resources, gpus, lastUpdated: wsLastUpdated, connectionState } = useSystemMetricsWs();
 
   const handleExport = () => {
     if (!data) return;
@@ -60,6 +89,7 @@ export function InsightsPage() {
             </p>
           </div>
           <div className="flex items-center gap-2 sm:gap-4">
+            <ConnectionDot state={connectionState} />
             {lastUpdated && (
               <span className="text-xs text-muted-foreground hidden sm:inline">
                 Updated {lastUpdated}
@@ -100,6 +130,39 @@ export function InsightsPage() {
           />
         </div>
 
+        {/* Live System Resources (from WebSocket) */}
+        {resources && (
+          <div>
+            <h2 className="text-sm font-medium text-muted-foreground mb-3">System Resources</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <MetricCard
+                title="CPU Usage"
+                value={`${resources.cpu_usage_pct.toFixed(1)}%`}
+                subtitle={`${resources.cpu_count ?? '-'} cores`}
+                icon={<Cpu className="h-5 w-5 text-muted-foreground" />}
+              />
+              <MetricCard
+                title="RAM Usage"
+                value={`${((resources.ram_used_mb / resources.ram_total_mb) * 100).toFixed(0)}%`}
+                subtitle={`${(resources.ram_used_mb / 1024).toFixed(1)} / ${(resources.ram_total_mb / 1024).toFixed(1)} GB`}
+                icon={<MemoryStick className="h-5 w-5 text-muted-foreground" />}
+              />
+              <MetricCard
+                title="Disk Usage"
+                value={`${((resources.disk_used_gb / resources.disk_total_gb) * 100).toFixed(0)}%`}
+                subtitle={`${resources.disk_used_gb.toFixed(0)} / ${resources.disk_total_gb.toFixed(0)} GB`}
+                icon={<HardDrive className="h-5 w-5 text-muted-foreground" />}
+              />
+              <MetricCard
+                title="Last Update"
+                value={wsLastUpdated ? new Date(wsLastUpdated).toLocaleTimeString() : '--'}
+                subtitle="WS push every 2s"
+                icon={<Activity className="h-5 w-5 text-muted-foreground" />}
+              />
+            </div>
+          </div>
+        )}
+
         {/* Live Inference */}
         {inferenceStats && (
           <div>
@@ -133,8 +196,8 @@ export function InsightsPage() {
           </div>
         )}
 
-        {/* GPU Details */}
-        <GpuDetailsPanel />
+        {/* GPU Details — pass WS data when available */}
+        <GpuDetailsPanel gpus={gpus.length > 0 ? gpus : undefined} />
 
         {/* Usage Chart - Full Width */}
         <UsageChart

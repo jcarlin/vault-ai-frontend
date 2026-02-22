@@ -59,12 +59,21 @@ function GpuCard({ gpu }: { gpu: GpuDetail }) {
   );
 }
 
-export function GpuDetailsPanel() {
-  const { data: gpus } = useQuery<GpuDetail[]>({
+interface GpuDetailsPanelProps {
+  /** When provided, uses these GPU details instead of polling REST. */
+  gpus?: GpuDetail[];
+}
+
+export function GpuDetailsPanel({ gpus: gpusProp }: GpuDetailsPanelProps) {
+  // Fallback to REST polling if no WS data provided
+  const { data: gpusQuery } = useQuery<GpuDetail[]>({
     queryKey: ['gpu-details'],
     queryFn: ({ signal }) => getGpuDetails(signal),
     refetchInterval: 10_000,
+    enabled: !gpusProp,
   });
+
+  const gpus = gpusProp ?? gpusQuery;
 
   if (!gpus || gpus.length === 0) return null;
 
