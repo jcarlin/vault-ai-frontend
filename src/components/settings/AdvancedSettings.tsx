@@ -6,6 +6,7 @@ import { Trash2, Pencil } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { listApiKeys, createApiKey, deleteApiKey, updateApiKey } from '@/lib/api/admin';
 import { getSystemResources, getSystemSettings, updateSystemSettings } from '@/lib/api/system';
+import { generateSupportBundle, createBackup, factoryReset } from '@/lib/api/diagnostics';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { MockBadge } from '@/components/ui/MockBadge';
 import type { KeyResponse, KeyUpdate, SystemResources, SystemSettingsResponse } from '@/types/api';
@@ -189,6 +190,13 @@ export function AdvancedSettings({ onSave }: AdvancedSettingsProps) {
   const [newKeyLabel, setNewKeyLabel] = useState('');
   const [editingKey, setEditingKey] = useState<KeyResponse | null>(null);
   const [editLabel, setEditLabel] = useState('');
+  const [showFactoryResetDialog, setShowFactoryResetDialog] = useState(false);
+  const [showBackupDialog, setShowBackupDialog] = useState(false);
+  const [factoryResetConfirmation, setFactoryResetConfirmation] = useState('');
+  const [backupPath, setBackupPath] = useState('/opt/vault/backups');
+  const [backupPassphrase, setBackupPassphrase] = useState('');
+  const [bundleLoading, setBundleLoading] = useState(false);
+  const [diagnosticsResult, setDiagnosticsResult] = useState<string | null>(null);
 
   const { data: systemSettings } = useQuery<SystemSettingsResponse>({
     queryKey: ['systemSettings'],
@@ -249,6 +257,42 @@ export function AdvancedSettings({ onSave }: AdvancedSettingsProps) {
       onSave();
     },
   });
+
+  const backupMutation = useMutation({
+    mutationFn: () =>
+      createBackup({
+        output_path: backupPath || undefined,
+        passphrase: backupPassphrase || undefined,
+      }),
+    onSuccess: (data) => {
+      setDiagnosticsResult(`Backup created: ${data.filename} (${(data.size_bytes / 1024).toFixed(0)} KB)`);
+      setShowBackupDialog(false);
+      setBackupPassphrase('');
+      onSave();
+    },
+  });
+
+  const factoryResetMutation = useMutation({
+    mutationFn: () => factoryReset({ confirmation: 'FACTORY RESET' }),
+    onSuccess: (data) => {
+      setDiagnosticsResult(data.message);
+      setShowFactoryResetDialog(false);
+      setFactoryResetConfirmation('');
+      onSave();
+    },
+  });
+
+  const handleDownloadBundle = async () => {
+    setBundleLoading(true);
+    try {
+      await generateSupportBundle();
+      setDiagnosticsResult('Support bundle downloaded');
+    } catch {
+      setDiagnosticsResult('Failed to generate support bundle');
+    } finally {
+      setBundleLoading(false);
+    }
+  };
 
   const activeAdminKeys = apiKeys.filter(k => k.is_active && k.scope === 'admin');
   const isLastAdmin = activeAdminKeys.length <= 1;
@@ -375,6 +419,49 @@ export function AdvancedSettings({ onSave }: AdvancedSettingsProps) {
         </div>
       )}
 
+      {/* Support & Diagnostics */}
+      <div className="rounded-lg bg-zinc-800/50 p-4">
+        <h3 className="text-sm font-medium text-zinc-300 mb-3">Support &amp; Diagnostics</h3>
+
+        {diagnosticsResult && (
+          <div className="rounded-lg bg-[var(--green-500)]/10 border border-[var(--green-500)]/20 p-3 mb-3">
+            <p className="text-sm text-[var(--green-400)]">{diagnosticsResult}</p>
+          </div>
+        )}
+
+        <div className="space-y-2">
+          <button
+            onClick={handleDownloadBundle}
+            disabled={bundleLoading}
+            className="w-full flex items-center gap-3 p-3 rounded-lg bg-zinc-700/50 hover:bg-zinc-700 text-left transition-colors disabled:opacity-50"
+          >
+            <span className="text-zinc-400 text-sm">
+              {bundleLoading ? 'Generating...' : 'Download Support Bundle'}
+            </span>
+          </button>
+
+          <button
+            onClick={() => setShowBackupDialog(true)}
+            disabled={backupMutation.isPending}
+            className="w-full flex items-center gap-3 p-3 rounded-lg bg-zinc-700/50 hover:bg-zinc-700 text-left transition-colors disabled:opacity-50"
+          >
+            <span className="text-zinc-400 text-sm">
+              {backupMutation.isPending ? 'Creating backup...' : 'Backup System'}
+            </span>
+          </button>
+
+          <button
+            onClick={() => setShowFactoryResetDialog(true)}
+            disabled={factoryResetMutation.isPending}
+            className="w-full flex items-center gap-3 p-3 rounded-lg bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 text-left transition-colors disabled:opacity-50"
+          >
+            <span className="text-red-400 text-sm">
+              {factoryResetMutation.isPending ? 'Resetting...' : 'Factory Reset'}
+            </span>
+          </button>
+        </div>
+      </div>
+
       {/* Warning */}
       <div className="rounded-lg bg-amber-500/10 border border-amber-500/20 p-4">
         <p className="text-sm text-amber-400">
@@ -382,6 +469,105 @@ export function AdvancedSettings({ onSave }: AdvancedSettingsProps) {
           configuration may affect system performance.
         </p>
       </div>
+
+      {/* Backup Dialog */}
+      <Dialog open={showBackupDialog} onOpenChange={setShowBackupDialog}>
+        <DialogContent className="sm:max-w-md bg-zinc-900 border-zinc-800">
+          <DialogHeader>
+            <DialogTitle className="text-zinc-100">Backup System</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-zinc-400">
+              Create a backup of the database, configuration, and TLS certificates.
+            </p>
+            <div>
+              <label className="block text-sm text-zinc-400 mb-1">Output directory</label>
+              <input
+                type="text"
+                value={backupPath}
+                onChange={(e) => setBackupPath(e.target.value)}
+                className="w-full px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-100 text-sm focus:outline-none focus:border-[var(--green-500)]"
+                placeholder="/opt/vault/backups"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-zinc-400 mb-1">Encryption passphrase (optional)</label>
+              <input
+                type="password"
+                value={backupPassphrase}
+                onChange={(e) => setBackupPassphrase(e.target.value)}
+                className="w-full px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-100 text-sm focus:outline-none focus:border-[var(--green-500)]"
+                placeholder="Leave empty for unencrypted backup"
+              />
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                onClick={() => setShowBackupDialog(false)}
+                className="px-4 py-2 rounded-lg border border-zinc-700 text-zinc-300 text-sm hover:bg-zinc-800 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => backupMutation.mutate()}
+                disabled={backupMutation.isPending}
+                className="px-4 py-2 rounded-lg bg-[var(--green-600)] text-white text-sm font-medium hover:bg-[var(--green-500)] transition-colors disabled:opacity-50"
+              >
+                {backupMutation.isPending ? 'Creating...' : 'Create Backup'}
+              </button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Factory Reset Dialog */}
+      <Dialog open={showFactoryResetDialog} onOpenChange={setShowFactoryResetDialog}>
+        <DialogContent className="sm:max-w-md bg-zinc-900 border-zinc-800">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-500">Factory Reset</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-zinc-400">
+              This will erase all conversations, training jobs, audit logs, and reset system configuration
+              to factory defaults. The setup wizard will re-appear on next access.
+            </p>
+            <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20">
+              <p className="text-xs text-red-400 font-medium">
+                This action cannot be undone. API keys are preserved.
+              </p>
+            </div>
+            <div>
+              <label className="block text-sm text-zinc-400 mb-1.5">
+                Type <span className="font-mono text-red-400">FACTORY RESET</span> to confirm
+              </label>
+              <input
+                type="text"
+                value={factoryResetConfirmation}
+                onChange={(e) => setFactoryResetConfirmation(e.target.value)}
+                className="w-full px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-100 text-sm focus:outline-none focus:border-red-500"
+                placeholder="FACTORY RESET"
+              />
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                onClick={() => {
+                  setShowFactoryResetDialog(false);
+                  setFactoryResetConfirmation('');
+                }}
+                className="px-4 py-2 rounded-lg border border-zinc-700 text-zinc-300 text-sm hover:bg-zinc-800 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => factoryResetMutation.mutate()}
+                disabled={factoryResetConfirmation !== 'FACTORY RESET' || factoryResetMutation.isPending}
+                className="px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-medium hover:bg-red-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {factoryResetMutation.isPending ? 'Resetting...' : 'Factory Reset'}
+              </button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Edit Key Dialog */}
       <Dialog open={editingKey !== null} onOpenChange={() => setEditingKey(null)}>

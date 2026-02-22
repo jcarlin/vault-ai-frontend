@@ -1,11 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { cn } from '@/lib/utils';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { MockBadge } from '@/components/ui/MockBadge';
 import { getSystemResources } from '@/lib/api/system';
+import { exportAllData, purgeData, archiveConversations } from '@/lib/api/diagnostics';
 import type { StorageInfo } from '@/mocks/models';
 
 interface DataSettingsProps {
@@ -57,21 +57,27 @@ function DataActionButton({
   description,
   variant = 'default',
   onClick,
+  disabled,
+  loading,
 }: {
   icon: React.ReactNode;
   label: string;
   description: string;
   variant?: 'default' | 'danger';
   onClick: () => void;
+  disabled?: boolean;
+  loading?: boolean;
 }) {
   return (
     <button
       onClick={onClick}
+      disabled={disabled || loading}
       className={cn(
         "w-full flex items-center gap-4 p-4 rounded-lg text-left transition-colors",
         variant === 'danger'
           ? "bg-red-500/10 border border-red-500/20 hover:bg-red-500/20"
-          : "bg-zinc-800/50 hover:bg-zinc-800"
+          : "bg-zinc-800/50 hover:bg-zinc-800",
+        (disabled || loading) && "opacity-50 cursor-not-allowed"
       )}
     >
       <span className={variant === 'danger' ? "text-red-500" : "text-zinc-400"}>
@@ -82,7 +88,7 @@ function DataActionButton({
           "text-sm font-medium",
           variant === 'danger' ? "text-red-400" : "text-zinc-100"
         )}>
-          {label}
+          {loading ? `${label}...` : label}
         </p>
         <p className="text-xs text-zinc-500 mt-0.5">{description}</p>
       </div>
@@ -92,7 +98,12 @@ function DataActionButton({
 
 export function DataSettings({ onSave }: DataSettingsProps) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showArchiveDialog, setShowArchiveDialog] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState('');
+  const [archiveDays, setArchiveDays] = useState(30);
+  const [archiveResult, setArchiveResult] = useState<string | null>(null);
+  const [purgeResult, setPurgeResult] = useState<string | null>(null);
+  const [exportLoading, setExportLoading] = useState(false);
 
   const { data: resources } = useQuery({
     queryKey: ['system-resources'],
@@ -111,30 +122,40 @@ export function DataSettings({ onSave }: DataSettingsProps) {
 
   const percentage = storage ? Math.round((storage.used / storage.total) * 100) : 0;
 
-  const handleExport = () => {
-    const data = {
-      exportedAt: new Date().toISOString(),
-      message: 'Mock export data',
-    };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `vault-ai-export-${new Date().toISOString().split('T')[0]}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-    onSave();
-  };
+  const archiveMutation = useMutation({
+    mutationFn: (days: number) => {
+      const before = new Date();
+      before.setDate(before.getDate() - days);
+      return archiveConversations({ before: before.toISOString() });
+    },
+    onSuccess: (data) => {
+      setArchiveResult(`Archived ${data.archived_count} conversations (${data.message_count} messages)`);
+      setShowArchiveDialog(false);
+      onSave();
+    },
+  });
 
-  const handleArchive = () => {
-    onSave();
-  };
-
-  const handleDelete = () => {
-    if (deleteConfirmation === 'DELETE ALL DATA') {
+  const purgeMutation = useMutation({
+    mutationFn: () => purgeData({ confirmation: 'DELETE ALL DATA' }),
+    onSuccess: (data) => {
+      setPurgeResult(
+        `Deleted ${data.deleted.conversations} conversations, ${data.deleted.messages} messages, ${data.deleted.training_jobs} training jobs`
+      );
       setShowDeleteDialog(false);
       setDeleteConfirmation('');
       onSave();
+    },
+  });
+
+  const handleExport = async () => {
+    setExportLoading(true);
+    try {
+      await exportAllData();
+      onSave();
+    } catch {
+      // Error handled by the fetch call
+    } finally {
+      setExportLoading(false);
     }
   };
 
@@ -177,29 +198,88 @@ export function DataSettings({ onSave }: DataSettingsProps) {
         </div>
       )}
 
+      {/* Result banners */}
+      {archiveResult && (
+        <div className="rounded-lg bg-[var(--green-500)]/10 border border-[var(--green-500)]/20 p-3">
+          <p className="text-sm text-[var(--green-400)]">{archiveResult}</p>
+        </div>
+      )}
+      {purgeResult && (
+        <div className="rounded-lg bg-red-500/10 border border-red-500/20 p-3">
+          <p className="text-sm text-red-400">{purgeResult}</p>
+        </div>
+      )}
+
       {/* Data actions */}
-      <div className="relative space-y-3">
-        <MockBadge className="absolute -top-1 right-0 z-10" />
+      <div className="space-y-3">
         <DataActionButton
           icon={<DownloadIcon />}
           label="Export All Data"
-          description="Download a complete backup of your data, models, and settings"
+          description="Download a complete backup of your conversations, settings, and metadata"
           onClick={handleExport}
+          loading={exportLoading}
         />
         <DataActionButton
           icon={<ArchiveIcon />}
           label="Archive Chats"
-          description="Archive old chat conversations to free up space"
-          onClick={handleArchive}
+          description="Archive old chat conversations to hide them from the main list"
+          onClick={() => setShowArchiveDialog(true)}
+          loading={archiveMutation.isPending}
         />
         <DataActionButton
           icon={<TrashIcon />}
           label="Delete All Data"
-          description="Permanently remove all data from this system"
+          description="Permanently remove all conversations, training jobs, and messages"
           variant="danger"
           onClick={() => setShowDeleteDialog(true)}
+          loading={purgeMutation.isPending}
         />
       </div>
+
+      {/* Archive dialog */}
+      <Dialog open={showArchiveDialog} onOpenChange={setShowArchiveDialog}>
+        <DialogContent className="sm:max-w-md bg-zinc-900 border-zinc-800">
+          <DialogHeader>
+            <DialogTitle className="text-zinc-100">Archive Old Conversations</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-zinc-400">
+              Archive conversations older than a specified number of days. Archived conversations
+              are hidden from the main list but can still be accessed directly.
+            </p>
+            <div>
+              <label className="block text-sm text-zinc-400 mb-1.5">
+                Archive conversations older than
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  value={archiveDays}
+                  onChange={(e) => setArchiveDays(Math.max(1, parseInt(e.target.value) || 1))}
+                  min={1}
+                  className="w-24 px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-100 text-sm focus:outline-none focus:border-[var(--green-500)]"
+                />
+                <span className="text-sm text-zinc-400">days</span>
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                onClick={() => setShowArchiveDialog(false)}
+                className="px-4 py-2 rounded-lg border border-zinc-700 text-zinc-300 text-sm hover:bg-zinc-800 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => archiveMutation.mutate(archiveDays)}
+                disabled={archiveMutation.isPending}
+                className="px-4 py-2 rounded-lg bg-[var(--green-600)] text-white text-sm font-medium hover:bg-[var(--green-500)] transition-colors disabled:opacity-50"
+              >
+                {archiveMutation.isPending ? 'Archiving...' : 'Archive'}
+              </button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Delete confirmation dialog */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
@@ -215,14 +295,13 @@ export function DataSettings({ onSave }: DataSettingsProps) {
               This action will permanently delete all your data, including:
             </p>
             <ul className="text-sm text-zinc-500 list-disc list-inside space-y-1">
-              <li>All chat conversations</li>
-              <li>Uploaded training data</li>
-              <li>Custom trained models</li>
-              <li>User settings and preferences</li>
+              <li>All chat conversations and messages</li>
+              <li>Training job records</li>
+              <li>System configuration</li>
             </ul>
             <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20">
               <p className="text-xs text-red-400 font-medium">
-                This action cannot be undone.
+                This action cannot be undone. API keys are preserved.
               </p>
             </div>
             <div>
@@ -248,11 +327,11 @@ export function DataSettings({ onSave }: DataSettingsProps) {
                 Cancel
               </button>
               <button
-                onClick={handleDelete}
-                disabled={deleteConfirmation !== 'DELETE ALL DATA'}
+                onClick={() => purgeMutation.mutate()}
+                disabled={deleteConfirmation !== 'DELETE ALL DATA' || purgeMutation.isPending}
                 className="px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-medium hover:bg-red-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Delete Everything
+                {purgeMutation.isPending ? 'Deleting...' : 'Delete Everything'}
               </button>
             </div>
           </div>

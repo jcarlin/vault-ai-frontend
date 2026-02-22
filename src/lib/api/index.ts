@@ -12,3 +12,4 @@ export { getSetupStatus, configureNetwork, createSetupAdmin, configureTls, selec
 export { queryAuditLog, getAuditStats, exportAuditLog } from './audit';
 export { getSystemLogs } from './logs';
 export { submitScan, getScanStatus, listHeldFiles, getHeldFile, approveHeldFile, rejectHeldFile, getSignatures, getQuarantineStats, getQuarantineConfig, updateQuarantineConfig } from './quarantine';
+export { exportAllData, purgeData, archiveConversations, factoryReset, generateSupportBundle, createBackup, restoreBackup } from './diagnostics';
