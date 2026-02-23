@@ -5,6 +5,7 @@ import { FileSearch, ShieldCheck, ShieldAlert, ShieldX } from 'lucide-react';
 import { MetricCard } from '@/components/insights/MetricCard';
 import { formatNumber } from '@/lib/formatters';
 import { getQuarantineStats } from '@/lib/api/quarantine';
+import { ApiClientError } from '@/lib/api/client';
 import { cn } from '@/lib/utils';
 
 const SEVERITY_COLORS: Record<string, string> = {
@@ -16,14 +17,18 @@ const SEVERITY_COLORS: Record<string, string> = {
 };
 
 export function QuarantineStats() {
-  const { data: stats } = useQuery({
+  const { data: stats, isError } = useQuery({
     queryKey: ['quarantine-stats'],
     queryFn: ({ signal }) => getQuarantineStats(signal),
     staleTime: 30_000,
     refetchInterval: 60_000,
+    retry: (failureCount, err) => {
+      if (err instanceof ApiClientError && err.status === 503) return false;
+      return failureCount < 3;
+    },
   });
 
-  if (!stats) return null;
+  if (isError || !stats) return null;
 
   return (
     <div className="space-y-4">

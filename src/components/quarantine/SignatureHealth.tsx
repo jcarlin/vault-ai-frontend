@@ -2,6 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { getSignatures } from '@/lib/api/quarantine';
+import { ApiClientError } from '@/lib/api/client';
 import type { SignatureSource } from '@/types/api';
 import { cn } from '@/lib/utils';
 
@@ -58,13 +59,17 @@ function SignatureCard({ label, source }: { label: string; source: SignatureSour
 }
 
 export function SignatureHealth() {
-  const { data: sigs } = useQuery({
+  const { data: sigs, isError } = useQuery({
     queryKey: ['quarantine-signatures'],
     queryFn: ({ signal }) => getSignatures(signal),
     staleTime: 60_000,
+    retry: (failureCount, err) => {
+      if (err instanceof ApiClientError && err.status === 503) return false;
+      return failureCount < 3;
+    },
   });
 
-  if (!sigs) return null;
+  if (isError || !sigs) return null;
 
   return (
     <div>

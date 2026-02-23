@@ -2,12 +2,13 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ShieldOff } from 'lucide-react';
 import { QuarantineStats } from './QuarantineStats';
 import { SignatureHealth } from './SignatureHealth';
 import { HeldFilesTable } from './HeldFilesTable';
 import { HeldFileDetailDialog } from './HeldFileDetailDialog';
 import { listHeldFiles, approveHeldFile, rejectHeldFile } from '@/lib/api/quarantine';
+import { ApiClientError } from '@/lib/api/client';
 import type { FileStatus } from '@/types/api';
 
 const PAGE_SIZE = 20;
@@ -17,11 +18,17 @@ export function QuarantinePage() {
   const [page, setPage] = useState(0);
   const [selectedFile, setSelectedFile] = useState<FileStatus | null>(null);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error } = useQuery({
     queryKey: ['quarantine-held', page],
     queryFn: ({ signal }) => listHeldFiles(page * PAGE_SIZE, PAGE_SIZE, signal),
     staleTime: 10_000,
+    retry: (failureCount, err) => {
+      if (err instanceof ApiClientError && err.status === 503) return false;
+      return failureCount < 3;
+    },
   });
+
+  const isUnavailable = isError && error instanceof ApiClientError && error.status === 503;
 
   const approveMutation = useMutation({
     mutationFn: ({ fileId, reason }: { fileId: string; reason: string }) =>
@@ -56,6 +63,19 @@ export function QuarantinePage() {
           </p>
         </div>
 
+        {isUnavailable && (
+          <div className="flex items-center gap-3 rounded-lg bg-amber-500/10 border border-amber-500/30 px-4 py-3">
+            <ShieldOff className="h-5 w-5 text-amber-400 shrink-0" />
+            <div>
+              <p className="text-sm font-medium text-amber-300">Quarantine pipeline unavailable</p>
+              <p className="text-xs text-amber-400/70 mt-0.5">
+                This feature requires ClamAV, YARA, and the quarantine filesystem. Available on the Vault Cube only.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {!isUnavailable && <>
         {/* Stats */}
         <QuarantineStats />
 
@@ -74,8 +94,10 @@ export function QuarantinePage() {
           </div>
         </div>
 
+        </>}
+
         {/* Pagination */}
-        {totalPages > 1 && (
+        {!isUnavailable && totalPages > 1 && (
           <div className="flex items-center justify-between text-xs text-zinc-400">
             <span>
               Page {page + 1} of {totalPages} ({data?.total ?? 0} files)
