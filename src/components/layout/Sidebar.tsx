@@ -109,10 +109,13 @@ function ConversationItem({
   }
 
   return (
-    <button
+    <div
+      role="button"
+      tabIndex={0}
       onClick={onClick}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } }}
       className={cn(
-        "group w-full text-left px-3 py-2 rounded-lg transition-colors relative",
+        "group w-full text-left px-3 py-2 rounded-lg transition-colors relative cursor-pointer",
         isSelected ? "bg-secondary/80" : "hover:bg-secondary/40"
       )}
     >
@@ -141,7 +144,7 @@ function ConversationItem({
           <Trash2 className="h-3 w-3" />
         </button>
       </div>
-    </button>
+    </div>
   );
 }
 

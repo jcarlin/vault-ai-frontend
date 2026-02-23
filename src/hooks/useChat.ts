@@ -1,9 +1,9 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ChatMessage, ChatState, Conversation, StreamingMetrics } from '@/types/chat';
-import type { ModelInfo, ModelConfigResponse, ConversationResponse } from '@/types/api';
+import type { VaultModelInfo, ModelConfigResponse, ConversationResponse } from '@/types/api';
 import { streamChatCompletion } from '@/lib/api/chat';
-import { fetchModels } from '@/lib/api/models';
+import { listVaultModels } from '@/lib/api/models';
 import { getModelConfig } from '@/lib/api/admin';
 import { ApiClientError } from '@/lib/api/client';
 import {
@@ -48,7 +48,7 @@ interface UseChatReturn {
   sendMessage: (content: string) => void;
   clearHistory: () => void;
   conversationId: string | null;
-  models: ModelInfo[];
+  models: VaultModelInfo[];
   selectedModelId: string;
   setSelectedModelId: (id: string) => void;
   modelLocked: boolean;
@@ -100,13 +100,12 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
     return () => { cancelled = true; };
   }, [initialConversationId]);
 
-  // Fetch available models
-  const { data: modelsData } = useQuery({
-    queryKey: ['models'],
-    queryFn: () => fetchModels(),
+  // Fetch available models from vault registry (same source as admin config)
+  const { data: models = [] } = useQuery<VaultModelInfo[]>({
+    queryKey: ['vaultModels'],
+    queryFn: ({ signal }) => listVaultModels(signal),
     staleTime: 60_000,
   });
-  const models = modelsData?.data ?? [];
 
   // Fetch admin-configured model defaults
   const { data: modelConfig } = useQuery<ModelConfigResponse>({
@@ -118,14 +117,21 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
   // Set default model if none selected:
   // 1. User's explicit selection
   // 2. Admin-configured default (if it exists in available models)
-  // 3. First running chat model
-  // 4. First chat model
-  // 5. First model
+  // 3. First loaded model
+  // 4. First model
   const adminDefault = modelConfig?.default_model_id;
+
+  // Sync admin-configured default into state once config loads
+  useEffect(() => {
+    if (selectedModelId) return;
+    if (adminDefault && models.length > 0 && models.some(m => m.id === adminDefault)) {
+      setSelectedModelId(adminDefault);
+    }
+  }, [adminDefault, models, selectedModelId]);
+
   const effectiveModelId = selectedModelId
     || (adminDefault && models.some(m => m.id === adminDefault) ? adminDefault : '')
-    || models.find(m => m.type === 'chat' && m.status === 'running')?.id
-    || models.find(m => m.type === 'chat')?.id
+    || models.find(m => m.status === 'loaded')?.id
     || models[0]?.id
     || 'default';
 

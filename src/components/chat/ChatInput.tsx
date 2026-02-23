@@ -3,14 +3,14 @@
 import { useState, useRef, useEffect, type KeyboardEvent } from 'react';
 import { Coins, ChevronDown, Check, Paperclip, Send, Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { ModelInfo } from '@/types/api';
+import type { VaultModelInfo } from '@/types/api';
 
 interface ChatInputProps {
   onSend: (message: string) => void;
   disabled?: boolean;
   disabledMessage?: string;
   placeholder?: string;
-  models?: ModelInfo[];
+  models?: VaultModelInfo[];
   selectedModelId?: string;
   onModelChange?: (modelId: string) => void;
   modelLocked?: boolean;
@@ -50,7 +50,7 @@ export function ChatInput({ onSend, disabled, disabledMessage, placeholder, mode
     }
   };
 
-  const handleModelSelect = (model: ModelInfo) => {
+  const handleModelSelect = (model: VaultModelInfo) => {
     onModelChange?.(model.id);
     setShowModelPicker(false);
   };
@@ -97,7 +97,7 @@ export function ChatInput({ onSend, disabled, disabledMessage, placeholder, mode
                   <p className="text-xs font-medium text-muted-foreground">Select Model</p>
                 </div>
                 <div className="max-h-64 overflow-auto py-1">
-                  {models.filter(m => m.type !== 'embedding').map((model) => (
+                  {models.map((model) => (
                     <button
                       key={model.id}
                       onClick={() => handleModelSelect(model)}
@@ -112,10 +112,10 @@ export function ChatInput({ onSend, disabled, disabledMessage, placeholder, mode
                         <p className="text-sm font-medium truncate">{model.name}</p>
                         <div className="flex items-center gap-2">
                           <p className="text-xs text-muted-foreground truncate">{model.parameters ?? ''}</p>
-                          {model.status === 'running' && (
+                          {model.status === 'loaded' && (
                             <span className="flex items-center gap-1 text-[10px] text-emerald-500">
                               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                              Running
+                              Loaded
                             </span>
                           )}
                         </div>
