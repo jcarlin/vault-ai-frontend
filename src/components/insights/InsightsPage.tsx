@@ -6,13 +6,15 @@ import { Download, Activity, Zap, Cpu, CheckCircle, Timer, Gauge, HardDrive, Mem
 import { Button } from '@/components/ui/button';
 import { MetricCard } from './MetricCard';
 import { GpuDetailsPanel } from './GpuDetailsPanel';
+import { UptimePanel } from './UptimePanel';
 import { UsageChart } from './UsageChart';
 import { PerformanceChart } from './PerformanceChart';
 import { ModelUsageChart } from './ModelUsageChart';
 import { fetchInsights } from '@/lib/api/insights';
 import { getInferenceStats } from '@/lib/api/system';
+import { getUptimeSummary } from '@/lib/api/uptime';
 import { useSystemMetricsWs } from '@/hooks/useSystemMetricsWs';
-import type { InsightsResponse, TimeRange, InferenceStatsResponse } from '@/types/api';
+import type { InsightsResponse, TimeRange, InferenceStatsResponse, UptimeSummaryResponse } from '@/types/api';
 import { formatNumber, formatTokensPerSec, parseUTC } from '@/lib/formatters';
 
 function ConnectionDot({ state }: { state: string }) {
@@ -53,6 +55,12 @@ export function InsightsPage() {
     queryKey: ['inference-stats'],
     queryFn: ({ signal }) => getInferenceStats(signal),
     refetchInterval: 10_000,
+  });
+
+  const { data: uptimeData } = useQuery<UptimeSummaryResponse>({
+    queryKey: ['uptime-summary'],
+    queryFn: ({ signal }) => getUptimeSummary(signal),
+    refetchInterval: 30_000,
   });
 
   // Live system metrics via WebSocket
@@ -195,6 +203,9 @@ export function InsightsPage() {
             </div>
           </div>
         )}
+
+        {/* Uptime & Availability */}
+        {uptimeData && <UptimePanel data={uptimeData} />}
 
         {/* GPU Details — pass WS data when available */}
         <GpuDetailsPanel gpus={gpus.length > 0 ? gpus : undefined} />

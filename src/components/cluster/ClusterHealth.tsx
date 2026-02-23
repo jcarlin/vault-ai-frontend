@@ -116,7 +116,7 @@ export function ClusterHealth({ health, isError }: ClusterHealthProps) {
       <div>
         <h3 className="text-sm font-medium text-foreground">System Status</h3>
         <p className="text-xs text-muted-foreground mt-0.5">
-          {health.gpus.length} GPUs &middot; {totalVramGb}GB VRAM &middot; {avgUtil}% avg &middot; {formatUptime(health.uptime_seconds)}
+          {health.gpus.length} GPUs &middot; {totalVramGb}GB VRAM &middot; {avgUtil}% avg &middot; {formatUptime(health.os_uptime_seconds ?? health.uptime_seconds)}
         </p>
         <div className="mt-2 flex items-center gap-2">
           <span className={cn('inline-block h-2 w-2 rounded-full', statusColors[health.status])} />

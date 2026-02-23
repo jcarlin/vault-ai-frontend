@@ -661,6 +661,44 @@ export interface DatasetValidateResult {
   quarantine_job_id: string | null;
 }
 
+// --- Uptime & Availability ---
+
+export interface ServiceAvailability {
+  service_name: string;
+  availability_24h: number;
+  availability_7d: number;
+  availability_30d: number;
+  current_status: string;
+}
+
+export interface UptimeSummaryResponse {
+  os_uptime_seconds: number;
+  api_uptime_seconds: number;
+  services: ServiceAvailability[];
+  incidents_24h: number;
+}
+
+export interface DowntimeEvent {
+  id: number;
+  service_name: string;
+  event_type: string;
+  timestamp: string;
+  duration_seconds: number | null;
+  details: string | null;
+}
+
+export interface UptimeEventsResponse {
+  events: DowntimeEvent[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface AvailabilityResponse {
+  window_hours: number;
+  services: Record<string, number>;
+}
+
 // Frontend-only (not in backend schema)
 export interface ApiError {
   detail: string;
