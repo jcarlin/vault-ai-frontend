@@ -12,6 +12,7 @@ import {
 import { cn } from '@/lib/utils';
 import { formatTimeAgo, formatDuration } from '@/lib/formatters';
 import { useTrainingJobs } from '@/hooks/useTrainingJobs';
+import { CreateTrainingJobModal } from './CreateTrainingJobModal';
 import type { TrainingJobResponse } from '@/types/api';
 
 type TrainingStatus = 'queued' | 'running' | 'paused' | 'completed' | 'failed' | 'cancelled';
@@ -248,10 +249,11 @@ function JobSection({
 }
 
 export function JobsPage() {
-  const { jobs, isLoading, pauseJob, resumeJob, cancelJob } = useTrainingJobs();
+  const { jobs, isLoading, createJob, isCreating, pauseJob, resumeJob, cancelJob } = useTrainingJobs();
 
   const [jobToCancel, setJobToCancel] = useState<TrainingJobResponse | null>(null);
   const [selectedJob, setSelectedJob] = useState<TrainingJobResponse | null>(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   const activeJobs = jobs.filter((j) => j.status === 'running');
   const pausedJobs = jobs.filter((j) => j.status === 'paused');
@@ -284,6 +286,13 @@ export function JobsPage() {
               Manage and monitor fine-tuning jobs
             </p>
           </div>
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-500 transition-colors text-sm font-medium"
+          >
+            <PlusIcon />
+            New Training Job
+          </button>
         </div>
 
         {isLoading && (
@@ -341,9 +350,18 @@ export function JobsPage() {
             />
 
             {!hasAnyJobs && (
-              <div className="text-center py-12 text-zinc-500">
-                <p className="text-sm">No training jobs</p>
-                <p className="text-xs mt-1">Training jobs will appear here when created via the API</p>
+              <div className="text-center py-12">
+                <p className="text-sm text-foreground font-medium">No training jobs yet</p>
+                <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
+                  Fine-tune a model on your own data to improve accuracy for your specific use case.
+                </p>
+                <button
+                  onClick={() => setShowCreateModal(true)}
+                  className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-500 transition-colors text-sm font-medium"
+                >
+                  <PlusIcon />
+                  Create your first training job
+                </button>
               </div>
             )}
           </div>
@@ -375,6 +393,15 @@ export function JobsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Create Training Job Modal */}
+      <CreateTrainingJobModal
+        open={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onCreated={() => setShowCreateModal(false)}
+        createJob={createJob}
+        isCreating={isCreating}
+      />
 
       {/* Job Detail Modal */}
       <Dialog open={!!selectedJob} onOpenChange={(isOpen) => !isOpen && setSelectedJob(null)}>

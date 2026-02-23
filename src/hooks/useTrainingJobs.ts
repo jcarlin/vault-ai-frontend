@@ -2,18 +2,21 @@ import { useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   listTrainingJobs,
+  createTrainingJob,
   pauseTrainingJob,
   resumeTrainingJob,
   cancelTrainingJob,
   getGpuAllocation,
 } from '@/lib/api/training';
-import type { TrainingJobResponse, GPUAllocationStatus } from '@/types/api';
+import type { TrainingJobResponse, TrainingJobCreate, GPUAllocationStatus } from '@/types/api';
 
 interface UseTrainingJobsReturn {
   jobs: TrainingJobResponse[];
   isLoading: boolean;
   activeJob: TrainingJobResponse | null;
   gpuAllocation: GPUAllocationStatus[];
+  createJob: (data: TrainingJobCreate) => void;
+  isCreating: boolean;
   pauseJob: (jobId: string) => void;
   resumeJob: (jobId: string) => void;
   cancelJob: (jobId: string) => void;
@@ -52,6 +55,11 @@ export function useTrainingJobs(): UseTrainingJobsReturn {
     onSuccess: invalidate,
   });
 
+  const createMutation = useMutation({
+    mutationFn: (data: TrainingJobCreate) => createTrainingJob(data),
+    onSuccess: invalidate,
+  });
+
   const cancelMutation = useMutation({
     mutationFn: (jobId: string) => cancelTrainingJob(jobId),
     onSuccess: invalidate,
@@ -62,6 +70,8 @@ export function useTrainingJobs(): UseTrainingJobsReturn {
     isLoading,
     activeJob,
     gpuAllocation,
+    createJob: (data: TrainingJobCreate) => createMutation.mutate(data),
+    isCreating: createMutation.isPending,
     pauseJob: (id: string) => pauseMutation.mutate(id),
     resumeJob: (id: string) => resumeMutation.mutate(id),
     cancelJob: (id: string) => cancelMutation.mutate(id),

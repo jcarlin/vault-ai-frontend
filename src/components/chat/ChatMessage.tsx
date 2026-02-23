@@ -2,6 +2,7 @@
 
 import { useState, memo, type ComponentProps } from 'react';
 import { Copy, Check, ChevronRight } from 'lucide-react';
+import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { cn } from '@/lib/utils';
@@ -120,9 +121,12 @@ function ThinkingPanel({ thinking, timestamp }: { thinking: ChatMessageType['thi
   );
 }
 
+const TRAINING_PATTERN = /\b(fine-tun|training job|train a model|start training|fine tuning)\b/i;
+
 export const ChatMessage = memo(function ChatMessage({ message }: ChatMessageProps) {
   const isUser = message.role === 'user';
   const [copied, setCopied] = useState(false);
+  const mentionsTraining = !isUser && TRAINING_PATTERN.test(message.content);
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(message.content);
@@ -154,6 +158,15 @@ export const ChatMessage = memo(function ChatMessage({ message }: ChatMessagePro
             </div>
           )}
         </div>
+        {mentionsTraining && (
+          <Link
+            href="/training"
+            className="mt-2 flex items-center gap-1.5 px-3 py-2 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-medium hover:bg-blue-500/15 transition-colors"
+          >
+            Go to Training
+            <ChevronRight className="h-3 w-3" />
+          </Link>
+        )}
         <div className="flex items-center gap-2 pt-1 mt-2">
           {!isUser && (
             <button
