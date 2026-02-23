@@ -16,7 +16,9 @@ export type ChatCompletionMessage = components['schemas']['ChatMessage'];
 export type ModelInfo = components['schemas']['ModelInfo'];
 export type ModelListResponse = components['schemas']['ModelListResponse'];
 export type GpuInfo = components['schemas']['GpuInfo'];
-export type HealthResponse = components['schemas']['HealthResponse'];
+export type HealthResponse = components['schemas']['HealthResponse'] & {
+  os_uptime_seconds?: number;
+};
 
 // --- Conversations ---
 export type ConversationSummary = components['schemas']['ConversationSummary'];
