@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 // /api/p/* is NOT public — it requires a valid access key cookie.
 const PUBLIC_PATHS = ['/auth', '/api/auth', '/_next/', '/favicon.ico'];
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Skip middleware for public paths

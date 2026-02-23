@@ -29,7 +29,7 @@ npm run api:generate # Regenerate types from committed spec (no backend needed)
 ```
 src/
 ├── components/
-│   ├── auth/        # ApiKeyEntry
+│   ├── auth/        # ApiKeyEntry (tabbed: credentials + API key login)
 │   ├── chat/        # ChatPanel, ChatInput, ChatMessage, SuggestedPrompts, ThinkingIndicator
 │   ├── audit/       # AuditLogPage, AuditTable, AuditStats, AuditFilters, SystemLogsTab
 │   ├── cluster/     # ClusterHealth, CubeCard, CubeDetailDialog
@@ -38,16 +38,16 @@ src/
 │   ├── models/      # ModelsPage, ModelCard, ModelList, ModelDetailDialog, AddModelModal
 │   ├── onboarding/  # OnboardingFlow, OnboardingWelcome, OnboardingChat
 │   ├── quarantine/  # QuarantinePage, QuarantineStats, SignatureHealth, HeldFilesTable, HeldFileDetailDialog
-│   ├── settings/    # SettingsPage, NetworkSettings, UsersSettings, SystemSettings, ModelSettings, AdvancedSettings, SecuritySettings, QuarantineSettings
+│   ├── settings/    # SettingsPage, NetworkSettings, UsersSettings, SystemSettings, ModelSettings, AdvancedSettings, SecuritySettings, QuarantineSettings, LdapSettings
 │   ├── training/    # JobsPage, JobDetailModal, etc. (orphaned — no route, deferred to Stage 5)
 │   ├── ui/          # shadcn primitives (badge, button, card, dialog, progress, tooltip)
 │   └── upload/      # UploadModal (wired to quarantine scan API), UploadDropzone
 ├── hooks/           # useChat, useClusterHealth, useOnboarding, useDeveloperMode
-├── lib/api/         # API client layer: client.ts, chat.ts, models.ts, conversations.ts, admin.ts, audit.ts, logs.ts, system.ts, quarantine.ts, etc.
+├── lib/api/         # API client layer: client.ts, chat.ts, models.ts, conversations.ts, admin.ts, audit.ts, logs.ts, system.ts, quarantine.ts, auth.ts, etc.
 ├── lib/onboarding.ts # Onboarding agent: system prompt, suggested prompts, localStorage helpers
 ├── types/           # api.ts (re-exports from api.generated.ts), models.ts
 ├── mocks/           # Legacy — mostly types/utilities now; mock data only for storage indicator + suggested prompts
-├── contexts/        # AuthContext (API key storage in localStorage)
+├── contexts/        # AuthContext (API key + JWT auth, user state, 401 handling)
 └── lib/utils.ts     # cn() helper
 ```
 
@@ -61,7 +61,7 @@ src/
 
 ## Backend API Integration
 
-The frontend is fully wired to `vault-ai-backend` (FastAPI) — all 73 endpoints across Rev 1 + Rev 2 + Epic 8 + Epic 9. Types are auto-generated from the backend's OpenAPI spec (`npm run api:sync`), plus manual quarantine types in `api.ts`.
+The frontend is fully wired to `vault-ai-backend` (FastAPI) — all endpoints across Rev 1 + Rev 2 + Epic 8 + Epic 9 + Epic 14. Types are auto-generated from the backend's OpenAPI spec (`npm run api:sync`), plus manual types for quarantine and auth/LDAP in `api.ts`.
 
 **Rev 1 (3 core endpoints):**
 ```
@@ -93,8 +93,13 @@ GET  /vault/health           → System health (vLLM status, GPU metrics)
 - Stats: job/file counts, severity distribution (`/vault/quarantine/stats`)
 - Config: get/update quarantine settings (`/vault/admin/config/quarantine`)
 
+**Epic 14 (13 endpoints) — wired to frontend:**
+- Auth: login with credentials (`POST /vault/auth/login`), LDAP detection (`GET /vault/auth/ldap-enabled`), identity (`GET /vault/auth/me`)
+- LDAP config: get/update (`/vault/admin/config/ldap`), test connection, sync users
+- Group mappings CRUD: list/create/update/delete (`/vault/admin/ldap/mappings/*`)
+
 **Key patterns:**
-- **Auth:** API keys with `vault_sk_` prefix, sent as `Authorization: Bearer <key>`
+- **Auth:** Dual-auth — API keys (`vault_sk_*`) and JWT tokens (`eyJ*`), both sent as `Authorization: Bearer <token>`. Backend differentiates by prefix. Global 401 handler auto-logs out on JWT expiry.
 - **Streaming:** Server-Sent Events, chunks are `ChatCompletionChunk` objects, terminated by `data: [DONE]`
 - **API client:** `src/lib/api/client.ts` — native fetch, typed errors, Next.js API proxy to `:8000`
 - **Training:** Job records exist in API but no real execution (Stage 5). Training UI components exist but are not routed.
@@ -106,7 +111,7 @@ GET  /vault/health           → System health (vLLM status, GPU metrics)
 - **Audit** (`/audit`): API request audit log with filters, stats, export, and system logs tab
 - **Models** (`/models`): Model management — load/unload GPU, import from filesystem, delete
 - **Quarantine** (`/quarantine`): File scanning pipeline — stats, signature health, held files table with approve/reject, detail dialog
-- **Settings** (`/settings`): Network, users, system, model defaults (temperature, max tokens, system prompt), security (TLS certificates), quarantine (scan config), advanced (API keys with edit/disable, diagnostics)
+- **Settings** (`/settings`): Network, users (+ LDAP settings), system, model defaults (temperature, max tokens, system prompt), security (TLS certificates), quarantine (scan config), advanced (API keys with edit/disable, diagnostics)
 
 ## Onboarding Agent (Epic 7)
 
