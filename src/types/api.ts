@@ -411,6 +411,129 @@ export interface LdapGroupMappingUpdate {
   priority?: number;
 }
 
+// --- Epic 17: Evaluation & Benchmarking ---
+
+export interface EvalConfig {
+  metrics: string[];
+  num_samples?: number | null;
+  few_shot: number;
+  batch_size: number;
+  max_tokens: number;
+  temperature: number;
+}
+
+export interface EvalJobCreate {
+  name: string;
+  model_id: string;
+  adapter_id?: string | null;
+  dataset_id: string;
+  config?: Partial<EvalConfig>;
+}
+
+export interface EvalMetricResult {
+  metric: string;
+  score: number;
+  ci_lower?: number | null;
+  ci_upper?: number | null;
+}
+
+export interface EvalExampleResult {
+  index: number;
+  prompt: string;
+  expected?: string | null;
+  generated: string;
+  scores: Record<string, number>;
+  correct?: boolean | null;
+}
+
+export interface EvalResults {
+  metrics: EvalMetricResult[];
+  per_example: EvalExampleResult[];
+  summary?: string | null;
+}
+
+export interface EvalJobResponse {
+  id: string;
+  name: string;
+  status: string;
+  progress: number;
+  model_id: string;
+  adapter_id?: string | null;
+  dataset_id: string;
+  dataset_type: string;
+  config: EvalConfig;
+  results?: EvalResults | null;
+  error?: string | null;
+  total_examples: number;
+  examples_completed: number;
+  started_at?: string | null;
+  completed_at?: string | null;
+  created_at: string;
+}
+
+export interface EvalJobList {
+  jobs: EvalJobResponse[];
+  total: number;
+}
+
+export interface EvalCompareEntry {
+  job_id: string;
+  model_id: string;
+  adapter_id?: string | null;
+  label: string;
+  metrics: EvalMetricResult[];
+}
+
+export interface EvalCompareResponse {
+  dataset_id: string;
+  models: EvalCompareEntry[];
+}
+
+export interface QuickEvalCase {
+  prompt: string;
+  expected?: string | null;
+  system_prompt?: string | null;
+}
+
+export interface QuickEvalRequest {
+  model_id: string;
+  adapter_id?: string | null;
+  test_cases: QuickEvalCase[];
+  metrics?: string[];
+  max_tokens?: number;
+  temperature?: number;
+}
+
+export interface QuickEvalCaseResult {
+  index: number;
+  prompt: string;
+  expected?: string | null;
+  generated: string;
+  scores: Record<string, number>;
+  correct?: boolean | null;
+}
+
+export interface QuickEvalResponse {
+  results: QuickEvalCaseResult[];
+  aggregate_scores: Record<string, number>;
+  duration_ms: number;
+}
+
+export interface EvalDatasetInfo {
+  id: string;
+  name: string;
+  description: string;
+  record_count: number;
+  categories: string[];
+  metrics: string[];
+  type: string;
+}
+
+export interface EvalDatasetList {
+  datasets: EvalDatasetInfo[];
+  total: number;
+}
+
 // Frontend-only (not in backend schema)
 export interface ApiError {
   detail: string;

@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
-import { MessageSquare, BarChart3, Coins, FileText, Shield, GraduationCap, ChevronDown, Menu, X } from 'lucide-react';
+import { MessageSquare, BarChart3, Coins, FileText, Shield, GraduationCap, FlaskConical, ChevronDown, Menu, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { HealthResponse } from '@/types/api';
 import { UserMenu } from './UserMenu';
@@ -146,6 +146,18 @@ export function HeaderBar({
             >
               <GraduationCap className="h-4 w-4" />
               <span className="hidden sm:inline">Training</span>
+            </button>
+            <button
+              onClick={() => router.push('/eval')}
+              className={cn(
+                "flex items-center gap-1.5 h-7 px-2 sm:px-3 rounded-md text-xs font-medium transition-colors",
+                currentPath === '/eval'
+                  ? "bg-secondary text-foreground"
+                  : "text-muted-foreground hover:text-foreground/80"
+              )}
+            >
+              <FlaskConical className="h-4 w-4" />
+              <span className="hidden sm:inline">Eval</span>
             </button>
           </div>
         )}
