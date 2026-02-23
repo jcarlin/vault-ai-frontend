@@ -78,6 +78,15 @@ function ScanIcon() {
   );
 }
 
+function TrainingIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-4 w-4">
+      <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+      <path d="M6 12v5c3 3 9 3 12 0v-5" />
+    </svg>
+  );
+}
+
 function getCategoryIcon(iconName: string) {
   switch (iconName) {
     case 'network': return <NetworkIcon />;
@@ -87,6 +96,7 @@ function getCategoryIcon(iconName: string) {
     case 'shield': return <ShieldIcon />;
     case 'scan': return <ScanIcon />;
     case 'code': return <CodeIcon />;
+    case 'training': return <TrainingIcon />;
     default: return <SettingsIcon />;
   }
 }

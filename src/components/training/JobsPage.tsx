@@ -10,58 +10,28 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
-import { MockBadge } from '@/components/ui/MockBadge';
-import {
-  type TrainingJob,
-  getStatusBgColor,
-} from '@/mocks/training';
 import { formatTimeAgo, formatDuration } from '@/lib/formatters';
+import { useTrainingJobs } from '@/hooks/useTrainingJobs';
+import type { TrainingJobResponse } from '@/types/api';
 
-// Mock data for completed job details
-const jobDetails: Record<string, {
-  summary: string;
-  baseModel: string;
-  datasetSize: string;
-  trainingDuration: string;
-  relatedChats: { id: string; title: string; timestamp: string }[];
-}> = {
-  'job-005': {
-    summary: 'Fine-tuned model for contract review and analysis. Trained on 15,000 legal documents including NDAs, service agreements, and employment contracts. Optimized for clause extraction, risk identification, and compliance checking.',
-    baseModel: 'Llama 3.1 8B',
-    datasetSize: '15,000 documents (2.3 GB)',
-    trainingDuration: '6h 12m',
-    relatedChats: [
-      { id: 'chat-1', title: 'Training GPT-4 variant on legal corpus', timestamp: '2 days ago' },
-      { id: 'chat-2', title: 'Extract key terms from NDAs', timestamp: '3 days ago' },
-      { id: 'chat-3', title: 'Configure contract review parameters', timestamp: '4 days ago' },
-    ],
-  },
-  'job-006': {
-    summary: 'Specialized model for medical records summarization. Trained on de-identified patient records, clinical notes, and discharge summaries. HIPAA compliant training pipeline with privacy-preserving techniques.',
-    baseModel: 'Llama 3.1 8B',
-    datasetSize: '28,500 records (4.1 GB)',
-    trainingDuration: '8h 45m',
-    relatedChats: [
-      { id: 'chat-4', title: 'Medical records compliance check', timestamp: '5 days ago' },
-      { id: 'chat-5', title: 'Set up HIPAA-compliant pipeline', timestamp: '6 days ago' },
-    ],
-  },
-};
+type TrainingStatus = 'queued' | 'running' | 'paused' | 'completed' | 'failed' | 'cancelled';
 
-function ChatIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
-      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-    </svg>
-  );
-}
-
-interface JobsPageProps {
-  jobs: TrainingJob[];
-  onPauseJob: (jobId: string) => void;
-  onResumeJob: (jobId: string) => void;
-  onCancelJob: (jobId: string) => void;
-  onNavigateToModel?: (modelId: string) => void;
+function getStatusBgColor(status: string): string {
+  switch (status) {
+    case 'running':
+      return 'bg-blue-500/10 text-blue-400';
+    case 'queued':
+      return 'bg-zinc-500/10 text-zinc-400';
+    case 'paused':
+      return 'bg-zinc-500/10 text-zinc-400';
+    case 'completed':
+      return 'bg-emerald-500/10 text-emerald-400';
+    case 'failed':
+    case 'cancelled':
+      return 'bg-red-500/10 text-red-500';
+    default:
+      return 'bg-zinc-500/10 text-zinc-400';
+  }
 }
 
 function PlusIcon() {
@@ -113,19 +83,19 @@ function JobCard({
   onClick,
   isClickable = false,
 }: {
-  job: TrainingJob;
+  job: TrainingJobResponse;
   onPause?: () => void;
   onResume?: () => void;
   onCancel?: () => void;
   onClick?: () => void;
   isClickable?: boolean;
 }) {
-  const timeRemaining = job.estimatedCompletion
-    ? new Date(job.estimatedCompletion).getTime() - Date.now()
-    : null;
   const isPaused = job.status === 'paused';
   const isRunning = job.status === 'running';
   const isActive = isRunning || isPaused;
+  const progress = job.progress ?? 0;
+  const stepsCompleted = job.metrics?.steps_completed ?? 0;
+  const totalSteps = job.metrics?.total_steps ?? 0;
 
   return (
     <div
@@ -164,15 +134,14 @@ function JobCard({
                 'h-full rounded-full transition-all',
                 isPaused ? 'bg-zinc-500' : 'bg-blue-500'
               )}
-              style={{ width: `${job.progress}%` }}
+              style={{ width: `${progress}%` }}
             />
           </div>
           <div className="flex items-center justify-between text-xs text-zinc-400">
             <span>
-              {job.progress}%
-              {!isPaused && timeRemaining && timeRemaining > 0 && ` • ${formatDuration(timeRemaining)}`}
+              {progress.toFixed(1)}%
               {' • '}
-              {job.metrics.stepsComplete.toLocaleString()} / {job.metrics.totalSteps.toLocaleString()} steps
+              {stepsCompleted.toLocaleString()} / {totalSteps.toLocaleString()} steps
             </span>
             <div className="flex items-center gap-2">
               {isRunning && (
@@ -215,24 +184,24 @@ function JobCard({
       )}
 
       {job.status === 'queued' && (
-        <p className="text-xs text-muted-foreground mt-2">{job.currentPhase}</p>
+        <p className="text-xs text-muted-foreground mt-2">Waiting in queue</p>
       )}
 
-      {job.status === 'completed' && job.completedAt && (
+      {job.status === 'completed' && job.completed_at && (
         <p className="text-xs text-muted-foreground mt-2">
-          Completed {formatTimeAgo(job.completedAt)}
+          Completed {formatTimeAgo(job.completed_at)}
         </p>
       )}
 
-      {job.status === 'cancelled' && job.completedAt && (
+      {job.status === 'cancelled' && job.completed_at && (
         <p className="text-xs text-muted-foreground mt-2">
-          Cancelled {formatTimeAgo(job.completedAt)}
+          Cancelled {formatTimeAgo(job.completed_at)}
         </p>
       )}
 
-      {job.status === 'failed' && job.completedAt && (
+      {job.status === 'failed' && (
         <p className="text-xs text-red-400 mt-2">
-          Failed {formatTimeAgo(job.completedAt)}
+          {job.error || 'Training failed'}
         </p>
       )}
     </div>
@@ -246,15 +215,13 @@ function JobSection({
   onResumeJob,
   onCancelJob,
   onJobClick,
-  getModelIdForJob: _getModelIdForJob,
 }: {
   title: string;
-  jobs: TrainingJob[];
+  jobs: TrainingJobResponse[];
   onPauseJob: (jobId: string) => void;
   onResumeJob: (jobId: string) => void;
   onCancelJob: (jobId: string) => void;
-  onJobClick?: (job: TrainingJob) => void;
-  getModelIdForJob: (jobId: string) => string | null;
+  onJobClick?: (job: TrainingJobResponse) => void;
 }) {
   if (jobs.length === 0) return null;
 
@@ -280,46 +247,29 @@ function JobSection({
   );
 }
 
-export function JobsPage({
-  jobs,
-  onPauseJob,
-  onResumeJob,
-  onCancelJob,
-  onNavigateToModel: _onNavigateToModel,
-}: JobsPageProps) {
-  const [jobToCancel, setJobToCancel] = useState<TrainingJob | null>(null);
-  const [showNewJobModal, setShowNewJobModal] = useState(false);
-  const [selectedCompletedJob, setSelectedCompletedJob] = useState<TrainingJob | null>(null);
+export function JobsPage() {
+  const { jobs, isLoading, pauseJob, resumeJob, cancelJob } = useTrainingJobs();
+
+  const [jobToCancel, setJobToCancel] = useState<TrainingJobResponse | null>(null);
+  const [selectedJob, setSelectedJob] = useState<TrainingJobResponse | null>(null);
 
   const activeJobs = jobs.filter((j) => j.status === 'running');
   const pausedJobs = jobs.filter((j) => j.status === 'paused');
+  const queuedJobs = jobs.filter((j) => j.status === 'queued');
   const completedJobs = jobs.filter((j) => j.status === 'completed');
   const failedJobs = jobs.filter((j) => j.status === 'failed' || j.status === 'cancelled');
 
   const handleCancelRequest = (jobId: string) => {
     const job = jobs.find(j => j.id === jobId);
-    if (job) {
-      setJobToCancel(job);
-    }
+    if (job) setJobToCancel(job);
   };
 
   const handleCancelConfirm = () => {
     if (jobToCancel) {
-      onCancelJob(jobToCancel.id);
+      cancelJob(jobToCancel.id);
       setJobToCancel(null);
     }
   };
-
-  const getModelIdForJob = (_jobId: string): string | null => {
-    // TODO: Stage 5 — resolve model ID from training API
-    return null;
-  };
-
-  const handleJobClick = (job: TrainingJob) => {
-    setSelectedCompletedJob(job);
-  };
-
-  const selectedJobDetails = selectedCompletedJob ? jobDetails[selectedCompletedJob.id] : null;
 
   const hasAnyJobs = jobs.length > 0;
 
@@ -328,73 +278,76 @@ export function JobsPage({
       <div className="max-w-3xl mx-auto space-y-4 sm:space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <div>
-              <h1 className="text-xl sm:text-2xl font-bold text-foreground">Jobs</h1>
-              <p className="text-muted-foreground text-sm mt-1 hidden sm:block">
-                Manage and monitor your training jobs
-              </p>
-            </div>
-            <MockBadge className="self-start mt-1" />
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground">Training Jobs</h1>
+            <p className="text-muted-foreground text-sm mt-1 hidden sm:block">
+              Manage and monitor fine-tuning jobs
+            </p>
           </div>
-          <button
-            onClick={() => setShowNewJobModal(true)}
-            className="flex items-center gap-2 h-9 px-3 sm:px-4 rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition-colors text-sm font-medium"
-          >
-            <PlusIcon />
-            <span className="hidden sm:inline">New Job</span>
-          </button>
         </div>
+
+        {isLoading && (
+          <div className="text-center py-12 text-zinc-500">
+            <p className="text-sm">Loading training jobs...</p>
+          </div>
+        )}
 
         {/* Job Sections */}
-        <div className="space-y-6">
-          <JobSection
-            title="Active"
-            jobs={activeJobs}
-            onPauseJob={onPauseJob}
-            onResumeJob={onResumeJob}
-            onCancelJob={handleCancelRequest}
-            onJobClick={handleJobClick}
-            getModelIdForJob={getModelIdForJob}
-          />
+        {!isLoading && (
+          <div className="space-y-6">
+            <JobSection
+              title="Active"
+              jobs={activeJobs}
+              onPauseJob={pauseJob}
+              onResumeJob={resumeJob}
+              onCancelJob={handleCancelRequest}
+              onJobClick={setSelectedJob}
+            />
 
-          <JobSection
-            title="Paused"
-            jobs={pausedJobs}
-            onPauseJob={onPauseJob}
-            onResumeJob={onResumeJob}
-            onCancelJob={handleCancelRequest}
-            onJobClick={handleJobClick}
-            getModelIdForJob={getModelIdForJob}
-          />
+            <JobSection
+              title="Paused"
+              jobs={pausedJobs}
+              onPauseJob={pauseJob}
+              onResumeJob={resumeJob}
+              onCancelJob={handleCancelRequest}
+              onJobClick={setSelectedJob}
+            />
 
-          <JobSection
-            title="Completed"
-            jobs={completedJobs}
-            onPauseJob={onPauseJob}
-            onResumeJob={onResumeJob}
-            onCancelJob={handleCancelRequest}
-            onJobClick={handleJobClick}
-            getModelIdForJob={getModelIdForJob}
-          />
+            <JobSection
+              title="Queued"
+              jobs={queuedJobs}
+              onPauseJob={pauseJob}
+              onResumeJob={resumeJob}
+              onCancelJob={handleCancelRequest}
+              onJobClick={setSelectedJob}
+            />
 
-          <JobSection
-            title="Not Completed"
-            jobs={failedJobs}
-            onPauseJob={onPauseJob}
-            onResumeJob={onResumeJob}
-            onCancelJob={handleCancelRequest}
-            onJobClick={handleJobClick}
-            getModelIdForJob={getModelIdForJob}
-          />
+            <JobSection
+              title="Completed"
+              jobs={completedJobs}
+              onPauseJob={pauseJob}
+              onResumeJob={resumeJob}
+              onCancelJob={handleCancelRequest}
+              onJobClick={setSelectedJob}
+            />
 
-          {!hasAnyJobs && (
-            <div className="text-center py-12 text-zinc-500">
-              <p className="text-sm">No training jobs</p>
-              <p className="text-xs mt-1">Start a new training job to fine-tune a model</p>
-            </div>
-          )}
-        </div>
+            <JobSection
+              title="Not Completed"
+              jobs={failedJobs}
+              onPauseJob={pauseJob}
+              onResumeJob={resumeJob}
+              onCancelJob={handleCancelRequest}
+              onJobClick={setSelectedJob}
+            />
+
+            {!hasAnyJobs && (
+              <div className="text-center py-12 text-zinc-500">
+                <p className="text-sm">No training jobs</p>
+                <p className="text-xs mt-1">Training jobs will appear here when created via the API</p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Cancel confirmation dialog */}
@@ -403,7 +356,7 @@ export function JobsPage({
           <DialogHeader className="space-y-3">
             <DialogTitle>Cancel Training Job?</DialogTitle>
             <DialogDescription>
-              Are you sure you want to cancel "{jobToCancel?.name}"? This action cannot be undone and all progress will be lost.
+              Are you sure you want to cancel &ldquo;{jobToCancel?.name}&rdquo;? This action cannot be undone and all progress will be lost.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-3 mt-4">
@@ -423,42 +376,13 @@ export function JobsPage({
         </DialogContent>
       </Dialog>
 
-      {/* New Job Modal (placeholder) */}
-      <Dialog open={showNewJobModal} onOpenChange={setShowNewJobModal}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>New Training Job</DialogTitle>
-            <DialogDescription>
-              Configure a new model training job
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-8 text-center text-muted-foreground text-sm">
-            Training job configuration coming soon
-          </div>
-          <DialogFooter>
-            <button
-              onClick={() => setShowNewJobModal(false)}
-              className="px-4 py-2 rounded-md bg-zinc-700 text-zinc-200 hover:bg-zinc-600 transition-colors text-sm font-medium"
-            >
-              Close
-            </button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
       {/* Job Detail Modal */}
-      <Dialog open={!!selectedCompletedJob} onOpenChange={(isOpen) => !isOpen && setSelectedCompletedJob(null)}>
+      <Dialog open={!!selectedJob} onOpenChange={(isOpen) => !isOpen && setSelectedJob(null)}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>{selectedCompletedJob?.name}</DialogTitle>
+            <DialogTitle>{selectedJob?.name}</DialogTitle>
             <DialogDescription>
-              {selectedCompletedJob?.status === 'completed' && selectedCompletedJob?.completedAt
-                ? `Completed ${formatTimeAgo(selectedCompletedJob.completedAt)}`
-                : selectedCompletedJob?.status === 'running'
-                ? 'Currently training'
-                : selectedCompletedJob?.status === 'paused'
-                ? 'Training paused'
-                : selectedCompletedJob?.status}
+              {selectedJob?.model} {selectedJob?.adapter_type ? `(${selectedJob.adapter_type})` : ''}
             </DialogDescription>
           </DialogHeader>
 
@@ -468,110 +392,77 @@ export function JobsPage({
               <h4 className="text-[10px] font-medium text-zinc-500 uppercase tracking-widest mb-3">Statistics</h4>
               <div className="grid grid-cols-2 gap-4">
                 <div className="p-3 rounded-lg bg-zinc-800/50 border border-zinc-700/50">
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Total Steps</p>
-                  <p className="text-sm font-medium text-foreground mt-1">
-                    {selectedCompletedJob?.metrics.totalSteps.toLocaleString()}
-                  </p>
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Status</p>
+                  <p className="text-sm font-medium text-foreground mt-1 capitalize">{selectedJob?.status}</p>
                 </div>
-                <div className="p-3 rounded-lg bg-zinc-800/50 border border-zinc-700/50">
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Final Loss</p>
-                  <p className="text-sm font-medium text-foreground mt-1">
-                    {selectedCompletedJob?.metrics.currentLoss.toFixed(4)}
-                  </p>
-                </div>
-                {selectedCompletedJob?.metrics.validationAccuracy && (
+                {selectedJob?.metrics?.steps_completed != null && (
                   <div className="p-3 rounded-lg bg-zinc-800/50 border border-zinc-700/50">
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Accuracy</p>
-                    <p className="text-sm font-medium text-emerald-400 mt-1">
-                      {(selectedCompletedJob.metrics.validationAccuracy * 100).toFixed(1)}%
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Steps</p>
+                    <p className="text-sm font-medium text-foreground mt-1">
+                      {selectedJob.metrics.steps_completed.toLocaleString()} / {(selectedJob.metrics.total_steps ?? 0).toLocaleString()}
                     </p>
                   </div>
                 )}
-                {selectedJobDetails && (
+                {selectedJob?.metrics?.loss != null && (
                   <div className="p-3 rounded-lg bg-zinc-800/50 border border-zinc-700/50">
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Duration</p>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Loss</p>
                     <p className="text-sm font-medium text-foreground mt-1">
-                      {selectedJobDetails.trainingDuration}
+                      {Number(selectedJob.metrics.loss).toFixed(4)}
+                    </p>
+                  </div>
+                )}
+                {selectedJob?.lora_config && (
+                  <div className="p-3 rounded-lg bg-zinc-800/50 border border-zinc-700/50">
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wide">LoRA Rank</p>
+                    <p className="text-sm font-medium text-foreground mt-1">
+                      {selectedJob.lora_config.rank}
                     </p>
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Summary */}
-            {selectedJobDetails && (
-              <div>
-                <h4 className="text-[10px] font-medium text-zinc-500 uppercase tracking-widest mb-3">Summary</h4>
-                <div className="p-3 rounded-lg bg-zinc-800/50 border border-zinc-700/50">
-                  <p className="text-sm text-foreground/80 leading-relaxed">
-                    {selectedJobDetails.summary}
-                  </p>
-                  <div className="mt-3 pt-3 border-t border-zinc-700/50 flex gap-4 text-xs text-muted-foreground">
-                    <span>Base: {selectedJobDetails.baseModel}</span>
-                    <span>Dataset: {selectedJobDetails.datasetSize}</span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Related Chats */}
-            {selectedJobDetails && selectedJobDetails.relatedChats.length > 0 && (
-              <div>
-                <h4 className="text-[10px] font-medium text-zinc-500 uppercase tracking-widest mb-3">Related Chats</h4>
-                <div className="space-y-2">
-                  {selectedJobDetails.relatedChats.map((chat) => (
-                    <button
-                      key={chat.id}
-                      className="w-full flex items-center gap-3 p-3 rounded-lg bg-zinc-800/50 border border-zinc-700/50 hover:bg-zinc-700/50 hover:border-zinc-600 transition-colors text-left"
-                    >
-                      <span className="text-muted-foreground">
-                        <ChatIcon />
-                      </span>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm text-foreground truncate">{chat.title}</p>
-                        <p className="text-xs text-muted-foreground">{chat.timestamp}</p>
-                      </div>
-                      <ChevronRightIcon />
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
             {/* Progress for active jobs */}
-            {(selectedCompletedJob?.status === 'running' || selectedCompletedJob?.status === 'paused') && (
+            {(selectedJob?.status === 'running' || selectedJob?.status === 'paused') && (
               <div>
                 <h4 className="text-[10px] font-medium text-zinc-500 uppercase tracking-widest mb-3">Progress</h4>
                 <div className="p-3 rounded-lg bg-zinc-800/50 border border-zinc-700/50">
                   <div className="flex items-center justify-between text-sm mb-2">
-                    <span className="text-foreground">{selectedCompletedJob.progress}%</span>
+                    <span className="text-foreground">{(selectedJob.progress ?? 0).toFixed(1)}%</span>
                     <span className="text-muted-foreground">
-                      {selectedCompletedJob.metrics.stepsComplete.toLocaleString()} / {selectedCompletedJob.metrics.totalSteps.toLocaleString()} steps
+                      {(selectedJob.metrics?.steps_completed ?? 0).toLocaleString()} / {(selectedJob.metrics?.total_steps ?? 0).toLocaleString()} steps
                     </span>
                   </div>
                   <div className="h-2 bg-zinc-700 rounded-full overflow-hidden">
                     <div
                       className={cn(
                         'h-full rounded-full transition-all',
-                        selectedCompletedJob.status === 'paused' ? 'bg-zinc-500' : 'bg-blue-500'
+                        selectedJob.status === 'paused' ? 'bg-zinc-500' : 'bg-blue-500'
                       )}
-                      style={{ width: `${selectedCompletedJob.progress}%` }}
+                      style={{ width: `${selectedJob.progress ?? 0}%` }}
                     />
                   </div>
-                  <p className="text-xs text-muted-foreground mt-2">{selectedCompletedJob.currentPhase}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Error */}
+            {selectedJob?.error && (
+              <div>
+                <h4 className="text-[10px] font-medium text-zinc-500 uppercase tracking-widest mb-3">Error</h4>
+                <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20">
+                  <p className="text-sm text-red-400">{selectedJob.error}</p>
                 </div>
               </div>
             )}
           </div>
 
-          {(selectedCompletedJob?.status === 'running' || selectedCompletedJob?.status === 'paused') && (
+          {(selectedJob?.status === 'running' || selectedJob?.status === 'paused') && (
             <DialogFooter className="gap-2">
-              {selectedCompletedJob?.status === 'running' && (
+              {selectedJob?.status === 'running' && (
                 <>
                   <button
-                    onClick={() => {
-                      onPauseJob(selectedCompletedJob.id);
-                    }}
+                    onClick={() => pauseJob(selectedJob.id)}
                     className="flex items-center gap-1.5 px-4 py-2 rounded-md bg-zinc-700 text-zinc-200 hover:bg-zinc-600 transition-colors text-sm font-medium"
                   >
                     <PauseIcon />
@@ -579,8 +470,8 @@ export function JobsPage({
                   </button>
                   <button
                     onClick={() => {
-                      setSelectedCompletedJob(null);
-                      handleCancelRequest(selectedCompletedJob.id);
+                      setSelectedJob(null);
+                      handleCancelRequest(selectedJob.id);
                     }}
                     className="flex items-center gap-1.5 px-4 py-2 rounded-md bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-colors text-sm font-medium"
                   >
@@ -589,12 +480,10 @@ export function JobsPage({
                   </button>
                 </>
               )}
-              {selectedCompletedJob?.status === 'paused' && (
+              {selectedJob?.status === 'paused' && (
                 <>
                   <button
-                    onClick={() => {
-                      onResumeJob(selectedCompletedJob.id);
-                    }}
+                    onClick={() => resumeJob(selectedJob.id)}
                     className="flex items-center gap-1.5 px-4 py-2 rounded-md bg-zinc-700 text-zinc-200 hover:bg-zinc-600 transition-colors text-sm font-medium"
                   >
                     <PlayIcon />
@@ -602,8 +491,8 @@ export function JobsPage({
                   </button>
                   <button
                     onClick={() => {
-                      setSelectedCompletedJob(null);
-                      handleCancelRequest(selectedCompletedJob.id);
+                      setSelectedJob(null);
+                      handleCancelRequest(selectedJob.id);
                     }}
                     className="flex items-center gap-1.5 px-4 py-2 rounded-md bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-colors text-sm font-medium"
                   >

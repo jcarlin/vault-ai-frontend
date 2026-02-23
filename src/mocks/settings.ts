@@ -19,7 +19,7 @@ export const languages = [
   { value: 'zh', label: 'Chinese' },
 ];
 
-export type SettingsCategory = 'network' | 'users' | 'data' | 'system' | 'models' | 'security' | 'quarantine' | 'advanced';
+export type SettingsCategory = 'network' | 'users' | 'data' | 'system' | 'models' | 'security' | 'quarantine' | 'training' | 'advanced';
 
 export interface SettingsCategoryInfo {
   id: SettingsCategory;
@@ -71,6 +71,12 @@ export const settingsCategories: SettingsCategoryInfo[] = [
     label: 'Quarantine',
     description: 'File scanning pipeline settings',
     icon: 'scan',
+  },
+  {
+    id: 'training',
+    label: 'Training',
+    description: 'Fine-tuning and GPU allocation',
+    icon: 'training',
   },
   {
     id: 'advanced',

@@ -10,6 +10,7 @@ import { ModelSettings } from './ModelSettings';
 import { AdvancedSettings } from './AdvancedSettings';
 import { SecuritySettings } from './SecuritySettings';
 import { QuarantineSettings } from './QuarantineSettings';
+import { TrainingSettings } from './TrainingSettings';
 
 interface SettingsPageProps {
   activeCategory?: SettingsCategory;
@@ -40,6 +41,8 @@ export function SettingsPage({ activeCategory = 'network', onRestartSetup }: Set
         return <SecuritySettings onSave={() => showSaveMessage('Security settings saved')} />;
       case 'quarantine':
         return <QuarantineSettings onSave={() => showSaveMessage('Quarantine settings saved')} />;
+      case 'training':
+        return <TrainingSettings onSave={() => showSaveMessage('Training settings saved')} />;
       case 'advanced':
         return <AdvancedSettings onSave={() => showSaveMessage('Advanced settings saved')} />;
       default:

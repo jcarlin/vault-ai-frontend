@@ -36,12 +36,73 @@ export type ResponseTimeDistribution = components['schemas']['ResponseTimeDistri
 export type TimeRange = components['schemas']['TimeRange'];
 
 // --- Training ---
-export type TrainingJobResponse = components['schemas']['TrainingJobResponse'];
-export type TrainingJobCreate = components['schemas']['TrainingJobCreate'];
+// Extended types — generated spec predates Epic 16 additions
+export type TrainingJobCreate = components['schemas']['TrainingJobCreate'] & {
+  adapter_type?: string;
+  lora_config?: LoRAConfig;
+};
 export type TrainingJobList = components['schemas']['TrainingJobList'];
 export type TrainingConfig = components['schemas']['TrainingConfig'];
-export type TrainingMetrics = components['schemas']['TrainingMetrics'];
+export type TrainingMetrics = components['schemas']['TrainingMetrics'] & {
+  steps_completed?: number;
+  total_steps?: number;
+  loss_history?: Array<{ step: number; loss: number }>;
+};
 export type ResourceAllocation = components['schemas']['ResourceAllocation'];
+export type TrainingJobResponse = components['schemas']['TrainingJobResponse'] & {
+  adapter_type?: string;
+  lora_config?: LoRAConfig | null;
+  adapter_id?: string | null;
+  metrics: TrainingMetrics;
+};
+
+// --- Epic 16: Training Adapters & Validation ---
+export interface LoRAConfig {
+  rank: number;
+  alpha: number;
+  dropout?: number;
+  target_modules?: string[];
+  quantization_bits?: number;
+}
+
+export interface AdapterInfo {
+  id: string;
+  name: string;
+  base_model: string;
+  adapter_type: string;
+  status: string;
+  path: string;
+  training_job_id: string | null;
+  config: Record<string, unknown> | null;
+  metrics: Record<string, unknown> | null;
+  size_bytes: number;
+  version: number;
+  created_at: string;
+  activated_at: string | null;
+}
+
+export interface AdapterList {
+  adapters: AdapterInfo[];
+  total: number;
+}
+
+export interface GPUAllocationStatus {
+  gpu_index: number;
+  assigned_to: string;
+  job_id: string | null;
+  memory_used_pct: number | null;
+}
+
+export interface DatasetValidationRequest {
+  path: string;
+}
+
+export interface DatasetValidationResponse {
+  valid: boolean;
+  format: string | null;
+  record_count: number;
+  findings: Record<string, unknown>[];
+}
 
 // --- Admin: Keys & Users ---
 export type KeyResponse = components['schemas']['KeyResponse'];
