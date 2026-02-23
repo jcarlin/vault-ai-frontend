@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { Code, ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -26,7 +26,14 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, clearApiKey } = useAuth();
+
+  // Global 401 handler — auto-logout on JWT expiry
+  useEffect(() => {
+    const handleAuthError = () => clearApiKey();
+    window.addEventListener('vault:auth-error', handleAuthError);
+    return () => window.removeEventListener('vault:auth-error', handleAuthError);
+  }, [clearApiKey]);
   const { enabled: developerMode, toggle: toggleDeveloperMode, applications } = useDeveloperMode();
 
   const [showClusterPanel, setShowClusterPanel] = useState(false);

@@ -247,6 +247,97 @@ export interface WsLogMessage {
   message?: string;
 }
 
+// --- Epic 14: Auth / LDAP ---
+export interface LoginRequest {
+  username: string;
+  password: string;
+}
+
+export interface AuthUser {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  auth_source: 'local' | 'ldap';
+}
+
+export interface LoginResponse {
+  token: string;
+  token_type: string;
+  expires_in: number;
+  user: AuthUser;
+}
+
+export interface AuthMeResponse {
+  auth_type: 'jwt' | 'api_key';
+  user: AuthUser;
+  key_prefix?: string;
+  key_scope?: string;
+}
+
+export interface LdapEnabledResponse {
+  ldap_enabled: boolean;
+}
+
+export interface LdapConfig {
+  enabled: boolean;
+  url: string;
+  bind_dn: string;
+  bind_password: string;
+  user_search_base: string;
+  group_search_base: string;
+  user_search_filter: string;
+  use_ssl: boolean;
+  default_role: string;
+}
+
+export interface LdapConfigUpdate {
+  enabled?: boolean;
+  url?: string;
+  bind_dn?: string;
+  bind_password?: string;
+  user_search_base?: string;
+  group_search_base?: string;
+  user_search_filter?: string;
+  use_ssl?: boolean;
+  default_role?: string;
+}
+
+export interface LdapTestResult {
+  success: boolean;
+  message: string;
+  users_found: number;
+  groups_found: number;
+}
+
+export interface LdapSyncResult {
+  success: boolean;
+  users_created: number;
+  users_updated: number;
+  users_deactivated: number;
+  errors: string[];
+}
+
+export interface LdapGroupMapping {
+  id: string;
+  ldap_group_dn: string;
+  vault_role: string;
+  priority: number;
+  created_at: string;
+}
+
+export interface LdapGroupMappingCreate {
+  ldap_group_dn: string;
+  vault_role: string;
+  priority?: number;
+}
+
+export interface LdapGroupMappingUpdate {
+  ldap_group_dn?: string;
+  vault_role?: string;
+  priority?: number;
+}
+
 // Frontend-only (not in backend schema)
 export interface ApiError {
   detail: string;

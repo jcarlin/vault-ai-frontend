@@ -34,18 +34,30 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: () => void 
   );
 }
 
-function UserAvatar() {
+function UserAvatar({ name }: { name?: string }) {
+  const initial = name ? name.charAt(0).toUpperCase() : 'A';
   return (
     <div className="h-8 w-8 rounded-full bg-secondary border border-border flex items-center justify-center text-sm font-medium text-muted-foreground">
-      A
+      {initial}
     </div>
   );
+}
+
+function getRoleBadgeStyles(role: string) {
+  switch (role) {
+    case 'admin':
+      return 'bg-purple-500/20 text-purple-400';
+    case 'user':
+      return 'bg-emerald-500/20 text-emerald-400';
+    default:
+      return 'bg-zinc-500/20 text-zinc-400';
+  }
 }
 
 export function UserMenu({ developerMode, onToggleDeveloperMode }: UserMenuProps) {
   const [open, setOpen] = useState(false);
   const router = useRouter();
-  const { clearApiKey } = useAuth();
+  const { clearApiKey, user, authType } = useAuth();
 
   return (
     <div className="relative">
@@ -54,7 +66,7 @@ export function UserMenu({ developerMode, onToggleDeveloperMode }: UserMenuProps
         className="p-1 rounded-lg hover:bg-secondary/50 transition-colors"
         aria-label="User menu"
       >
-        <UserAvatar />
+        <UserAvatar name={user?.name} />
       </button>
 
       {open && (
@@ -64,6 +76,30 @@ export function UserMenu({ developerMode, onToggleDeveloperMode }: UserMenuProps
             onClick={() => setOpen(false)}
           />
           <div className="absolute right-0 top-full mt-2 w-56 bg-secondary border border-border rounded-lg shadow-lg z-50 py-1">
+            {/* User info (JWT users) */}
+            {user && (
+              <>
+                <div className="px-4 py-2.5">
+                  <p className="text-sm font-medium text-foreground truncate">{user.name}</p>
+                  <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                  <div className="flex items-center gap-1.5 mt-1.5">
+                    <span className={cn(
+                      'px-1.5 py-0.5 rounded text-[10px] font-medium capitalize',
+                      getRoleBadgeStyles(user.role)
+                    )}>
+                      {user.role}
+                    </span>
+                    {user.auth_source === 'ldap' && (
+                      <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-500/20 text-blue-400">
+                        LDAP
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="border-t border-border my-1" />
+              </>
+            )}
+
             {/* Developer Mode Toggle */}
             <div className="px-4 py-2.5 flex items-center justify-between">
               <div className="flex items-center gap-3">

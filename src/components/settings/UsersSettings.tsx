@@ -6,6 +6,7 @@ import { Plus, Pencil, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { listUsers, createUser, updateUser, deactivateUser } from '@/lib/api/admin';
+import { LdapSettings } from './LdapSettings';
 import { formatLastActive } from '@/mocks/settings';
 import type { UserResponse, UserCreate, UserUpdate } from '@/types/api';
 
@@ -293,6 +294,11 @@ export function UsersSettings({ onSave }: UsersSettingsProps) {
         }
         title="Edit User"
       />
+
+      {/* LDAP Settings */}
+      <div className="border-t border-zinc-800 pt-6">
+        <LdapSettings />
+      </div>
     </div>
   );
 }

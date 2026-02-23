@@ -37,8 +37,15 @@ function extractErrorDetail(body: Record<string, unknown>): string | undefined {
   return undefined;
 }
 
+function dispatchAuthError() {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('vault:auth-error'));
+  }
+}
+
 async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
+    if (response.status === 401) dispatchAuthError();
     let detail: string | undefined;
     try {
       const body = await response.json();
@@ -91,6 +98,7 @@ export async function apiDelete(path: string, signal?: AbortSignal): Promise<voi
     signal,
   });
   if (!response.ok) {
+    if (response.status === 401) dispatchAuthError();
     let detail: string | undefined;
     try {
       const body = await response.json();
@@ -120,6 +128,7 @@ export async function apiStream(
     signal,
   });
   if (!response.ok) {
+    if (response.status === 401) dispatchAuthError();
     let detail: string | undefined;
     try {
       const errorBody = await response.json();
