@@ -39,6 +39,21 @@ function CustomTooltip({ active, payload }: CustomTooltipProps) {
 }
 
 export function ModelUsageChart({ data }: ModelUsageChartProps) {
+  if (data.length === 0) {
+    return (
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base">Model Usage</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="h-[250px] flex items-center justify-center">
+            <p className="text-sm text-muted-foreground">No model usage data yet</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card>
       <CardHeader className="pb-2">

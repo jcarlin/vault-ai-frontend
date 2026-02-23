@@ -13,7 +13,7 @@ import { fetchInsights } from '@/lib/api/insights';
 import { getInferenceStats } from '@/lib/api/system';
 import { useSystemMetricsWs } from '@/hooks/useSystemMetricsWs';
 import type { InsightsResponse, TimeRange, InferenceStatsResponse } from '@/types/api';
-import { formatNumber, formatTokensPerSec } from '@/lib/formatters';
+import { formatNumber, formatTokensPerSec, parseUTC } from '@/lib/formatters';
 
 function ConnectionDot({ state }: { state: string }) {
   const color =
@@ -155,7 +155,7 @@ export function InsightsPage() {
               />
               <MetricCard
                 title="Last Update"
-                value={wsLastUpdated ? new Date(wsLastUpdated).toLocaleTimeString() : '--'}
+                value={wsLastUpdated ? parseUTC(wsLastUpdated).toLocaleTimeString() : '--'}
                 subtitle="WS push every 2s"
                 icon={<Activity className="h-5 w-5 text-muted-foreground" />}
               />
