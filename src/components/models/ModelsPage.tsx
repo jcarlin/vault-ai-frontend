@@ -10,7 +10,8 @@ import { AddModelModal } from './AddModelModal';
 import { type Model, type StorageInfo } from '@/mocks/models';
 import { listVaultModels, loadModel, unloadModel, deleteModel } from '@/lib/api/models';
 import { getSystemResources } from '@/lib/api/system';
-import type { VaultModelInfo } from '@/types/api';
+import { getModelConfig, updateModelConfig } from '@/lib/api/admin';
+import type { VaultModelInfo, ModelConfigUpdate } from '@/types/api';
 
 function toFrontendModel(info: VaultModelInfo): Model {
   const isLoaded = info.status === 'loaded';
@@ -35,7 +36,7 @@ function toFrontendModel(info: VaultModelInfo): Model {
 
 export function ModelsPage() {
   const queryClient = useQueryClient();
-  const [selectedModel, setSelectedModel] = useState<Model | null>(null);
+  const [selectedModelId, setSelectedModelId] = useState<string | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
 
   const { data: vaultModels, isLoading } = useQuery({
@@ -49,6 +50,19 @@ export function ModelsPage() {
     queryFn: ({ signal }) => getSystemResources(signal),
     staleTime: 30_000,
     refetchInterval: 60_000,
+  });
+
+  const { data: modelConfig } = useQuery({
+    queryKey: ['modelConfig'],
+    queryFn: ({ signal }) => getModelConfig(signal),
+    staleTime: 30_000,
+  });
+
+  const setDefaultMutation = useMutation({
+    mutationFn: (data: ModelConfigUpdate) => updateModelConfig(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['modelConfig'] });
+    },
   });
 
   const loadMutation = useMutation({
@@ -72,18 +86,22 @@ export function ModelsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['vault-models'] });
       queryClient.invalidateQueries({ queryKey: ['models'] });
-      setSelectedModel(null);
+      setSelectedModelId(null);
     },
   });
 
   const models: Model[] = vaultModels?.map(toFrontendModel) ?? [];
-  // Mark first loaded model as default, or first model overall
-  const loadedModels = models.filter(m => m.vaultStatus === 'loaded');
-  if (loadedModels.length > 0) {
-    loadedModels[0].isDefault = true;
-  } else if (models.length > 0) {
-    models[0].isDefault = true;
+  // Mark the configured default model
+  const defaultModelId = modelConfig?.default_model_id;
+  if (defaultModelId) {
+    const defaultModel = models.find(m => m.id === defaultModelId);
+    if (defaultModel) defaultModel.isDefault = true;
   }
+
+  // Derive selected model from fresh models array so isDefault stays in sync
+  const selectedModel = selectedModelId
+    ? models.find(m => m.id === selectedModelId) ?? null
+    : null;
 
   const storage: StorageInfo | null = resources
     ? {
@@ -103,6 +121,10 @@ export function ModelsPage() {
 
   const handleDelete = (model: Model) => {
     deleteMutation.mutate(model.id);
+  };
+
+  const handleSetDefault = (model: Model) => {
+    setDefaultMutation.mutate({ default_model_id: model.id });
   };
 
   return (
@@ -136,7 +158,7 @@ export function ModelsPage() {
         ) : (
           <ModelList
             models={models}
-            onModelClick={setSelectedModel}
+            onModelClick={(m) => setSelectedModelId(m.id)}
           />
         )}
       </div>
@@ -145,7 +167,8 @@ export function ModelsPage() {
       <ModelDetailDialog
         model={selectedModel}
         open={!!selectedModel}
-        onClose={() => setSelectedModel(null)}
+        onClose={() => setSelectedModelId(null)}
+        onSetDefault={handleSetDefault}
         onLoad={handleLoad}
         onUnload={handleUnload}
         onDelete={handleDelete}
