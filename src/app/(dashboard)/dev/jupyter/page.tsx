@@ -1,5 +1,10 @@
+import { DevModeGuard } from '@/components/devmode/DevModeGuard';
 import { JupyterPage } from '@/components/devmode/JupyterPage';
 
 export default function JupyterRoute() {
-  return <JupyterPage />;
+  return (
+    <DevModeGuard>
+      <JupyterPage />
+    </DevModeGuard>
+  );
 }

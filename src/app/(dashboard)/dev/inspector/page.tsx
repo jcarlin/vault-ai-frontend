@@ -1,5 +1,10 @@
+import { DevModeGuard } from '@/components/devmode/DevModeGuard';
 import { ModelInspectorPage } from '@/components/devmode/ModelInspectorPage';
 
 export default function InspectorRoute() {
-  return <ModelInspectorPage />;
+  return (
+    <DevModeGuard>
+      <ModelInspectorPage />
+    </DevModeGuard>
+  );
 }

@@ -8,6 +8,7 @@ import { parseUTC } from '@/lib/formatters';
 import { listApiKeys, createApiKey, deleteApiKey, updateApiKey } from '@/lib/api/admin';
 import { getSystemResources, getSystemSettings, updateSystemSettings } from '@/lib/api/system';
 import { generateSupportBundle, createBackup, factoryReset } from '@/lib/api/diagnostics';
+import { useDeveloperMode } from '@/hooks/useDeveloperMode';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { MockBadge } from '@/components/ui/MockBadge';
 import { UpdatePanel } from './UpdatePanel';
@@ -296,6 +297,8 @@ export function AdvancedSettings({ onSave }: AdvancedSettingsProps) {
     }
   };
 
+  const { enabled: devModeEnabled } = useDeveloperMode();
+
   const activeAdminKeys = apiKeys.filter(k => k.is_active && k.scope === 'admin');
   const isLastAdmin = activeAdminKeys.length <= 1;
 
@@ -305,6 +308,21 @@ export function AdvancedSettings({ onSave }: AdvancedSettingsProps) {
         <h2 className="text-xl font-semibold text-zinc-100">Advanced</h2>
         <p className="text-sm text-zinc-500 mt-1">Developer tools and system diagnostics</p>
       </div>
+
+      {/* Developer Mode Info Card */}
+      {devModeEnabled && (
+        <div className="rounded-lg bg-purple-500/10 border border-purple-500/20 p-4">
+          <h3 className="text-sm font-medium text-purple-400 mb-2">Developer Mode Active</h3>
+          <div className="space-y-1.5">
+            <p className="text-xs text-zinc-400">
+              <span className="text-zinc-300 font-medium">Enabled tools:</span> Terminal, Python Console, Jupyter Notebooks, Model Inspector, Debug Logs
+            </p>
+            <p className="text-xs text-zinc-400">
+              <span className="text-zinc-300 font-medium">Not tracked:</span> Terminal and Python commands are not recorded in the audit log. Sessions are in-memory only and do not persist across restarts.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* API Keys */}
       <div className="rounded-lg bg-zinc-800/50 p-4">
