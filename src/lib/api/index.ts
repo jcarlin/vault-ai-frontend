@@ -14,3 +14,4 @@ export { getSystemLogs } from './logs';
 export { submitScan, getScanStatus, listHeldFiles, getHeldFile, approveHeldFile, rejectHeldFile, getSignatures, getQuarantineStats, getQuarantineConfig, updateQuarantineConfig } from './quarantine';
 export { exportAllData, purgeData, archiveConversations, factoryReset, generateSupportBundle, createBackup, restoreBackup } from './diagnostics';
 export { getUpdateStatus, scanForUpdates, getPendingUpdate, applyUpdate, getUpdateProgress, rollbackUpdate, getUpdateHistory } from './updates';
+export { enableDevMode, disableDevMode, getDevModeStatus, inspectModel, startTerminalSession, stopTerminalSession, startPythonSession, stopPythonSession, startJupyter, stopJupyter } from './devmode';

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { enableDevMode, disableDevMode, getDevModeStatus } from '@/lib/api/devmode';
 
 const STORAGE_KEY = 'vault-ai-developer-mode';
 
@@ -48,21 +49,65 @@ export function useDeveloperMode() {
     const stored = localStorage.getItem(STORAGE_KEY);
     return stored === 'true';
   });
+  const [loading, setLoading] = useState(false);
 
+  // Sync with backend on mount
+  useEffect(() => {
+    getDevModeStatus()
+      .then((status) => {
+        setEnabled(status.enabled);
+        localStorage.setItem(STORAGE_KEY, String(status.enabled));
+      })
+      .catch(() => {
+        // Fallback to localStorage if backend is unreachable
+      });
+  }, []);
+
+  // Keep localStorage in sync
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, String(enabled));
   }, [enabled]);
 
-  const toggle = useCallback(() => {
-    setEnabled(prev => !prev);
+  const toggle = useCallback(async () => {
+    setLoading(true);
+    try {
+      if (enabled) {
+        const status = await disableDevMode();
+        setEnabled(status.enabled);
+      } else {
+        const status = await enableDevMode();
+        setEnabled(status.enabled);
+      }
+    } catch {
+      // Fallback: toggle locally if backend fails
+      setEnabled((prev) => !prev);
+    } finally {
+      setLoading(false);
+    }
+  }, [enabled]);
+
+  const enable = useCallback(async () => {
+    setLoading(true);
+    try {
+      const status = await enableDevMode();
+      setEnabled(status.enabled);
+    } catch {
+      setEnabled(true);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  const enable = useCallback(() => {
-    setEnabled(true);
-  }, []);
-
-  const disable = useCallback(() => {
-    setEnabled(false);
+  const disable = useCallback(async () => {
+    setLoading(true);
+    try {
+      const status = await disableDevMode();
+      setEnabled(status.enabled);
+    } catch {
+      setEnabled(false);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   return {
@@ -70,6 +115,7 @@ export function useDeveloperMode() {
     toggle,
     enable,
     disable,
+    loading,
     applications,
   };
 }

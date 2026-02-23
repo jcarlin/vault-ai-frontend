@@ -53,7 +53,7 @@ export default function DashboardLayout({
 
   const isSettingsPage = pathname === '/settings';
   const isChatPage = pathname === '/chat';
-  const showSidebar = ['/chat', '/insights', '/models', '/settings', '/audit', '/quarantine'].includes(pathname);
+  const showSidebar = ['/chat', '/insights', '/models', '/settings', '/audit', '/quarantine'].includes(pathname) || pathname.startsWith('/dev/');
 
   const handleSelectConversation = (conversation: Conversation) => {
     if (onboardingActive) dismissOnboarding();
@@ -144,7 +144,15 @@ export default function DashboardLayout({
               developerMode={developerMode}
               applications={applications}
               onSelectApplication={(app) => {
-                void app;
+                const routeMap: Record<string, string> = {
+                  python: '/dev/python',
+                  jupyter: '/dev/jupyter',
+                  terminal: '/dev/terminal',
+                  inspector: '/dev/inspector',
+                  logs: '/dev/logs',
+                };
+                const route = routeMap[app.id];
+                if (route) router.push(route);
                 setShowMobileSidebar(false);
               }}
               onSelectConversation={handleSelectConversation}
