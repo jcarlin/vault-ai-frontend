@@ -534,6 +534,133 @@ export interface EvalDatasetList {
   total: number;
 }
 
+// --- Epic 22: Dataset Management ---
+
+export interface DataSourceConfig {
+  base_path?: string;
+  endpoint?: string;
+  bucket?: string;
+  access_key?: string;
+  secret_key?: string;
+  region?: string;
+  server?: string;
+  mount_point?: string;
+}
+
+export interface DataSourceCreate {
+  name: string;
+  source_type: 'local' | 's3' | 'smb' | 'nfs';
+  config: DataSourceConfig;
+}
+
+export interface DataSourceUpdate {
+  name?: string;
+  config?: DataSourceConfig;
+  status?: string;
+}
+
+export interface DataSourceResponse {
+  id: string;
+  name: string;
+  source_type: string;
+  status: string;
+  config: DataSourceConfig;
+  last_scanned_at: string | null;
+  last_error: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DataSourceList {
+  sources: DataSourceResponse[];
+  total: number;
+}
+
+export interface DataSourceTestResult {
+  success: boolean;
+  message: string;
+  files_found?: number;
+}
+
+export interface DataSourceScanResult {
+  datasets_found: number;
+  datasets_new: number;
+  datasets_updated: number;
+  message: string;
+}
+
+export interface DatasetCreate {
+  name: string;
+  description?: string;
+  dataset_type: 'training' | 'eval' | 'document' | 'other';
+  format?: string;
+  source_id?: string;
+  source_path: string;
+  tags?: string[];
+}
+
+export interface DatasetUpdate {
+  name?: string;
+  description?: string;
+  dataset_type?: string;
+  tags?: string[];
+}
+
+export interface DatasetResponse {
+  id: string;
+  name: string;
+  description: string | null;
+  dataset_type: string;
+  format: string;
+  status: string;
+  source_id: string | null;
+  source_path: string;
+  file_size_bytes: number;
+  record_count: number;
+  tags: string[];
+  metadata: Record<string, unknown> | null;
+  quarantine_job_id: string | null;
+  validation: Record<string, unknown> | null;
+  registered_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DatasetList {
+  datasets: DatasetResponse[];
+  total: number;
+}
+
+export interface DatasetUploadResponse {
+  dataset: DatasetResponse;
+  quarantine_job_id: string | null;
+  message: string;
+}
+
+export interface DatasetPreview {
+  dataset_id: string;
+  format: string;
+  total_records: number;
+  records: Record<string, unknown>[];
+  columns?: string[];
+}
+
+export interface DatasetStats {
+  total_datasets: number;
+  total_size_bytes: number;
+  by_type: Record<string, number>;
+  by_status: Record<string, number>;
+  by_format: Record<string, number>;
+}
+
+export interface DatasetValidateResult {
+  valid: boolean;
+  format: string;
+  record_count: number;
+  findings: Record<string, unknown>[];
+  quarantine_job_id: string | null;
+}
+
 // Frontend-only (not in backend schema)
 export interface ApiError {
   detail: string;

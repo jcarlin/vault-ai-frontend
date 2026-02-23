@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/dialog';
 import { createEvalJob } from '@/lib/api/eval';
 import { fetchModels } from '@/lib/api/models';
+import { DatasetPicker } from '@/components/datasets/DatasetPicker';
 import type { EvalDatasetInfo, EvalJobCreate } from '@/types/api';
 
 interface CreateEvalModalProps {
@@ -123,19 +124,11 @@ export function CreateEvalModal({ open, onClose, datasets, datasetsLoading }: Cr
           {/* Dataset */}
           <div>
             <label className="text-xs text-muted-foreground block mb-1.5">Dataset</label>
-            <select
+            <DatasetPicker
+              datasetType="eval"
               value={datasetId}
-              onChange={(e) => setDatasetId(e.target.value)}
-              className="w-full px-3 py-2 rounded-md bg-zinc-800 border border-zinc-700 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-blue-500"
-              disabled={datasetsLoading}
-            >
-              <option value="">{datasetsLoading ? 'Loading...' : 'Select a dataset'}</option>
-              {datasets.map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.name} ({d.record_count} examples)
-                </option>
-              ))}
-            </select>
+              onChange={setDatasetId}
+            />
             {selectedDataset && (
               <p className="text-xs text-muted-foreground mt-1">{selectedDataset.description}</p>
             )}

@@ -15,3 +15,4 @@ export { submitScan, getScanStatus, listHeldFiles, getHeldFile, approveHeldFile,
 export { exportAllData, purgeData, archiveConversations, factoryReset, generateSupportBundle, createBackup, restoreBackup } from './diagnostics';
 export { getUpdateStatus, scanForUpdates, getPendingUpdate, applyUpdate, getUpdateProgress, rollbackUpdate, getUpdateHistory } from './updates';
 export { enableDevMode, disableDevMode, getDevModeStatus, inspectModel, startTerminalSession, stopTerminalSession, startPythonSession, stopPythonSession, startJupyter, stopJupyter } from './devmode';
+export { createDataSource, listDataSources, updateDataSource, deleteDataSource, testDataSource, scanDataSource, listDatasets, getDataset, createDataset, uploadDataset, updateDataset as updateDatasetRecord, deleteDataset, validateDatasetById, previewDataset, listDatasetsByType, getDatasetStats } from './datasets';
