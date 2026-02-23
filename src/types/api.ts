@@ -193,6 +193,12 @@ export interface QuarantineConfig {
   max_archive_depth: number;
   auto_approve_clean: boolean;
   strictness_level: string;
+  // Epic 13: AI Safety
+  ai_safety_enabled: boolean;
+  pii_enabled: boolean;
+  pii_action: string;
+  injection_detection_enabled: boolean;
+  model_hash_verification: boolean;
 }
 
 export interface QuarantineConfigUpdate {
@@ -202,6 +208,12 @@ export interface QuarantineConfigUpdate {
   max_archive_depth?: number;
   auto_approve_clean?: boolean;
   strictness_level?: string;
+  // Epic 13: AI Safety
+  ai_safety_enabled?: boolean;
+  pii_enabled?: boolean;
+  pii_action?: string;
+  injection_detection_enabled?: boolean;
+  model_hash_verification?: boolean;
 }
 
 // SSE streaming types — not in OpenAPI spec (streamed as raw SSE, not a JSON response)

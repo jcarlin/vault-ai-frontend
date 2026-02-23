@@ -18,6 +18,7 @@ const STAGE_COLORS: Record<string, string> = {
   integrity: 'bg-blue-500/20 text-blue-400',
   malware: 'bg-purple-500/20 text-purple-400',
   content: 'bg-cyan-500/20 text-cyan-400',
+  ai_safety: 'bg-orange-500/20 text-orange-400',
 };
 
 interface HeldFileDetailDialogProps {
