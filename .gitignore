@@ -40,3 +40,9 @@ claude.md
 notes.md
 tickets/
 reference/
+
+# Playwright E2E
+test-results/
+playwright-report/
+e2e-report.md
+e2e/.auth/

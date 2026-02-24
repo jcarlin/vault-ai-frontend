@@ -12,4 +12,6 @@ paths = [
     '''node_modules/''',
     '''package-lock\.json''',
     '''\.gitleaks\.toml''',
+    '''e2e/fixtures/''',
+    '''e2e/helpers/mock-data\.ts''',
 ]
