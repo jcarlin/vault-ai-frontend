@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { timingSafeEqual } from 'crypto';
+import { createHash, timingSafeEqual } from 'crypto';
 
 export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => ({}));
@@ -14,9 +14,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Server not configured' }, { status: 500 });
   }
 
-  const a = Buffer.from(key);
-  const b = Buffer.from(expected);
-  if (a.length !== b.length || !timingSafeEqual(a, b)) {
+  // Hash both values before comparing to prevent length-based timing side-channels.
+  // Without this, an attacker could binary-search for the correct key length
+  // because the short-circuit on a.length !== b.length leaks timing info.
+  const a = createHash('sha256').update(key).digest();
+  const b = createHash('sha256').update(expected).digest();
+  if (!timingSafeEqual(a, b)) {
     return NextResponse.json({ error: 'Invalid access key' }, { status: 401 });
   }
 

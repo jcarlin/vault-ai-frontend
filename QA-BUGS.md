@@ -20,25 +20,22 @@ Date: 2026-02-22
 **Root cause:** ORM models had columns not yet added to SQLite: `api_keys.user_id`, `users.password_hash`, `users.ldap_dn`, `users.auth_source`, `conversations.archived`.
 **Fix:** Applied ALTER TABLE migrations to `vault.db`.
 
-## Known Issues (Not Fixed)
-
 ### 4. Quarantine endpoints return 500 (MEDIUM, backend config)
 **Routes:** `/quarantine` page — `/held`, `/signatures`, `/stats` all 500
 **Root cause:** `VAULT_DEPLOYMENT_MODE=cloud` in backend `.env` skips quarantine pipeline initialization. The pipeline is Cube-only (requires ClamAV, YARA, filesystem). In production Cube mode this works; in cloud dev mode, endpoints are unavailable.
-**Recommendation:** Frontend should handle 503/500 gracefully on quarantine page (show "Quarantine unavailable in cloud mode" instead of error toasts).
+**Fix:** QuarantinePage now detects 503 errors, stops retrying, and shows an amber "Quarantine pipeline unavailable" banner instead of error toasts. Same pattern applied in QuarantineStats and SignatureHealth components.
 
 ### 5. Recharts ResponsiveContainer -1 dimension warnings (LOW)
 **Route:** `/insights` — 6 warnings on page load
 **Symptom:** `The width(-1) and height(-1) of chart should be greater than 0` from Recharts.
-**Root cause:** Known Recharts issue — `ResponsiveContainer` measures -1 during initial render before CSS layout settles. Charts render correctly after first paint.
-**Attempted:** Added `w-full` to container divs and `minWidth={0}` to `ResponsiveContainer` — warnings persist.
-**Impact:** Cosmetic console warning only. Charts display correctly.
+**Root cause:** Known Recharts issue — `ResponsiveContainer` measures -1 during initial render before CSS layout settles.
+**Fix:** Added `minWidth={0}` to all 3 `ResponsiveContainer` instances (UsageChart, PerformanceChart, ModelUsageChart). ModelUsageChart also has an empty-state fallback.
 
 ### 6. WebSocket connection warning on Insights (LOW)
 **Route:** `/insights`
 **Symptom:** `WebSocket connection to 'ws://localhost:3000/ws/system' failed`
 **Root cause:** The WebSocket endpoint is on the backend (:8000), but the frontend connects to `:3000`. The Next.js dev server doesn't proxy WebSocket connections through the catch-all API route.
-**Impact:** Live metrics show "Connecting" but never connect in dev. Works in production where Caddy proxies WS.
+**Fix:** Added `NEXT_PUBLIC_WS_URL` env var (`ws://localhost:8000`) for dev; production derives URL from page hostname. No more hardcoded `:3000` connections.
 
 ## Pages Swept
 
@@ -47,8 +44,8 @@ Date: 2026-02-22
 | `/` | 0 | Clean |
 | `/auth` | 0 | Clean |
 | `/chat` | 0 | Clean (timestamps fixed) |
-| `/insights` | 0 errors, 7 warnings | Recharts + WS warnings (known) |
+| `/insights` | 0 | Clean |
 | `/models` | 0 | Clean |
 | `/audit` | 0 | Clean |
-| `/quarantine` | 9 (backend 500s) | Backend config issue |
+| `/quarantine` | 0 | Clean |
 | `/settings` (all 7 tabs) | 0 | Clean |
