@@ -117,8 +117,8 @@ export function AddDataSourceModal({ open, onClose }: AddDataSourceModalProps) {
               <label className="block text-sm text-zinc-400 mb-1.5">Base Path</label>
               <input
                 type="text"
-                value={config.base_path ?? ''}
-                onChange={(e) => updateConfig('base_path', e.target.value)}
+                value={config.path ?? ''}
+                onChange={(e) => updateConfig('path', e.target.value)}
                 placeholder="/data/datasets"
                 disabled={createMutation.isPending}
                 className={inputClass}

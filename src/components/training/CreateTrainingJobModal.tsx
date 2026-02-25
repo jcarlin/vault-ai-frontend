@@ -15,7 +15,7 @@ import { fetchModels } from '@/lib/api/models';
 import { DatasetPicker } from '@/components/datasets/DatasetPicker';
 import { listDatasetsByType } from '@/lib/api/datasets';
 import { validateDatasetById } from '@/lib/api/datasets';
-import type { TrainingJobCreate, DatasetValidateResult } from '@/types/api';
+import type { TrainingJobCreate, DatasetValidateResponse } from '@/types/api';
 
 interface CreateTrainingJobModalProps {
   open: boolean;
@@ -111,7 +111,7 @@ export function CreateTrainingJobModal({
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<FormData>(INITIAL_FORM);
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [validation, setValidation] = useState<DatasetValidateResult | null>(null);
+  const [validation, setValidation] = useState<DatasetValidateResponse | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
 
   const { data: modelsData } = useQuery({
@@ -352,12 +352,12 @@ export function CreateTrainingJobModal({
                       {validation.valid ? <CheckIcon /> : <AlertIcon />}
                       <div>
                         {validation.valid ? (
-                          <span>Valid — {validation.record_count.toLocaleString()} records, {validation.format} format</span>
+                          <span>Valid — {validation.record_count.toLocaleString()} records{validation.format_detected ? `, ${validation.format_detected} format` : ''}</span>
                         ) : (
                           <div className="space-y-1">
                             <span>Validation failed</span>
-                            {validation.findings.map((f, i) => (
-                              <p key={i} className="text-red-400/80">{String(f.message ?? JSON.stringify(f))}</p>
+                            {validation.errors.map((err, i) => (
+                              <p key={i} className="text-red-400/80">{err}</p>
                             ))}
                           </div>
                         )}

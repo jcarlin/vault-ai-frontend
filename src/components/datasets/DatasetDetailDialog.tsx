@@ -175,12 +175,12 @@ export function DatasetDetailDialog({ dataset, open, onClose }: DatasetDetailDia
             {showPreview && previewLoading && (
               <p className="text-xs text-zinc-500">Loading preview...</p>
             )}
-            {showPreview && preview && preview.records.length > 0 && (
+            {showPreview && preview && preview.preview_records.length > 0 && (
               <div className="overflow-x-auto rounded-lg border border-zinc-700/50">
                 <table className="w-full text-xs">
                   <thead>
                     <tr className="border-b border-zinc-700/50 bg-zinc-800/50">
-                      {(preview.columns ?? Object.keys(preview.records[0])).map((col) => (
+                      {Object.keys(preview.preview_records[0]).map((col) => (
                         <th key={col} className="px-3 py-2 text-left text-zinc-400 font-medium">
                           {col}
                         </th>
@@ -188,9 +188,9 @@ export function DatasetDetailDialog({ dataset, open, onClose }: DatasetDetailDia
                     </tr>
                   </thead>
                   <tbody>
-                    {preview.records.map((record, i) => (
+                    {preview.preview_records.map((record, i) => (
                       <tr key={i} className="border-b border-zinc-800/50">
-                        {(preview.columns ?? Object.keys(record)).map((col) => (
+                        {Object.keys(preview.preview_records[0]).map((col) => (
                           <td key={col} className="px-3 py-2 text-zinc-300 max-w-[200px] truncate">
                             {String(record[col] ?? '')}
                           </td>
@@ -201,7 +201,7 @@ export function DatasetDetailDialog({ dataset, open, onClose }: DatasetDetailDia
                 </table>
               </div>
             )}
-            {showPreview && preview && preview.records.length === 0 && (
+            {showPreview && preview && preview.preview_records.length === 0 && (
               <p className="text-xs text-zinc-500">No records available for preview</p>
             )}
           </div>
@@ -250,9 +250,21 @@ export function DatasetDetailDialog({ dataset, open, onClose }: DatasetDetailDia
           <p className="text-xs text-red-400 mt-2">Validation failed. Please try again.</p>
         )}
         {validateMutation.isSuccess && (
-          <p className="text-xs text-emerald-400 mt-2">
-            Validation complete: {validateMutation.data.valid ? 'Valid' : 'Issues found'} ({validateMutation.data.record_count} records)
-          </p>
+          <div className="mt-2 space-y-1">
+            <p className={cn("text-xs", validateMutation.data.valid ? "text-emerald-400" : "text-red-400")}>
+              Validation complete: {validateMutation.data.valid ? 'Valid' : 'Issues found'} ({validateMutation.data.record_count} records)
+            </p>
+            {validateMutation.data.errors.length > 0 && (
+              <ul className="text-xs text-red-400 list-disc list-inside">
+                {validateMutation.data.errors.map((err, i) => <li key={i}>{err}</li>)}
+              </ul>
+            )}
+            {validateMutation.data.warnings.length > 0 && (
+              <ul className="text-xs text-amber-400 list-disc list-inside">
+                {validateMutation.data.warnings.map((w, i) => <li key={i}>{w}</li>)}
+              </ul>
+            )}
+          </div>
         )}
       </DialogContent>
     </Dialog>

@@ -12,7 +12,7 @@ import type {
   DatasetUploadResponse,
   DatasetPreview,
   DatasetStats,
-  DatasetValidateResult,
+  DatasetValidateResponse,
 } from '@/types/api';
 import { apiGet, apiPost, apiPut, apiDelete, ApiClientError } from './client';
 
@@ -26,27 +26,27 @@ function getApiKey(): string | null {
 // --- Data Sources ---
 
 export async function createDataSource(data: DataSourceCreate): Promise<DataSourceResponse> {
-  return apiPost<DataSourceResponse>('/vault/datasets/sources', data);
+  return apiPost<DataSourceResponse>('/vault/admin/datasources', data);
 }
 
 export async function listDataSources(signal?: AbortSignal): Promise<DataSourceList> {
-  return apiGet<DataSourceList>('/vault/datasets/sources', signal);
+  return apiGet<DataSourceList>('/vault/admin/datasources', signal);
 }
 
 export async function updateDataSource(id: string, data: DataSourceUpdate): Promise<DataSourceResponse> {
-  return apiPut<DataSourceResponse>(`/vault/datasets/sources/${id}`, data);
+  return apiPut<DataSourceResponse>(`/vault/admin/datasources/${id}`, data);
 }
 
 export async function deleteDataSource(id: string): Promise<void> {
-  return apiDelete(`/vault/datasets/sources/${id}`);
+  return apiDelete(`/vault/admin/datasources/${id}`);
 }
 
 export async function testDataSource(id: string): Promise<DataSourceTestResult> {
-  return apiPost<DataSourceTestResult>(`/vault/datasets/sources/${id}/test`, {});
+  return apiPost<DataSourceTestResult>(`/vault/admin/datasources/${id}/test`, {});
 }
 
 export async function scanDataSource(id: string): Promise<DataSourceScanResult> {
-  return apiPost<DataSourceScanResult>(`/vault/datasets/sources/${id}/scan`, {});
+  return apiPost<DataSourceScanResult>(`/vault/admin/datasources/${id}/scan`, {});
 }
 
 // --- Datasets ---
@@ -147,8 +147,8 @@ export async function deleteDataset(id: string): Promise<void> {
   return apiDelete(`/vault/datasets/${id}`);
 }
 
-export async function validateDatasetById(id: string): Promise<DatasetValidateResult> {
-  return apiPost<DatasetValidateResult>(`/vault/datasets/${id}/validate`, {});
+export async function validateDatasetById(id: string): Promise<DatasetValidateResponse> {
+  return apiPost<DatasetValidateResponse>(`/vault/datasets/${id}/validate`, {});
 }
 
 export async function previewDataset(

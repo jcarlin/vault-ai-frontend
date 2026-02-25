@@ -112,8 +112,14 @@ export function DataSourceCard({ source }: DataSourceCardProps) {
 
       {/* Scan result feedback */}
       {scanMutation.isSuccess && (
-        <p className="mt-2 text-xs text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded">
-          {scanMutation.data.message} ({scanMutation.data.datasets_new} new, {scanMutation.data.datasets_updated} updated)
+        <p className={cn(
+          "mt-2 text-xs px-2 py-1 rounded",
+          scanMutation.data.errors.length === 0
+            ? "text-emerald-400 bg-emerald-500/10"
+            : "text-amber-400 bg-amber-500/10"
+        )}>
+          {scanMutation.data.datasets_discovered} discovered, {scanMutation.data.datasets_updated} updated
+          {scanMutation.data.errors.length > 0 && ` (${scanMutation.data.errors.length} errors)`}
         </p>
       )}
 

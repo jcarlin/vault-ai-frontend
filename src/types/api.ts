@@ -111,7 +111,10 @@ export type KeyResponse = components['schemas']['KeyResponse'];
 export type KeyCreate = components['schemas']['KeyCreate'];
 export type KeyCreateResponse = components['schemas']['KeyCreateResponse'];
 export type UserResponse = components['schemas']['UserResponse'];
-export type UserCreate = components['schemas']['UserCreate'];
+export type UserCreate = components['schemas']['UserCreate'] & {
+  password?: string;
+  auth_source?: string;
+};
 export type UserUpdate = components['schemas']['UserUpdate'];
 
 // Manual types — backend has these but not yet in generated spec
@@ -539,7 +542,7 @@ export interface EvalDatasetList {
 // --- Epic 22: Dataset Management ---
 
 export interface DataSourceConfig {
-  base_path?: string;
+  path?: string;
   endpoint?: string;
   bucket?: string;
   access_key?: string;
@@ -585,10 +588,10 @@ export interface DataSourceTestResult {
 }
 
 export interface DataSourceScanResult {
-  datasets_found: number;
-  datasets_new: number;
+  source_id: string;
+  datasets_discovered: number;
   datasets_updated: number;
-  message: string;
+  errors: string[];
 }
 
 export interface DatasetCreate {
@@ -634,17 +637,20 @@ export interface DatasetList {
 }
 
 export interface DatasetUploadResponse {
-  dataset: DatasetResponse;
-  quarantine_job_id: string | null;
+  id: string;
+  name: string;
+  format: string;
+  file_size_bytes: number;
+  status: string;
   message: string;
 }
 
 export interface DatasetPreview {
-  dataset_id: string;
+  id: string;
+  name: string;
   format: string;
   total_records: number;
-  records: Record<string, unknown>[];
-  columns?: string[];
+  preview_records: Record<string, unknown>[];
 }
 
 export interface DatasetStats {
@@ -655,12 +661,13 @@ export interface DatasetStats {
   by_format: Record<string, number>;
 }
 
-export interface DatasetValidateResult {
+export interface DatasetValidateResponse {
+  id: string;
   valid: boolean;
-  format: string;
+  errors: string[];
+  warnings: string[];
   record_count: number;
-  findings: Record<string, unknown>[];
-  quarantine_job_id: string | null;
+  format_detected: string | null;
 }
 
 // --- Uptime & Availability ---
