@@ -168,6 +168,7 @@ function UserFormDialog({
                 <label className="block text-sm font-medium text-zinc-400 mb-1.5">Password</label>
                 <input
                   type="password"
+                  autoComplete="new-password"
                   value={formData.password}
                   onChange={(e) => {
                     setFormData({ ...formData, password: e.target.value });
@@ -185,6 +186,7 @@ function UserFormDialog({
                 </label>
                 <input
                   type="password"
+                  autoComplete="new-password"
                   value={formData.confirmPassword}
                   onChange={(e) => {
                     setFormData({ ...formData, confirmPassword: e.target.value });
