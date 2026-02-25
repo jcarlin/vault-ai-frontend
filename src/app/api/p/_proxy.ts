@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8000';
+const BACKEND_URL = (process.env.BACKEND_URL || 'http://localhost:8000').replace(/\/+$/, '');
 
 // Only forward requests to known backend API prefixes
 const ALLOWED_PATH_PREFIXES = ['/v1/', '/vault/'];
