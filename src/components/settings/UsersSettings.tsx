@@ -82,6 +82,8 @@ interface UserFormData {
   name: string;
   email: string;
   role: UserRole;
+  password: string;
+  confirmPassword: string;
 }
 
 function UserFormDialog({
@@ -90,19 +92,33 @@ function UserFormDialog({
   onSubmit,
   initialData,
   title,
+  isEditing,
 }: {
   open: boolean;
   onClose: () => void;
   onSubmit: (data: UserFormData) => void;
   initialData?: UserFormData;
   title: string;
+  isEditing?: boolean;
 }) {
   const [formData, setFormData] = useState<UserFormData>(
-    initialData || { name: '', email: '', role: 'user' }
+    initialData || { name: '', email: '', role: 'user', password: '', confirmPassword: '' }
   );
+  const [passwordError, setPasswordError] = useState<string | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isEditing) {
+      if (formData.password.length < 8) {
+        setPasswordError('Password must be at least 8 characters');
+        return;
+      }
+      if (formData.password !== formData.confirmPassword) {
+        setPasswordError('Passwords do not match');
+        return;
+      }
+    }
+    setPasswordError(null);
     onSubmit(formData);
     onClose();
   };
@@ -146,6 +162,44 @@ function UserFormDialog({
               <option value="viewer">Viewer</option>
             </select>
           </div>
+          {!isEditing && (
+            <>
+              <div>
+                <label className="block text-sm font-medium text-zinc-400 mb-1.5">Password</label>
+                <input
+                  type="password"
+                  value={formData.password}
+                  onChange={(e) => {
+                    setFormData({ ...formData, password: e.target.value });
+                    setPasswordError(null);
+                  }}
+                  className="w-full px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-100 text-sm focus:outline-none focus:border-[var(--green-500)]"
+                  required
+                  minLength={8}
+                  placeholder="Minimum 8 characters"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-zinc-400 mb-1.5">
+                  Confirm Password
+                </label>
+                <input
+                  type="password"
+                  value={formData.confirmPassword}
+                  onChange={(e) => {
+                    setFormData({ ...formData, confirmPassword: e.target.value });
+                    setPasswordError(null);
+                  }}
+                  className="w-full px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-100 text-sm focus:outline-none focus:border-[var(--green-500)]"
+                  required
+                  minLength={8}
+                />
+              </div>
+              {passwordError && (
+                <p className="text-sm text-red-400">{passwordError}</p>
+              )}
+            </>
+          )}
           <div className="flex justify-end gap-2 pt-2">
             <button
               type="button"
@@ -158,7 +212,7 @@ function UserFormDialog({
               type="submit"
               className="px-4 py-2 rounded-lg bg-[var(--green-600)] text-white text-sm font-medium hover:bg-[var(--green-500)] transition-colors"
             >
-              {initialData ? 'Save Changes' : 'Add User'}
+              {isEditing ? 'Save Changes' : 'Add User'}
             </button>
           </div>
         </form>
@@ -171,6 +225,7 @@ export function UsersSettings({ onSave }: UsersSettingsProps) {
   const queryClient = useQueryClient();
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [editingUser, setEditingUser] = useState<UserResponse | null>(null);
+  const [deletingUser, setDeletingUser] = useState<UserResponse | null>(null);
 
   const { data: users = [] } = useQuery<UserResponse[]>({
     queryKey: ['users'],
@@ -202,7 +257,13 @@ export function UsersSettings({ onSave }: UsersSettingsProps) {
   });
 
   const handleAddUser = (data: UserFormData) => {
-    createMutation.mutate({ name: data.name, email: data.email, role: data.role });
+    createMutation.mutate({
+      name: data.name,
+      email: data.email,
+      role: data.role,
+      password: data.password,
+      auth_source: 'local',
+    });
   };
 
   const handleEditUser = (data: UserFormData) => {
@@ -214,8 +275,14 @@ export function UsersSettings({ onSave }: UsersSettingsProps) {
     setEditingUser(null);
   };
 
-  const handleDeleteUser = (userId: string) => {
-    deactivateMutation.mutate(userId);
+  const handleDeleteUser = (user: UserResponse) => {
+    setDeletingUser(user);
+  };
+
+  const confirmDeleteUser = () => {
+    if (!deletingUser) return;
+    deactivateMutation.mutate(deletingUser.id);
+    setDeletingUser(null);
   };
 
   return (
@@ -243,7 +310,7 @@ export function UsersSettings({ onSave }: UsersSettingsProps) {
             key={user.id}
             user={user}
             onEdit={() => setEditingUser(user)}
-            onDelete={() => handleDeleteUser(user.id)}
+            onDelete={() => handleDeleteUser(user)}
           />
         ))}
         {users.length === 0 && (
@@ -283,17 +350,46 @@ export function UsersSettings({ onSave }: UsersSettingsProps) {
         open={!!editingUser}
         onClose={() => setEditingUser(null)}
         onSubmit={handleEditUser}
+        isEditing
         initialData={
           editingUser
             ? {
                 name: editingUser.name,
                 email: editingUser.email,
                 role: editingUser.role as UserRole,
+                password: '',
+                confirmPassword: '',
               }
             : undefined
         }
         title="Edit User"
       />
+
+      {/* Delete confirmation dialog */}
+      <Dialog open={!!deletingUser} onOpenChange={() => setDeletingUser(null)}>
+        <DialogContent className="sm:max-w-md bg-zinc-900 border-zinc-800">
+          <DialogHeader>
+            <DialogTitle className="text-zinc-100">Deactivate User</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-zinc-400">
+            Are you sure you want to deactivate <span className="text-zinc-100 font-medium">{deletingUser?.name}</span>? They will no longer be able to log in.
+          </p>
+          <div className="flex justify-end gap-2 pt-2">
+            <button
+              onClick={() => setDeletingUser(null)}
+              className="px-4 py-2 rounded-lg border border-zinc-700 text-zinc-300 text-sm hover:bg-zinc-800 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={confirmDeleteUser}
+              className="px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-medium hover:bg-red-500 transition-colors"
+            >
+              Deactivate
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* LDAP Settings */}
       <div className="border-t border-zinc-800 pt-6">

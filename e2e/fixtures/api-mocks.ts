@@ -255,6 +255,27 @@ export class MockApiHelper {
     if (method === 'GET' && path === '/vault/admin/users') {
       return { body: data.mockUsers };
     }
+    if (method === 'POST' && path === '/vault/admin/users') {
+      return {
+        body: {
+          id: `user-${Date.now()}`,
+          name: 'New User',
+          username: 'newuser',
+          email: 'new@vault.local',
+          role: 'user',
+          status: 'active',
+          is_active: true,
+          auth_source: 'local',
+          created_at: new Date().toISOString(),
+        },
+      };
+    }
+    if (method === 'PUT' && path.match(/^\/vault\/admin\/users\/[^/]+$/)) {
+      return { body: { ...data.mockUsers[0], name: 'Updated User' } };
+    }
+    if (method === 'DELETE' && path.match(/^\/vault\/admin\/users\/[^/]+$/)) {
+      return { body: { ...data.mockUsers[0], status: 'inactive', is_active: false } };
+    }
 
     // --- Quarantine ---
     if (method === 'GET' && path === '/vault/quarantine/stats') {
